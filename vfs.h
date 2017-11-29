@@ -52,7 +52,7 @@ void vfs_init(struct vfs *vfs);
 
 /** Attempts to open a file from the
  * virtual file system. */
-int vfs_open_file(struct vfs_*vfs,
+int vfs_open_file(struct vfs *vfs,
                   struct vfs_file *file,
                   const char *path);
 
