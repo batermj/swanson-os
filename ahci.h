@@ -16,17 +16,15 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SWANSON_PCI_H
-#define SWANSON_PCI_H
+#ifndef SWANSON_AHCI_H
+#define SWANSON_AHCI_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
-
 #ifdef __cplusplus
 } /* extern "C" { */
 #endif
 
-#endif /* SWANSON_PCI_H */
+#endif /* SWANSON_AHCI_H */
