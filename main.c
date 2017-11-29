@@ -84,6 +84,9 @@ int main(int argc, const char **argv) {
 	kernel.memmap.unused_section_count = 1;
 
 	exitcode = kernel_main(&kernel);
+
+	free(primary_memmap_section.addr);
+
 	if (exitcode == KERNEL_SUCCESS)
 		return EXIT_SUCCESS;
 	else if (exitcode == KERNEL_FAILURE)
