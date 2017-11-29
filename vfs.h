@@ -19,6 +19,8 @@
 #ifndef SWANSON_VFS_H
 #define SWANSON_VFS_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -27,16 +29,33 @@ struct vfs_entry {
 	void *data;
 };
 
-struct vfs_file {
+struct vfs_stream {
+	/** Implementation data. */
 	void *data;
+	/** Sets the position of the stream. */
+	int (*setpos)(void *data, uint64_t pos);
+	/** Gets the position of the stream. */
+	int (*getpos)(void *data, uint64_t *pos);
+	/** Writes data to the stream. */
+	int (*write)(void *data,
+	             const void *buf,
+	             uint64_t buf_size,
+	             uint64_t *write_size);
+	/** Reads data from the stream. */
+	int (*read)(void *data,
+	            void *buf,
+	            uint64_t buf_size,
+	            uint64_t *read_size);
+};
+
+struct vfs_file {
+	struct vfs_stream stream;
+	uint64_t offset;
+	uint64_t length;
 };
 
 struct vfs_dir {
 	void *data;
-	struct vfs_file *file_array;
-	unsigned long int file_count;
-	struct vfs_dir *dir_array;
-	unsigned long int dir_count;
 };
 
 /** Virtual file system. */
