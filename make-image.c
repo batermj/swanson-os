@@ -73,7 +73,7 @@ int main(int argc, const char **argv) {
 	memset(zero_buffer, 0, sizeof(zero_buffer));
 	write_count = 0;
 	while ((write_count < size)) {
-		write_count += image.base.stream.write(&image, zero_buffer, sizeof(zero_buffer));
+		write_count += stream_write(&image.base.stream, zero_buffer, sizeof(zero_buffer));
 	}
 
 	/* format the disk with a GUID partition table */
