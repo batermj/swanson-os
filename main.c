@@ -21,17 +21,33 @@
 #include <string.h>
 
 #include "debug.h"
+#include "fdisk.h"
 #include "kernel.h"
+
+/** Used for storing options from
+ * the command line.
+ * */
 
 struct opts {
 	/** The number of bytes to allocate for memory. */
 	unsigned long int memory;
+	/** The disk image for the kernel to read. */
+	const char *disk_path;
 };
+
+/** Initializes default values
+ * for the command line options.
+ * */
 
 static void opts_init(struct opts *opts) {
 	/* 256 MiB */
 	opts->memory = 256 * 1024 * 1024;
+	opts->disk_path = "swanson.img";
 }
+
+/** Parses options from the
+ * command line.
+ * */
 
 static int opts_parse(struct opts *opts,
                       int argc,
@@ -39,11 +55,16 @@ static int opts_parse(struct opts *opts,
 
 	int i;
 	const char *memory = NULL;
+	const char *disk_path = NULL;
 
 	for (i = 1; i < argc; i++) {
 		if ((strcmp(argv[i], "--memory") == 0)
 		 || (strcmp(argv[i], "-m") == 0)) {
 			memory = argv[i + 1];
+			i++;
+		} else if ((strcmp(argv[i], "--disk-path") == 0)
+		        || (strcmp(argv[i], "-d") == 0)) {
+			disk_path = argv[i + 1];
 			i++;
 		} else {
 			fprintf(stderr, "Unknown option '%s'\n", argv[i]);
@@ -61,19 +82,33 @@ static int opts_parse(struct opts *opts,
 		opts->memory *= 1024 * 1024;
 	}
 
+	if (disk_path != NULL)
+		opts->disk_path = disk_path;
+
 	return EXIT_SUCCESS;
 }
 
 int main(int argc, const char **argv) {
 
+	int err;
 	struct opts opts;
 	enum kernel_exitcode exitcode;
 	struct kernel kernel;
 	struct memmap_section primary_memmap_section;
+	struct fdisk disk;
 
 	opts_init(&opts);
 
 	opts_parse(&opts, argc, argv);
+
+	fdisk_init(&disk);
+
+	err = fdisk_open(&disk, opts.disk_path, "r+");
+	if (err != 0) {
+		fprintf(stderr, "Failed to open disk image '%s'.\n", opts.disk_path);
+		fdisk_close(&disk);
+		return EXIT_FAILURE;
+	}
 
 	primary_memmap_section.addr = malloc(opts.memory);
 	primary_memmap_section.size = opts.memory;
@@ -86,6 +121,8 @@ int main(int argc, const char **argv) {
 	exitcode = kernel_main(&kernel);
 
 	free(primary_memmap_section.addr);
+
+	fdisk_close(&disk);
 
 	if (exitcode == KERNEL_SUCCESS)
 		return EXIT_SUCCESS;
