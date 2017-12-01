@@ -52,7 +52,7 @@ uint64_t stream_read(struct stream *stream,
 	if (stream->read == NULL)
 		return 0;
 	else
-		return stream_read(stream, buf, buf_size);
+		return stream->read(stream->data, buf, buf_size);
 }
 
 uint64_t stream_write(struct stream *stream,
@@ -61,5 +61,5 @@ uint64_t stream_write(struct stream *stream,
 	if (stream->write == NULL)
 		return 0;
 	else
-		return stream_write(stream, buf, buf_size);
+		return stream->write(stream->data, buf, buf_size);
 }
