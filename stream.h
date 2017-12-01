@@ -29,15 +29,31 @@ extern "C" {
 struct stream {
 	/** Implementation data. */
 	void *data;
-	/** Write callback. */
-	uint64_t (*write)(void *data, const void *buf, uint64_t buf_size);
 	/** Read callback. */
 	uint64_t (*read)(void *data, void *buf, uint64_t buf_size);
+	/** Write callback. */
+	uint64_t (*write)(void *data, const void *buf, uint64_t buf_size);
 	/** Get the position of the stream. */
 	int (*getpos)(void *data, uint64_t *offset);
 	/** Set the position of the stream. */
 	int (*setpos)(void *data, uint64_t offset);
 };
+
+void stream_init(struct stream *stream);
+
+uint64_t stream_read(struct stream *stream,
+                     void *buf,
+                     uint64_t buf_size);
+
+uint64_t stream_write(struct stream *stream,
+                      const void *buf,
+                      uint64_t buf_size);
+
+int stream_getpos(struct stream *stream,
+                  uint64_t *offset);
+
+int stream_setpos(struct stream *stream,
+                  uint64_t offset);
 
 #ifdef __cplusplus
 } /* extern "C" { */
