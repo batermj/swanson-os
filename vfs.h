@@ -19,42 +19,35 @@
 #ifndef SWANSON_VFS_H
 #define SWANSON_VFS_H
 
+#include "stream.h"
+
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/** A directory entry in the virtual file system. */
 struct vfs_entry {
+	/** Implementation data */
 	void *data;
 };
 
-struct vfs_stream {
-	/** Implementation data. */
-	void *data;
-	/** Sets the position of the stream. */
-	int (*setpos)(void *data, uint64_t pos);
-	/** Gets the position of the stream. */
-	int (*getpos)(void *data, uint64_t *pos);
-	/** Writes data to the stream. */
-	int (*write)(void *data,
-	             const void *buf,
-	             uint64_t buf_size,
-	             uint64_t *write_size);
-	/** Reads data from the stream. */
-	int (*read)(void *data,
-	            void *buf,
-	            uint64_t buf_size,
-	            uint64_t *read_size);
-};
-
+/** A handle for a file in the virtual file system. */
 struct vfs_file {
-	struct vfs_stream stream;
+	/** The stream used for reading and writing file
+	 * data. */
+	struct stream stream;
+	/** The offset within the stream that the file
+	 * data starts in. */
 	uint64_t offset;
+	/** The size of the file data, in bytes. */
 	uint64_t length;
 };
 
+/** A handle for a directory within the virtual file system. */
 struct vfs_dir {
+	/** Implementation data. */
 	void *data;
 };
 
@@ -62,8 +55,6 @@ struct vfs_dir {
 struct vfs {
 	/** Implementation data. */
 	void *data;
-	/** Root directory */
-	struct vfs_dir root_dir;
 };
 
 /** Initializes the virtual file system. */
