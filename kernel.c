@@ -18,12 +18,30 @@
 
 #include "kernel.h"
 
+#include "debug.h"
+
+#ifndef NULL
+#define NULL ((void *) 0x00)
+#endif
+
 void kernel_init(struct kernel *kernel) {
 	vfs_init(&kernel->vfs);
 	memmap_init(&kernel->memmap);
+	kernel->disk_array = NULL;
+	kernel->disk_count = 0;
 }
 
 enum kernel_exitcode kernel_main(struct kernel *kernel) {
-	(void) kernel;
+
+	int err;
+	struct vfs_file init_file;
+	const char *init_path = "/sbin/init";
+
+	err = vfs_open_file(&kernel->vfs, &init_file, init_path);
+	if (err != 0) {
+		debug("Failed to open '%s'\n", init_path);
+		return KERNEL_FAILURE;
+	}
+
 	return KERNEL_SUCCESS;
 }
