@@ -22,6 +22,8 @@
 #include "memmap.h"
 #include "vfs.h"
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -43,6 +45,12 @@ struct kernel {
 	struct vfs vfs;
 	/** The kernel's memory map. */
 	struct memmap memmap;
+	/** The array of disks that the
+	 * kernel may read and write to. */
+	struct disk *disk_array;
+	/** The number of disks in the
+	 * disk array. */
+	uint64_t disk_count;
 };
 
 /** Initializes the kernel structure. */
