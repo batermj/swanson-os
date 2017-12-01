@@ -16,6 +16,8 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** @file */
+
 #ifndef SWANSON_STREAM_H
 #define SWANSON_STREAM_H
 
@@ -25,7 +27,9 @@
 extern "C" {
 #endif
 
-/** An abstract data reader and writer. */
+/** An abstract data reader and writer.
+ * */
+
 struct stream {
 	/** Implementation data. */
 	void *data;
@@ -39,18 +43,52 @@ struct stream {
 	int (*setpos)(void *data, uint64_t offset);
 };
 
+/** Initializes the stream members
+ * to null. After this function is
+ * called, the callback functions
+ * may be set.
+ * @param stream An uninitialized
+ * stream structure.
+ * */
+
 void stream_init(struct stream *stream);
+
+/** Read from a stream.
+ * @param stream The stream to read from.
+ * @param buf The buffer to put the data in.
+ * @param buf_size The number of bytes to read.
+ * @returns The number of bytes read.
+ * */
 
 uint64_t stream_read(struct stream *stream,
                      void *buf,
                      uint64_t buf_size);
 
+/** Write to a stream.
+ * @param stream The stream to write to.
+ * @param buf The buffer to write to the stream.
+ * @param buf_size The number of bytes to write.
+ * @returns the number of bytes written.
+ * */
+
 uint64_t stream_write(struct stream *stream,
                       const void *buf,
                       uint64_t buf_size);
 
+/** Get the stream position.
+ * @param stream The stream to get the position of.
+ * @param offset The position of the stream.
+ * @returns Zero on success, non-zero otherwise.
+ * */
+
 int stream_getpos(struct stream *stream,
                   uint64_t *offset);
+
+/** Set the stream position.
+ * @param stream The stream to set the position of.
+ * @param offset The new stream position.
+ * @returns Zero on success, non-zero otherwise.
+ * */
 
 int stream_setpos(struct stream *stream,
                   uint64_t offset);
