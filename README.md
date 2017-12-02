@@ -1,5 +1,5 @@
-Swanson
-=======
+Swanson OS
+==========
 
 Swanson is an operating system built for virtualization.
 
