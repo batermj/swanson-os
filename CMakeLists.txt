@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-project("Swanson OS")
+project("Swanson OS" C)
 
 if (MSVC)
 	# 4820 warnings about added structure padding
