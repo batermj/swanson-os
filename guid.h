@@ -21,6 +21,8 @@
 #ifndef SWANSON_GUID_H
 #define SWANSON_GUID_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
