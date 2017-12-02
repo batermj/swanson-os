@@ -19,10 +19,72 @@
 #include "kernel.h"
 
 #include "debug.h"
+#include "disk.h"
+#include "gpt.h"
 
 #ifndef NULL
 #define NULL ((void *) 0x00)
 #endif
+
+static int probe_gpt_header(void *kernel_ptr, const struct gpt_header *header) {
+	(void) kernel_ptr;
+	(void) header;
+	debug("Found GPT header: %.*s\n", 8, header->signature);
+	return 0;
+}
+
+static int probe_gpt_partition(void *kernel_ptr, const struct gpt_partition *partition) {
+
+	(void) kernel_ptr;
+	(void) partition;
+
+	debug("Found GPT partition: %u");
+
+	return 0;
+}
+
+static void gpt_error(void *kernel_ptr, enum gpt_error error) {
+	(void) kernel_ptr;
+	debug("Failed accessing GPT formatted drive: %s.\n", gpt_strerror(error));
+}
+
+static enum kernel_exitcode probe_disk(struct kernel *kernel,
+                                       struct disk *disk) {
+
+	int err;
+	struct gpt_accessor partition_finder;
+
+	gpt_accessor_init(&partition_finder);
+	partition_finder.data = kernel;
+	partition_finder.header = probe_gpt_header;
+	partition_finder.partition = probe_gpt_partition;
+	partition_finder.error = gpt_error;
+
+	err = gpt_access(&disk->stream, &partition_finder);
+	if (err != 0)
+		debug("Failed to access GPT partitions.\n");
+
+	return KERNEL_FAILURE;
+}
+
+static enum kernel_exitcode find_fs(struct kernel *kernel) {
+
+	uint64_t i;
+	enum kernel_exitcode exitcode;
+
+	if (kernel->disk_count == 0) {
+		debug("No disks found.\n");
+		return KERNEL_FAILURE;
+	}
+
+	for (i = 0; i < kernel->disk_count; i++) {
+		exitcode = probe_disk(kernel, &kernel->disk_array[i]);
+		if (exitcode == KERNEL_SUCCESS)
+			return KERNEL_SUCCESS;
+	}
+
+	return KERNEL_FAILURE;
+}
 
 void kernel_init(struct kernel *kernel) {
 	vfs_init(&kernel->vfs);
@@ -37,9 +99,15 @@ enum kernel_exitcode kernel_main(struct kernel *kernel) {
 	struct vfs_file init_file;
 	const char *init_path = "/sbin/init";
 
+	err = find_fs(kernel);
+	if (err != KERNEL_SUCCESS) {
+		debug("Failed to find file system.\n");
+		return err;
+	}
+
 	err = vfs_open_file(&kernel->vfs, &init_file, init_path);
 	if (err != 0) {
-		debug("Failed to open '%s'\n", init_path);
+		debug("Failed to open '%s'.\n", init_path);
 		return KERNEL_FAILURE;
 	}
 
