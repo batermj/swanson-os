@@ -24,6 +24,17 @@
 #define NULL ((void *) 0x00)
 #endif
 
+#ifdef _MSC_VER
+/* 4242 and 4244 warn about 'loss of data'
+ * while casting. When building for
+ * x86, this may cause a warning to
+ * be generated when casting uint64_t
+ * to size_t. This can be ignored for
+ * now. */
+#pragma warning (disable : 4242)
+#pragma warning (disable : 4244)
+#endif
+
 static int fdisk_getpos(void *fdisk_ptr, uint64_t *pos) {
 
 	struct fdisk *fdisk = (struct fdisk *) fdisk_ptr;
