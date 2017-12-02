@@ -18,6 +18,7 @@
 
 #include "gpt.h"
 
+#include "crc32.h"
 #include "sstream.h"
 
 const char *gpt_strerror(enum gpt_error error) {
@@ -36,14 +37,14 @@ const char *gpt_strerror(enum gpt_error error) {
 }
 
 void gpt_header_init(struct gpt_header *header) {
-	signature[0] = 'E';
-	signature[1] = 'F';
-	signature[2] = 'I';
-	signature[3] = ' ';
-	signature[4] = 'P';
-	signature[5] = 'A';
-	signature[6] = 'R';
-	signature[7] = 'T';
+	header->signature[0] = 'E';
+	header->signature[1] = 'F';
+	header->signature[2] = 'I';
+	header->signature[3] = ' ';
+	header->signature[4] = 'P';
+	header->signature[5] = 'A';
+	header->signature[6] = 'R';
+	header->signature[7] = 'T';
 	header->version = 0x00010000;
 	header->header_size = 92;
 	header->header_crc32 = 0;
@@ -62,57 +63,69 @@ void gpt_header_init(struct gpt_header *header) {
 enum gpt_error gpt_header_write(struct stream *stream,
                                 const struct gpt_header *header) {
 
-	uint64_t write_count = 0;
+	int err;
+	char buf[512];
+	struct sstream sector;
+	uint64_t write_count;
+	uint32_t header_checksum;
 
-	write_count += stream_write(stream, "EFI PART", 8)
-	write_count += stream_encode_uint32le(stream, 0x0010000 /* version */);
-	write_count += stream_encode_uint32le(stream, 92 /* header size */);
-	write_count += stream_encode_uint32le(stream, 0 /* header checksum */);
-	write_count += stream_encode_uint32le(stream, 0 /* reserved */);
-	write_count += stream_encode_uint64le(stream, header->current_lba);
-	write_count += stream_encode_uint64le(
+	sstream_init(&sector);
+
+	sstream_setbuf(&sector, buf, sizeof(buf));
+
+	write_count = 0;
+
+	write_count += stream_write(&sector.stream, header->signature, sizeof(header->signature));
+
+	write_count += stream_encode_uint32le(&sector.stream, header->version);
+	write_count += stream_encode_uint32le(&sector.stream, header->header_size);
+	write_count += stream_encode_uint32le(&sector.stream, header->header_crc32);
+	write_count += stream_encode_uint32le(&sector.stream, header->reserved);
+	write_count += stream_encode_uint64le(&sector.stream, header->current_lba);
+	write_count += stream_encode_uint64le(&sector.stream, header->backup_lba);
+	write_count += stream_encode_uint64le(&sector.stream, header->first_usable_lba);
+	write_count += stream_encode_uint64le(&sector.stream, header->last_usable_lba);
+
+	write_count += stream_write(&sector.stream, header->disk_guid.buffer, GUID_SIZE);
+
+	write_count += stream_encode_uint64le(&sector.stream, header->partitions_array_lba);
+	write_count += stream_encode_uint32le(&sector.stream, header->partition_count);
+	write_count += stream_encode_uint32le(&sector.stream, header->partition_entry_size);
+	write_count += stream_encode_uint32le(&sector.stream, header->partition_array_crc32);
+
 	if (write_count != header->header_size)
 		return GPT_ERROR_UNKNOWN;
 
-	/* TODO : calculate header checksum */
+	/* calculate header checksum */
+
+	header_checksum = crc32(buf, sizeof(buf));
+
+	err = stream_setpos(&sector.stream, 16);
+	if (err != 0)
+		return GPT_ERROR_UNKNOWN;
+
+	write_count = stream_encode_uint32le(&sector.stream, header_checksum);
+	if (write_count != 4)
+		return GPT_ERROR_UNKNOWN;
+
+	/* TODO : calculate partition header array checksum */
+
+	err = stream_setpos(stream, 512);
+	if (err != 0)
+		return GPT_ERROR_UNKNOWN;
+
+	write_count = stream_write(stream, buf, sizeof(buf));
+	if (write_count != sizeof(buf))
+		return GPT_ERROR_UNKNOWN;
 
 	return GPT_ERROR_NONE;
 }
 
 enum gpt_error gpt_format(struct stream *stream) {
 
-	int err;
-	uint64_t write_count = 0;
-	unsigned char sector[512];
-	struct sstream lb1;
+	struct gpt_header header;
 
-	sstream_init(&lb1);
+	gpt_header_init(&header);
 
-	sstream_setbuf(&lb1, sector, sizeof(sector));
-
-	/* signature */
-	write_count += stream_write(&lb1.stream, "EFI PART", 8);
-	/* revision (1.0) */
-	write_count += stream_write(&lb1.stream, "\x00\x00\x01\x00", 4);
-	/* header size (92 bytes) */
-	write_count += stream_write(&lb1.stream, "\x5c\x00\x00\x00", 4);
-	/* header crc32 (calculated later) */
-	write_count += stream_write(&lb1.stream, "\x00\x00\x00\x00", 4);
-	/* reserved */
-	write_count += stream_write(&lb1.stream, "\x00\x00\x00\x00", 4);
-	/* current LBA (0x01) */
-	write_count += stream_write(&lb1.stream, "\x01\x00\x00\x00\x00\x00\x00\x00", 8);
-/*
-	if (write_count != 92)
-		return GPT_ERROR_UNKNOWN;
-*/
-	err = stream_setpos(stream, 512);
-	if (err != 0)
-		return GPT_ERROR_UNKNOWN;
-
-	write_count = stream_write(stream, sector, sizeof(sector));
-	if (write_count != 512)
-		return GPT_ERROR_UNKNOWN;
-
-	return GPT_ERROR_NONE;
+	return gpt_header_write(stream, &header);
 }
