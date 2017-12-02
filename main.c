@@ -115,6 +115,9 @@ int main(int argc, const char **argv) {
 
 	kernel_init(&kernel);
 
+	kernel.disk_array = &disk.base;
+	kernel.disk_count = 1;
+
 	kernel.memmap.unused_section_array = &primary_memmap_section;
 	kernel.memmap.unused_section_count = 1;
 
