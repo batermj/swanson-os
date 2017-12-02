@@ -75,6 +75,26 @@ uint64_t stream_write(struct stream *stream,
                       const void *buf,
                       uint64_t buf_size);
 
+/** Encodes a binary, 32-bit, little-endian number
+ * into a stream at the current position.
+ * @param stream An initialized stream structure.
+ * @param n The number to encode.
+ * @returns The number of bytes written.
+ * */
+
+uint64_t stream_encode_uint32le(struct stream *stream,
+                                uint32_t n);
+
+/** Encodes a binary, 64-bit, little-endian number
+ * into a stream at the current position.
+ * @param stream An initialized stream structure.
+ * @param n The number to encode.
+ * @returns The number of bytes written.
+ * */
+
+uint64_t stream_encode_uint64le(struct stream *stream,
+                                uint64_t n);
+
 /** Get the stream position.
  * @param stream The stream to get the position of.
  * @param offset The position of the stream.
