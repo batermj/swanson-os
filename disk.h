@@ -16,6 +16,8 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** @file */
+
 #ifndef SWANSON_DISK_H
 #define SWANSON_DISK_H
 
@@ -25,7 +27,13 @@
 extern "C" {
 #endif
 
-/** A disk structure. */
+/** A disk structure.
+ * The disk may be anything that behaves
+ * like a stream, whether a physical hard disk,
+ * a file, or a block of memory.
+ * @see fdisk
+ * */
+
 struct disk {
 	/** The stream callbacks for the disk. */
 	struct stream stream;

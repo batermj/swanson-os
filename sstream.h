@@ -16,6 +16,8 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** @file */
+
 #ifndef SWANSON_SSTREAM_H
 #define SWANSON_SSTREAM_H
 
@@ -28,7 +30,9 @@ extern "C" {
 /** A string stream. Used
  * for reading and writing to
  * a block of memory as if it were
- * a string. */
+ * a string.
+ * */
+
 struct sstream {
 	/** The base stream structure. */
 	struct stream stream;
@@ -43,11 +47,21 @@ struct sstream {
 };
 
 /** Initializes the string stream
- * and the stream callbacks. */
+ * and the stream callbacks.
+ * @param sstream An uninitialized string stream.
+ * */
+
 void sstream_init(struct sstream *sstream);
 
 /** Assigns the buffer to use for
- * the string data. */
+ * the string data.
+ * @param sstream An initialized string stream
+ * structure.
+ * @param buf The buffer to associate with the
+ * string stream.
+ * @param buf_size The size of the buffer.
+ * */
+
 void sstream_setbuf(struct sstream *sstream,
                     void *buf,
                     uint64_t buf_size);

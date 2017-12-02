@@ -16,6 +16,8 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** @file */
+
 #ifndef SWANSON_KERNEL_H
 #define SWANSON_KERNEL_H
 
@@ -29,7 +31,10 @@ extern "C" {
 #endif
 
 /** The code returned from the kernel entry point.
- * Indicates whether or not the kernel ran without a panic. */
+ * Indicates whether or not the kernel ran without a panic.
+ * @see kernel_main
+ * */
+
 enum kernel_exitcode {
 	/** Kernel exited without a panic. */
 	KERNEL_SUCCESS = 0,
@@ -37,7 +42,9 @@ enum kernel_exitcode {
 	KERNEL_FAILURE = 1
 };
 
-/** The kernel */
+/** The kernel.
+ * */
+
 struct kernel {
 	/** Implementation data. */
 	void *data;
@@ -53,10 +60,18 @@ struct kernel {
 	uint64_t disk_count;
 };
 
-/** Initializes the kernel structure. */
+/** Initializes the kernel structure.
+ * @param kernel An uninitialized kernel structure.
+ * */
+
 void kernel_init(struct kernel *kernel);
 
-/** Entry point of the kernel. */
+/** Entry point of the kernel.
+ * @param kernel an initialized kernel structure.
+ * @returns An exit code that indicates whether or
+ * not the kernel exited with a panic.
+ * */
+
 enum kernel_exitcode kernel_main(struct kernel *kernel);
 
 #ifdef __cplusplus

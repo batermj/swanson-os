@@ -1,3 +1,5 @@
+/** @file */
+
 /* NOTE : This header is not used by the source
  * code, it is only used by doxygen. */
 

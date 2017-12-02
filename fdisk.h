@@ -16,6 +16,8 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** @file */
+
 #ifndef SWANSON_FDISK_H
 #define SWANSON_FDISK_H
 
@@ -28,7 +30,9 @@ extern "C" {
 #endif
 
 /** A disk contained within a file
- * on the host computers file system. */
+ * on the host computers file system.
+ * */
+
 struct fdisk {
 	/** The base disk structure. */
 	struct disk base;
@@ -36,9 +40,34 @@ struct fdisk {
 	FILE *file;
 };
 
+/** Initializes structure members.
+ * This should be called before @ref fdisk_open.
+ * @param fdisk An uninitialized disk structure.
+ * */
+
 void fdisk_init(struct fdisk *fdisk);
 
+/** Closes the file associated with
+ * the disk. This function is safe to
+ * call more than once - meaning it won't
+ * fail if a file isn't open.
+ * @param fdisk An initialized disk structure.
+ * */
+
 void fdisk_close(struct fdisk *fdisk);
+
+/** Opens a disk containing by a file
+ * in the host operating system. @ref fdisk_init
+ * should be called before this function.
+ * @param fdisk An initialized disk structure.
+ * @param path The path, on the host file system,
+ * of the disk file.
+ * @param mode The mode to open the file in. This
+ * argument is passed to the standard library
+ * function, fopen.
+ * @returns If the file opens successfully, zero
+ * is returned. Non-zero is returned otherwise.
+ * */
 
 int fdisk_open(struct fdisk *fdisk,
                const char *path,

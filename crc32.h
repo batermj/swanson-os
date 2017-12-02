@@ -16,6 +16,8 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** @file */
+
 #ifndef SWANSON_CRC32_H
 #define SWANSON_CRC32_H
 
@@ -24,6 +26,14 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/** Calculates the 32-bit checksum for
+ * a block of memory.
+ * @param buf The address to the block
+ * of memory to calculate the checksum for.
+ * @param buf_size The size of the buffer.
+ * @returns The 32-bit checksum.
+ * */
 
 uint32_t crc32(const void *buf, uint64_t buf_size);
 

@@ -16,6 +16,8 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** @file */
+
 #ifndef SWANSON_VFS_H
 #define SWANSON_VFS_H
 
@@ -27,13 +29,17 @@
 extern "C" {
 #endif
 
-/** A directory entry in the virtual file system. */
+/** A directory entry in the virtual file system.
+ * */
+
 struct vfs_entry {
 	/** Implementation data */
 	void *data;
 };
 
-/** A handle for a file in the virtual file system. */
+/** A handle for a file in the virtual file system.
+ * */
+
 struct vfs_file {
 	/** The stream used for reading and writing file
 	 * data. */
@@ -45,23 +51,41 @@ struct vfs_file {
 	uint64_t length;
 };
 
-/** A handle for a directory within the virtual file system. */
+/** A handle for a directory within the virtual file system.
+ * */
+
 struct vfs_dir {
 	/** Implementation data. */
 	void *data;
 };
 
-/** Virtual file system. */
+/** Virtual file system.
+ * */
+
 struct vfs {
 	/** Implementation data. */
 	void *data;
 };
 
-/** Initializes the virtual file system. */
+/** Initializes the virtual file system.
+ * @param vfs An uninitialized virtual file
+ * system structure.
+ * */
+
 void vfs_init(struct vfs *vfs);
 
 /** Attempts to open a file from the
- * virtual file system. */
+ * virtual file system.
+ * @param vfs An initialized virtual file
+ * system structure.
+ * @param file A pointer to the file
+ * structure that will be used for read
+ * and write operations.
+ * @param path The path of the file to open.
+ * @returns On success, zero. On failure,
+ * a non-zero error code.
+ * */
+
 int vfs_open_file(struct vfs *vfs,
                   struct vfs_file *file,
                   const char *path);

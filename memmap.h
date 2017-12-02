@@ -16,6 +16,8 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** @file */
+
 #ifndef SWANSON_MEMMAP_H
 #define SWANSON_MEMMAP_H
 
@@ -23,7 +25,9 @@
 extern "C" {
 #endif
 
-/** A section of memory in the memory map. */
+/** A section of memory in the memory map.
+ * */
+
 struct memmap_section {
 	/** The starting address of the memory map section. */
 	void *addr;
@@ -31,7 +35,9 @@ struct memmap_section {
 	unsigned long int size;
 };
 
-/** A memory map of the system. */
+/** A memory map of the system.
+ * */
+
 struct memmap {
 	/** An array of the unused sections in the memory map. */
 	struct memmap_section *unused_section_array;
@@ -43,16 +49,37 @@ struct memmap {
 	unsigned long int used_section_count;
 };
 
-/** Initializes the memory map. */
+/** Initializes the memory map.
+ * This function should be called first.
+ * @param memmap An uninitialized memory map.
+ * */
+
 void memmap_init(struct memmap *memmap);
 
-/** Allocates memory from the memory map. */
+/** Allocates memory from the memory map.
+ * @param memmap An initialized memory map.
+ * @param size The number of bytes to allocate.
+ * @returns On success, the address of the memory
+ * block. On failure, zero (or NULL).
+ * */
+
 void *memmap_alloc(struct memmap *memmap, unsigned long int size);
 
-/** Resizes a block of memory that already exists. */
+/** Resizes a block of memory that already exists.
+ * @param memmap An initialized memory map.
+ * @param addr The address of the memory block to resize.
+ * @param size The new size of the memory block.
+ * @returns On success, the new address of the memory
+ * block. On failure, zero (or NULL).
+ * */
+
 void *memmap_realloc(struct memmap *memmap, void *addr, unsigned long int size);
 
-/** Releases a block of memory in the memory map. */
+/** Releases a block of memory in the memory map.
+ * @param memmap An initialized memory map.
+ * @param addr The address of the memory block to free.
+ * */
+
 void memmap_free(struct memmap *memmap, void *addr);
 
 #ifdef __cplusplus
