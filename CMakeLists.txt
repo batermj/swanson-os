@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 2.6)
 
 project("Swanson OS")
 
+if (MSVC)
+	set (SWANSON_CFLAGS /W3 /WX)
+endif (MSVC)
+
 if (CMAKE_COMPILER_IS_GNUCC)
 	set (SWANSON_CFLAGS -Wall -Wextra -Werror -Wfatal-errors)
 endif (CMAKE_COMPILER_IS_GNUCC)
