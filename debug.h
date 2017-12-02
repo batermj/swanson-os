@@ -16,12 +16,21 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** @file */
+
 #ifndef SWANSON_DEBUG_H
 #define SWANSON_DEBUG_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/** Prints a kernel debug message.
+ * This function prints to the standard
+ * output file.
+ * @param fmt The printf-format for
+ * the debug statement.
+ * */
 
 void debug(const char *fmt, ...);
 
