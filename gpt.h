@@ -130,6 +130,14 @@ struct gpt_header {
 	uint32_t partition_array_crc32;
 };
 
+/** Initializes a GPT header with
+ * sensible values.
+ * @param header The GPT header structure
+ * to initialize.
+ * */
+
+void gpt_header_init(struct gpt_header *header);
+
 /** Reads the GPT header.
  * This function also verifies header signature
  * and the the checksum for the header and partition

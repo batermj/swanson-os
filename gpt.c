@@ -35,6 +35,50 @@ const char *gpt_strerror(enum gpt_error error) {
 		return "Unknown Error";
 }
 
+void gpt_header_init(struct gpt_header *header) {
+	signature[0] = 'E';
+	signature[1] = 'F';
+	signature[2] = 'I';
+	signature[3] = ' ';
+	signature[4] = 'P';
+	signature[5] = 'A';
+	signature[6] = 'R';
+	signature[7] = 'T';
+	header->version = 0x00010000;
+	header->header_size = 92;
+	header->header_crc32 = 0;
+	header->reserved = 0;
+	header->current_lba = 1;
+	header->backup_lba = 1;
+	header->first_usable_lba = ~0x00ULL;
+	header->last_usable_lba = ~0x00ULL;
+	header->disk_guid[0] = 0;
+	header->partitions_array_lba = ~0x00ULL;
+	header->partition_count = 0;
+	header->partition_entry_size = 128;
+	header->partition_array_crc32 = 0;
+}
+
+enum gpt_error gpt_header_write(struct stream *stream,
+                                const struct gpt_header *header) {
+
+	uint64_t write_count = 0;
+
+	write_count += stream_write(stream, "EFI PART", 8)
+	write_count += stream_encode_uint32le(stream, 0x0010000 /* version */);
+	write_count += stream_encode_uint32le(stream, 92 /* header size */);
+	write_count += stream_encode_uint32le(stream, 0 /* header checksum */);
+	write_count += stream_encode_uint32le(stream, 0 /* reserved */);
+	write_count += stream_encode_uint64le(stream, header->current_lba);
+	write_count += stream_encode_uint64le(
+	if (write_count != header->header_size)
+		return GPT_ERROR_UNKNOWN;
+
+	/* TODO : calculate header checksum */
+
+	return GPT_ERROR_NONE;
+}
+
 enum gpt_error gpt_format(struct stream *stream) {
 
 	int err;
