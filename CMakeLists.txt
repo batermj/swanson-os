@@ -60,7 +60,8 @@ function(ADD_UNIT_TEST TEST_NAME)
 	add_test(${TEST_NAME} ${TEST_NAME})
 endfunction(ADD_UNIT_TEST TEST_NAME)
 
-add_unit_test("memmap-test" "memmap-test.c")
+# add_unit_test("memmap-test" "memmap-test.c")
+add_unit_test("gpt-test" "gpt-test.c")
 
 enable_testing()
 
