@@ -3,7 +3,11 @@ cmake_minimum_required(VERSION 2.6)
 project("Swanson OS")
 
 if (MSVC)
-	set (SWANSON_CFLAGS /W3 /WX)
+	# 4820 warnings about added structure padding
+	# 4996 warnings about 'unsafe' libc functions
+	# 4710 warnings about functions like 'printf'
+	#      not being inlined.
+	set (SWANSON_CFLAGS /Wall /WX /wd4820 /wd4996 /wd4710)
 endif (MSVC)
 
 if (CMAKE_COMPILER_IS_GNUCC)
