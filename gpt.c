@@ -60,6 +60,62 @@ void gpt_header_init(struct gpt_header *header) {
 	header->partition_array_crc32 = 0;
 }
 
+enum gpt_error gpt_header_read(struct stream *stream,
+                               struct gpt_header *header) {
+
+	int err;
+	uint64_t read_count;
+	char buf[512];
+	struct sstream sector;
+
+	sstream_init(&sector);
+
+	sstream_setbuf(&sector, buf, sizeof(buf));
+
+	err = stream_setpos(stream, 512);
+	if (err != 0)
+		return GPT_ERROR_UNKNOWN;
+
+	read_count = stream_read(stream, buf, sizeof(buf));
+	if (read_count != sizeof(buf))
+		return GPT_ERROR_UNKNOWN;
+
+	read_count = 0;
+
+	read_count += stream_read(&sector.stream, header->signature, sizeof(header->signature));
+
+	read_count += stream_decode_uint32le(&sector.stream, &header->version);
+	read_count += stream_decode_uint32le(&sector.stream, &header->header_size);
+	read_count += stream_decode_uint32le(&sector.stream, &header->header_crc32);
+	read_count += stream_decode_uint32le(&sector.stream, &header->reserved);
+	read_count += stream_decode_uint64le(&sector.stream, &header->current_lba);
+	read_count += stream_decode_uint64le(&sector.stream, &header->backup_lba);
+	read_count += stream_decode_uint64le(&sector.stream, &header->first_usable_lba);
+	read_count += stream_decode_uint64le(&sector.stream, &header->last_usable_lba);
+
+	read_count += stream_read(&sector.stream, header->disk_guid.buffer, GUID_SIZE);
+
+	read_count += stream_decode_uint64le(&sector.stream, &header->partitions_array_lba);
+	read_count += stream_decode_uint32le(&sector.stream, &header->partition_count);
+	read_count += stream_decode_uint32le(&sector.stream, &header->partition_entry_size);
+	read_count += stream_decode_uint32le(&sector.stream, &header->partition_array_crc32);
+
+	if (read_count != header->header_size)
+		return GPT_ERROR_UNKNOWN;
+
+	/* the checksum field should be zero
+	 * when the checksum is being calculated */
+	buf[16] = 0;
+	buf[17] = 0;
+	buf[18] = 0;
+	buf[19] = 0;
+
+	if (crc32(buf, sizeof(buf)) != header->header_crc32)
+		return GPT_ERROR_BAD_HEADER;
+
+	return GPT_ERROR_NONE;
+}
+
 enum gpt_error gpt_header_write(struct stream *stream,
                                 const struct gpt_header *header) {
 
@@ -128,4 +184,45 @@ enum gpt_error gpt_format(struct stream *stream) {
 	gpt_header_init(&header);
 
 	return gpt_header_write(stream, &header);
+}
+
+void gpt_accessor_init(struct gpt_accessor *accessor) {
+	accessor->data = NULL;
+	accessor->header = NULL;
+	accessor->partition = NULL;
+	accessor->error = NULL;
+}
+
+int gpt_access(struct stream *stream,
+               struct gpt_accessor *accessor) {
+
+	int err;
+	struct gpt_header header;
+	uint32_t i;
+
+	err = gpt_header_read(stream, &header);
+	if (err != GPT_ERROR_NONE) {
+		if (accessor->error != NULL)
+			accessor->error(accessor->data, err);
+		return -1;
+	}
+
+	if (accessor->header != NULL) {
+		err = accessor->header(accessor->data, &header);
+		if (err != 0)
+			return err;
+	}
+
+	if (header.partition_count == 0)
+		return 0;
+
+	err = stream_setpos(stream, header.partitions_array_lba * 512);
+	if (err != 0)
+		return err;
+
+	for (i = 0; i < header.partition_count; i++) {
+		/* TODO : read partitions */
+	}
+
+	return 0;
 }

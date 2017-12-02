@@ -230,6 +230,16 @@ struct gpt_accessor {
 	void (*error)(void *data, enum gpt_error error);
 };
 
+/** Initializes a GPT accessor structure.
+ * This function is good to use because it ensures
+ * that all function pointers that aren't used are
+ * set to zero. This, in turn, prevents the access
+ * function from calling a function that doesn't exist.
+ * @param accessor An uninitialized GPT accessor.
+ * */
+
+void gpt_accessor_init(struct gpt_accessor *accessor);
+
 /** Reads a GPT stream and passes the
  * data structures to the accessor.
  * @param stream A stream containing the GPT data.
