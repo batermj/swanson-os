@@ -18,6 +18,10 @@
 
 #include "crc32.h"
 
+#ifdef _MSC_VER
+#pragma warning (disable : 4146)
+#endif
+
 uint32_t crc32(const void *buf, uint64_t buf_size) {
 
 	uint64_t i;
