@@ -52,7 +52,7 @@ void gpt_header_init(struct gpt_header *header) {
 	header->backup_lba = 1;
 	header->first_usable_lba = ~0x00ULL;
 	header->last_usable_lba = ~0x00ULL;
-	header->disk_guid[0] = 0;
+	guid_init(&header->disk_guid);
 	header->partitions_array_lba = ~0x00ULL;
 	header->partition_count = 0;
 	header->partition_entry_size = 128;

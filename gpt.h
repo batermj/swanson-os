@@ -21,6 +21,8 @@
 #ifndef SWANSON_GPT_H
 #define SWANSON_GPT_H
 
+#include "guid.h"
+
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -119,7 +121,7 @@ struct gpt_header {
 	/** Last LBA that a partition may use. */
 	uint64_t last_usable_lba;
 	/** Disk GUID */
-	uint8_t disk_guid[16];
+	struct guid disk_guid;
 	/** The starting LBA of the partition header entries. */
 	uint64_t partitions_array_lba;
 	/** The number of partitions that exist. */
@@ -174,9 +176,9 @@ enum gpt_error gpt_header_write(struct stream *stream,
 
 struct gpt_partition {
 	/** The partition type GUID. See @ref GPT_GUID_SWANSON */
-	uint8_t partition_type_guid[16];
+	struct guid partition_type_guid;
 	/** Partition GUID. This field is currently ignored.  */
-	uint8_t partition_guid[16];
+	struct guid partition_guid;
 	/** The first inclusive LBA of the partition contents. */
 	uint64_t first_lba;
 	/** The last inclusive LBA of the partition contents. */
