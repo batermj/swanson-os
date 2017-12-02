@@ -63,3 +63,33 @@ uint64_t stream_write(struct stream *stream,
 	else
 		return stream->write(stream->data, buf, buf_size);
 }
+
+uint64_t stream_encode_uint32le(struct stream *stream,
+                                uint32_t n) {
+
+	uint8_t buf_data[4];
+
+	buf_data[0] = (n >> 0x00) & 0xff;
+	buf_data[1] = (n >> 0x08) & 0xff;
+	buf_data[2] = (n >> 0x10) & 0xff;
+	buf_data[3] = (n >> 0x18) & 0xff;
+
+	return stream_write(stream, buf, 4);
+}
+
+uint64_t stream_encode_uint64le(struct stream *stream,
+                                uint64_t n) {
+
+	uint8_t buf_data[8];
+
+	buf_data[0] = (n >> 0x00) & 0xff;
+	buf_data[1] = (n >> 0x08) & 0xff;
+	buf_data[2] = (n >> 0x10) & 0xff;
+	buf_data[3] = (n >> 0x18) & 0xff;
+	buf_data[4] = (n >> 0x20) & 0xff;
+	buf_data[5] = (n >> 0x28) & 0xff;
+	buf_data[6] = (n >> 0x30) & 0xff;
+	buf_data[7] = (n >> 0x38) & 0xff;
+
+	return stream_write(stream, buf, 8);
+}
