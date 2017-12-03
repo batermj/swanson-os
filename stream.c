@@ -28,6 +28,7 @@ void stream_init(struct stream *stream) {
 	stream->setpos = NULL;
 	stream->read = NULL;
 	stream->write = NULL;
+	stream->getsize = NULL;
 }
 
 int stream_getpos(struct stream *stream,
@@ -146,4 +147,12 @@ uint64_t stream_encode_uint64le(struct stream *stream,
 	buf[7] = (n >> 0x38) & 0xff;
 
 	return stream_write(stream, buf, 8);
+}
+
+int stream_getsize(struct stream *stream,
+                   uint64_t *size) {
+	if (stream->getsize == NULL)
+		return -1;
+	else
+		return stream->getsize(stream->data, size);
 }

@@ -41,6 +41,8 @@ struct stream {
 	int (*getpos)(void *data, uint64_t *offset);
 	/** Set the position of the stream. */
 	int (*setpos)(void *data, uint64_t offset);
+	/** Get the size, in bytes, of the stream. */
+	int (*getsize)(void *data, uint64_t *size);
 };
 
 /** Initializes the stream members
@@ -136,6 +138,19 @@ int stream_getpos(struct stream *stream,
 
 int stream_setpos(struct stream *stream,
                   uint64_t offset);
+
+/** Get the size of the stream. In other
+ * words, get the number of bytes occupied
+ * by the data that is currently in the stream.
+ * @param stream An initialized stream structure.
+ * @param size The address to the variable that
+ * receives the stream size.
+ * @returns Zero on success, a negative error
+ * code otherwise.
+ * */
+
+int stream_getsize(struct stream *stream,
+                   uint64_t *size);
 
 #ifdef __cplusplus
 } /* extern "C" { */
