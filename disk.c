@@ -16,41 +16,8 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** @file */
+#include "disk.h"
 
-#ifndef SWANSON_DISK_H
-#define SWANSON_DISK_H
-
-#include "stream.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/** A disk structure.
- * The disk may be anything that behaves
- * like a stream, whether a physical hard disk,
- * a file, or a block of memory.
- * @see fdisk
- * @see partition
- * */
-
-struct disk {
-	/** The stream callbacks for the disk. */
-	struct stream stream;
-};
-
-/** Initializes a disk structure.
- * This function should be called before
- * the structure is used.
- * @param disk An uninitialized disk
- * structure.
- * */
-
-void disk_init(struct disk *disk);
-
-#ifdef __cplusplus
-} /* extern "C" { */
-#endif
-
-#endif /* SWANSON_DISK_H */
+void disk_init(struct disk *disk) {
+	stream_init(&disk->stream);
+}
