@@ -21,6 +21,8 @@
 #include "crc32.h"
 #include "sstream.h"
 
+#include "debug.h"
+
 #ifndef NULL
 #define NULL ((void *) 0x00)
 #endif
@@ -174,6 +176,55 @@ enum gpt_error gpt_header_write(struct stream *stream,
 	return GPT_ERROR_NONE;
 }
 
+void gpt_partition_init(struct gpt_partition *partition) {
+	unsigned int i;
+	guid_init(&partition->partition_type_guid);
+	guid_init(&partition->partition_guid);
+	partition->first_lba = 0;
+	partition->last_lba = 0;
+	partition->attributes = 0;
+	for (i = 0; i < (sizeof(partition->name) / sizeof(partition->name[0])); i++)
+		partition->name[i] = 0;
+}
+
+enum gpt_error gpt_partition_read(struct stream *stream,
+                                  struct gpt_partition *partition) {
+
+	uint64_t read_count;
+
+	read_count = 0;
+	read_count += guid_read(stream, &partition->partition_type_guid);
+	read_count += guid_read(stream, &partition->partition_guid);
+	read_count += stream_decode_uint64le(stream, &partition->first_lba);
+	read_count += stream_decode_uint64le(stream, &partition->last_lba);
+	read_count += stream_decode_uint64le(stream, &partition->attributes);
+	read_count += stream_read(stream, partition->name, sizeof(partition->name));
+
+	if (read_count != GPT_PARTITION_ENTRY_SIZE)
+		return GPT_ERROR_UNKNOWN;
+
+	return GPT_ERROR_NONE;
+}
+
+enum gpt_error gpt_partition_write(struct stream *stream,
+                                   const struct gpt_partition *partition) {
+
+	uint64_t write_count;
+
+	write_count = 0;
+	write_count += guid_write(stream, &partition->partition_type_guid);
+	write_count += guid_write(stream, &partition->partition_guid);
+	write_count += stream_encode_uint64le(stream, partition->first_lba);
+	write_count += stream_encode_uint64le(stream, partition->last_lba);
+	write_count += stream_encode_uint64le(stream, partition->attributes);
+	write_count += stream_write(stream, partition->name, sizeof(partition->name));
+
+	if (write_count != GPT_PARTITION_ENTRY_SIZE)
+		return GPT_ERROR_UNKNOWN;
+
+	return GPT_ERROR_NONE;
+}
+
 enum gpt_error gpt_format(struct stream *stream) {
 
 	int err;
@@ -239,7 +290,9 @@ int gpt_access(struct stream *stream,
 
 	int err;
 	struct gpt_header header;
+	struct gpt_partition partition;
 	uint32_t i;
+	uint64_t partition_offset;
 
 	err = stream_setpos(stream, 512);
 	if (err != 0)
@@ -261,29 +314,68 @@ int gpt_access(struct stream *stream,
 	if (header.partition_count == 0)
 		return 0;
 
-	err = stream_setpos(stream, header.partition_array_lba * 512);
-	if (err != 0)
-		return err;
+	partition_offset = header.partition_array_lba * 512;
 
 	for (i = 0; i < header.partition_count; i++) {
-		/* TODO : read partitions */
+
+		err = stream_setpos(stream, partition_offset);
+		if (err != 0)
+			return err;
+
+		gpt_partition_init(&partition);
+
+		err = gpt_partition_read(stream, &partition);
+		if (err != GPT_ERROR_NONE) {
+			if (accessor->error != NULL)
+				accessor->error(accessor->data, err);
+			return -1;
+		}
+
+		if (accessor->partition != NULL) {
+			err = accessor->partition(accessor->data, &partition);
+			if (err != 0)
+				return err;
+		}
+
+		partition_offset += 512;
 	}
 
 	return 0;
 }
 
 enum gpt_error gpt_add_partition(struct stream *stream,
-                                 uint32_t *partition_index) {
+                                 uint32_t *partition_index_ptr) {
 
 	int err;
 	struct gpt_header header;
 	struct gpt_partition partition;
+	uint32_t partition_index;
+	uint64_t partition_offset;
 
 	err = stream_setpos(stream, 512);
 	if (err != 0)
 		return GPT_ERROR_UNKNOWN;
 
 	err = gpt_header_read(stream, &header);
+	if (err != GPT_ERROR_NONE)
+		return err;
+
+	if (header.partition_count >= GPT_MAX_PARTITION_COUNT)
+		return GPT_ERROR_NEED_SPACE;
+
+	header.partition_count++;
+
+	partition_index = header.partition_count - 1;
+
+	partition_offset = (header.partition_array_lba + partition_index) * 512;
+
+	err = stream_setpos(stream, partition_offset);
+	if (err != 0)
+		return GPT_ERROR_UNKNOWN;
+
+	gpt_partition_init(&partition);
+
+	err = gpt_partition_write(stream, &partition);
 	if (err != GPT_ERROR_NONE)
 		return err;
 
@@ -297,8 +389,10 @@ enum gpt_error gpt_add_partition(struct stream *stream,
 	if (err != GPT_ERROR_NONE)
 		return err;
 
+	if (partition_index_ptr != NULL)
+		*partition_index_ptr = partition_index;
+
 	(void) partition;
-	(void) partition_index;
 
 	return GPT_ERROR_NONE;
 }
