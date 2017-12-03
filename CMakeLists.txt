@@ -29,6 +29,8 @@ add_swanson_library("swanson"
 	"debug.c"
 	"disk.h"
 	"disk.c"
+	"ext4.h"
+	"ext4.c"
 	"fdisk.h"
 	"fdisk.c"
 	"gpt.h"
@@ -49,6 +51,8 @@ add_swanson_library("swanson"
 	"vfs.c")
 
 add_swanson_executable("gpt-tool" "gpt-tool.c")
+
+add_swanson_executable("ext4-tool" "ext4-tool.c")
 
 add_swanson_executable("swanson-pc" "main.c")
 

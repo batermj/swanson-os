@@ -103,6 +103,13 @@ struct ext4_superblock {
 	uint16_t reserved_gid;
 };
 
+/** Initializes an ext4 superblock with
+ * reasonable values.
+ * @param superblock An uninitialized superblock.
+ * */
+
+void ext4_superblock_init(struct ext4_superblock *superblock);
+
 #ifdef __cplusplus
 } /* extern "C" { */
 #endif
