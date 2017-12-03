@@ -100,7 +100,7 @@ enum gpt_error {
 	GPT_ERROR_BAD_PARTITION_HEADERS,
 	/** There is not enough space
 	 * available for the GPT function. */
-	GPT_ERROR_NO_SPACE
+	GPT_ERROR_NEED_SPACE
 };
 
 /** GPT partition attributes. Used
