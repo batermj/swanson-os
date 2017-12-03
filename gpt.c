@@ -21,6 +21,10 @@
 #include "crc32.h"
 #include "sstream.h"
 
+#ifndef NULL
+#define NULL ((void *) 0x00)
+#endif
+
 const char *gpt_strerror(enum gpt_error error) {
 	if (error == GPT_ERROR_BAD_STREAM)
 		return "Invalid Stream";
