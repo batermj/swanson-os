@@ -16,7 +16,13 @@ if (CMAKE_COMPILER_IS_GNUCC)
 	set (SWANSON_CFLAGS -Wall -Wextra -Werror -Wfatal-errors)
 endif (CMAKE_COMPILER_IS_GNUCC)
 
-add_library("swanson"
+# Use these functions for adding targets
+# in this build script.
+include("cmake/AddSwansonLibrary.cmake")
+include("cmake/AddSwansonExecutable.cmake")
+include("cmake/AddSwansonTest.cmake")
+
+add_swanson_library("swanson"
 	"crc32.h"
 	"crc32.c"
 	"debug.h"
@@ -37,33 +43,23 @@ add_library("swanson"
 	"sstream.c"
 	"vfs.h"
 	"vfs.c")
-target_compile_options("swanson" PRIVATE ${SWANSON_CFLAGS})
 
-add_executable("image-tool" "image-tool.c")
-target_link_libraries("image-tool" "swanson")
+add_swanson_executable("image-tool" "image-tool.c")
 
-add_executable("swanson-host" "main.c")
-set_target_properties("swanson-host" PROPERTIES OUTPUT_NAME "swanson")
-target_link_libraries("swanson-host" "swanson")
-target_compile_options("swanson-host" PRIVATE ${SWANSON_CFLAGS})
-add_custom_command(TARGET "swanson-host"
+add_swanson_executable("swanson-pc" "main.c")
+
+add_custom_command(TARGET "swanson-pc"
 	POST_BUILD
 	COMMAND $<TARGET_FILE:image-tool> "--image-path" "swanson.img"
 	COMMENT "Generating swanson.img")
 
-install(TARGETS "swanson" "swanson-host"
+install(TARGETS "swanson" "swanson-pc"
 	RUNTIME DESTINATION "bin"
 	ARCHIVE DESTINATION "lib"
 	LIBRARY DESTINATION "lib")
 
-function(ADD_UNIT_TEST TEST_NAME)
-	add_executable(${TEST_NAME} ${ARGN})
-	target_link_libraries(${TEST_NAME} "swanson")
-	add_test(${TEST_NAME} ${TEST_NAME})
-endfunction(ADD_UNIT_TEST TEST_NAME)
-
 # add_unit_test("memmap-test" "memmap-test.c")
-add_unit_test("gpt-test" "gpt-test.c")
+add_swanson_test("gpt-test" "gpt-test.c")
 
 enable_testing()
 
