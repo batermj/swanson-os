@@ -27,9 +27,11 @@
 #endif
 
 static int probe_gpt_header(void *kernel_ptr, const struct gpt_header *header) {
+	/* Nothing to do here. This function is a placeholder
+	 * just in case the GPT header has to be examined for
+	 * some reason. It may be removed in the future. */
 	(void) kernel_ptr;
 	(void) header;
-	debug("Found GPT header: %.*s\n", 8, header->signature);
 	return 0;
 }
 
@@ -38,7 +40,12 @@ static int probe_gpt_partition(void *kernel_ptr, const struct gpt_partition *par
 	(void) kernel_ptr;
 	(void) partition;
 
-	debug("Found GPT partition: %u\n", 0);
+	if (guid_cmp(&partition->partition_type_guid, &gpt_guid_swanson) != 0) {
+		/* Not a Swanson partition. */
+		return 0;
+	}
+
+	debug("Found Swanson partition.\n");
 
 	return 0;
 }
