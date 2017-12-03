@@ -200,9 +200,11 @@ int main(int argc, const char **argv) {
 			err = print(&image, argc - i, &argv[i]);
 		} else if (strcmp(argv[i], "help") == 0) {
 			help(argv[0]);
+			fdisk_close(&image);
 			return EXIT_FAILURE;
 		} else {
 			fprintf(stderr, "Unknown command '%s', see '%s help'.\n", argv[i], argv[0]);
+			fdisk_close(&image);
 			return EXIT_FAILURE;
 		}
 	}
