@@ -38,7 +38,7 @@ static int probe_gpt_partition(void *kernel_ptr, const struct gpt_partition *par
 	(void) kernel_ptr;
 	(void) partition;
 
-	debug("Found GPT partition: %u");
+	debug("Found GPT partition: %u\n", 0);
 
 	return 0;
 }
