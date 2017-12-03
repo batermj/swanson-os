@@ -55,7 +55,7 @@ struct stream;
 /** The size of the partition header array.
  * */
 
-#define GPT_PARTITION_ARRAY_SIZE (GPT_PARTITION_ENTRY_SIZE * GPT_MAX_PARTITION_COUNT)
+#define GPT_PARTITION_ARRAY_SIZE (512 * GPT_MAX_PARTITION_COUNT)
 
 /** The offset, in bytes, that the GPT header
  * is located.
@@ -67,11 +67,12 @@ struct stream;
  * to be formatted with a GPT. This includes
  * the size for the master boot record, GPT
  * header, 128 partition headers (each 128 bytes
- * long), a backup GPT header and a backup GPT
- * partition header array.
+ * long), a backup GPT header, a backup GPT
+ * partition header array and 128 LBAs for the
+ * partitions (one per partition).
  * */
 
-#define GPT_MINIMUM_DISK_SIZE (GPT_START_OFFSET + (2 * (GPT_PARTITION_ARRAY_SIZE + GPT_HEADER_SIZE)))
+#define GPT_MINIMUM_DISK_SIZE (GPT_START_OFFSET + (GPT_MAX_PARTITION_COUNT * 512) + (2 * (GPT_PARTITION_ARRAY_SIZE + GPT_HEADER_SIZE)))
 
 /** The GUID for a Swanson partition.
  * */
@@ -241,6 +242,41 @@ struct gpt_partition {
 
 void gpt_partition_init(struct gpt_partition *partition);
 
+/** Sets the name of the partition.
+ * @param partition An initialized partition.
+ * @param name The name to give the partition.
+ * If this exceeds @ref GPT_PARTITION_NAME_MAX,
+ * the name will be truncated to fit.
+ * */
+
+void gpt_partition_set_name(struct gpt_partition *partition,
+                            const char *name);
+
+/** Sets the starting LBA of the partition.
+ * After calling this function, @ref gpt_partition_set_size
+ * should be called afterwards, to ensure the last LBA of the
+ * partition is updated.
+ * @param partition An initialized partition.
+ * @param lba The starting LBA of the partition.
+ * This value should be greater than or equal to
+ * 130. If it is less than 130, it will be rounded
+ * up to 130.
+ * */
+
+void gpt_partition_set_lba(struct gpt_partition *partition,
+                           uint64_t lba);
+
+/** Set the size of the partition, rounded up to the
+ * nearest 512 boundary. @ref gpt_partition_set_lba must
+ * be called before using this function.
+ * @param partition An initialized partition.
+ * @param size The new size of the partition.
+ * This is rounded up to a 512 boundary.
+ * */
+
+void gpt_partition_set_size(struct gpt_partition *partition,
+                            uint64_t size);
+
 /** Reads a partition header
  * at the current location of
  * the stream.
@@ -349,6 +385,21 @@ int gpt_mutate(struct stream *stream, const struct gpt_mutator *mutator);
  * */
 
 enum gpt_error gpt_format(struct stream *stream);
+
+/** Searches for an LBA that can
+ * fit a specified amount of storage.
+ * @param stream An initialized stream, formatted
+ * with GPT.
+ * @param size The number of bytes that the LBA
+ * must fit.
+ * @param lba The LBA, if found, that can fit
+ * the specified amount of storage.
+ * @returns See @ref gpt_error.
+ * */
+
+enum gpt_error gpt_find_space(struct stream *stream,
+                              uint64_t size,
+                              uint64_t *lba);
 
 /** Creates a new partition.
  * The partition is created as a

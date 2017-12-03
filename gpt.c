@@ -177,14 +177,12 @@ enum gpt_error gpt_header_write(struct stream *stream,
 }
 
 void gpt_partition_init(struct gpt_partition *partition) {
-	unsigned int i;
 	guid_init(&partition->partition_type_guid);
 	guid_init(&partition->partition_guid);
 	partition->first_lba = 0;
 	partition->last_lba = 0;
 	partition->attributes = 0;
-	for (i = 0; i < (sizeof(partition->name) / sizeof(partition->name[0])); i++)
-		partition->name[i] = 0;
+	gpt_partition_set_name(partition, "");
 }
 
 enum gpt_error gpt_partition_read(struct stream *stream,
@@ -204,6 +202,29 @@ enum gpt_error gpt_partition_read(struct stream *stream,
 		return GPT_ERROR_UNKNOWN;
 
 	return GPT_ERROR_NONE;
+}
+
+void gpt_partition_set_name(struct gpt_partition *partition,
+                            const char *name) {
+	unsigned int i;
+	unsigned int i_max;
+	i_max = sizeof(partition->name);
+	i_max /= sizeof(partition->name[0]);
+	for (i = 0; (i < (i_max - 1)) && name[i]; i++)
+		partition->name[i] = name[i];
+	/* zero the rest */
+	while (i < i_max)
+		partition->name[i++] = 0;
+}
+
+void gpt_partition_set_lba(struct gpt_partition *partition,
+                           uint64_t lba) {
+	partition->first_lba = lba;
+}
+
+void gpt_partition_set_size(struct gpt_partition *partition,
+                            uint64_t size) {
+	partition->last_lba = partition->first_lba + (size + 512) / 512;
 }
 
 enum gpt_error gpt_partition_write(struct stream *stream,
@@ -230,6 +251,8 @@ enum gpt_error gpt_format(struct stream *stream) {
 	int err;
 	uint64_t stream_size;
 	uint64_t last_lba;
+	uint64_t first_usable_lba;
+	uint64_t last_usable_lba;
 	struct gpt_header header;
 	struct gpt_header backup_header;
 
@@ -246,9 +269,14 @@ enum gpt_error gpt_format(struct stream *stream) {
 		return GPT_ERROR_NEED_SPACE;
 
 	last_lba = stream_size / 512;
+	/* mbr + gpt header + gpt partition headers */
+	first_usable_lba = 130;
+	/* last usable lba - gpt partition headers - gpt backup header */
+	last_usable_lba = last_lba - 129;
 
 	gpt_header_init(&header);
-
+	header.first_usable_lba = first_usable_lba;
+	header.last_usable_lba = last_usable_lba;
 	header.backup_lba = last_lba;
 
 	err = stream_setpos(stream, 512);
@@ -264,6 +292,8 @@ enum gpt_error gpt_format(struct stream *stream) {
 	backup_header.backup_lba = 1;
 	backup_header.current_lba = last_lba;
 	backup_header.partition_array_lba = last_lba - 128;
+	backup_header.first_usable_lba = first_usable_lba;
+	backup_header.last_usable_lba = last_usable_lba;
 
 	err = stream_setpos(stream, (last_lba - 1) * 512);
 	if (err != 0)
@@ -343,6 +373,15 @@ int gpt_access(struct stream *stream,
 	return 0;
 }
 
+enum gpt_error gpt_find_space(struct stream *stream,
+                              uint64_t size,
+                              uint64_t *lba) {
+	(void) stream;
+	(void) size;
+	(void) lba;
+	return GPT_ERROR_NONE;
+}
+
 enum gpt_error gpt_add_partition(struct stream *stream,
                                  uint32_t *partition_index_ptr) {
 
@@ -351,6 +390,11 @@ enum gpt_error gpt_add_partition(struct stream *stream,
 	struct gpt_partition partition;
 	uint32_t partition_index;
 	uint64_t partition_offset;
+	uint64_t partition_lba;
+
+	err = gpt_find_space(stream, 512, &partition_lba);
+	if (err != GPT_ERROR_NONE)
+		return err;
 
 	err = stream_setpos(stream, 512);
 	if (err != 0)
