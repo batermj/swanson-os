@@ -23,6 +23,10 @@
 #include "fdisk.h"
 #include "gpt.h"
 
+#ifndef MiB
+#define MiB (1 * 1024 * 1024)
+#endif
+
 int main(int argc, const char **argv) {
 
 	int i = 1;
@@ -35,12 +39,13 @@ int main(int argc, const char **argv) {
 	uint32_t partition_index;
 
 	for (i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "--mebibytes") == 0) {
+		if (strcmp(argv[i], "--image-size") == 0) {
 			if (sscanf(argv[i + 1], "%lu", &size) != 1) {
 				fprintf(stderr, "Malformed image size '%s'\n", argv[i + 1]);
 				return EXIT_FAILURE;
 			}
 			size *= 1024 * 1024;
+			i++;
 		} else if (strcmp(argv[i], "--image-path") == 0) {
 			image_path = argv[i + 1];
 			i++;
@@ -49,7 +54,7 @@ int main(int argc, const char **argv) {
 			printf("\n");
 			printf("Options:\n");
 			printf("\t--image-path PATH : Specify path of image.\n");
-			printf("\t--mebibytes  N    : Specify the size of the image (in mebibytes).\n");
+			printf("\t--image-size  N   : Specify the size of the image (in mebibytes).\n");
 			printf("\t--help            : Print help and exit.\n");
 		} else {
 			fprintf(stderr, "Unknown option '%s' (see --help)\n", argv[i]);
@@ -59,6 +64,11 @@ int main(int argc, const char **argv) {
 
 	if (image_path == NULL)
 		image_path = "swanson.img";
+
+	if (size < GPT_MINIMUM_DISK_SIZE) {
+		fprintf(stderr, "Disk must be at least %u MiB.\n", (MiB + GPT_MINIMUM_DISK_SIZE) / MiB);
+		return EXIT_FAILURE;
+	}
 
 	fdisk_init(&image);
 
