@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 
 project("Swanson OS" C)
 
+option(SWANSON_DOCUMENTATION "Build the documentation with Doxygen." ON)
+
 if (MSVC)
 	# 4820 warnings about added structure padding
 	# 4996 warnings about 'unsafe' libc functions
@@ -66,9 +68,8 @@ add_unit_test("gpt-test" "gpt-test.c")
 enable_testing()
 
 find_package(Doxygen)
-if (DOXYGEN_FOUND)
+if (DOXYGEN_FOUND AND SWANSON_DOCUMENTATION)
 	configure_file("Doxyfile.in" "Doxyfile" @ONLY)
 	add_custom_target("doc" ALL COMMAND ${DOXYGEN_EXECUTABLE})
 	install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html" DESTINATION "doc")
-
-endif (DOXYGEN_FOUND)
+endif (DOXYGEN_FOUND AND SWANSON_DOCUMENTATION)
