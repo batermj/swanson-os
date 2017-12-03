@@ -31,6 +31,35 @@ extern "C" {
 
 struct stream;
 
+/** The size of the GPT header.
+ * */
+
+#define GPT_HEADER_SIZE 92
+
+/** The size of a partition header
+ * entry within the partition header array.
+ * */
+
+#define GPT_PARTITION_ENTRY_SIZE 128
+
+/** The maximum amount of partitions
+ * that may be created in a GPT formatted
+ * disk.
+ * */
+
+#define GPT_MAX_PARTITION_COUNT 128
+
+/** The size of the partition header array.
+ * */
+
+#define GPT_PARTITION_ARRAY_SIZE (GPT_PARTITION_ENTRY_SIZE * GPT_MAX_PARTITION_COUNT)
+
+/** The offset, in bytes, that the GPT header
+ * is located.
+ * */
+
+#define GPT_START_OFFSET 512
+
 /** The minimum size required for a disk
  * to be formatted with a GPT. This includes
  * the size for the master boot record, GPT
@@ -39,14 +68,7 @@ struct stream;
  * partition header array.
  * */
 
-#define GPT_MINIMUM_DISK_SIZE 34304
-
-/** The maximum amount of partitions
- * that may be created in a GPT formatted
- * disk.
- * */
-
-#define GPT_MAX_PARTITION_COUNT 128
+#define GPT_MINIMUM_DISK_SIZE (GPT_START_OFFSET + (2 * (GPT_PARTITION_ARRAY_SIZE + GPT_HEADER_SIZE)))
 
 /** The GUID for a Swanson partition.
  * */
