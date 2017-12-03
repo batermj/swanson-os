@@ -21,8 +21,6 @@
 #include "crc32.h"
 #include "sstream.h"
 
-#include "debug.h"
-
 #ifndef NULL
 #define NULL ((void *) 0x00)
 #endif
@@ -433,8 +431,6 @@ enum gpt_error gpt_add_partition(struct stream *stream,
 	uint64_t partition_offset;
 	uint64_t partition_lba;
 
-	debug("HERE 1\n");
-
 	err = gpt_find_space(stream, partition_size, &partition_lba);
 	if (err != GPT_ERROR_NONE)
 		return err;
@@ -456,8 +452,6 @@ enum gpt_error gpt_add_partition(struct stream *stream,
 
 	partition_offset = (header.partition_array_lba + partition_index) * 512;
 
-	debug("HERE 2\n");
-
 	err = stream_setpos(stream, partition_offset);
 	if (err != 0)
 		return GPT_ERROR_UNKNOWN;
@@ -472,8 +466,6 @@ enum gpt_error gpt_add_partition(struct stream *stream,
 	if (err != GPT_ERROR_NONE)
 		return err;
 
-	debug("HERE 3\n");
-
 	err = stream_setpos(stream, 512);
 	if (err != 0)
 		return GPT_ERROR_UNKNOWN;
@@ -484,8 +476,6 @@ enum gpt_error gpt_add_partition(struct stream *stream,
 
 	if (partition_index_ptr != NULL)
 		*partition_index_ptr = partition_index;
-
-	debug("HERE 4\n");
 
 	return GPT_ERROR_NONE;
 }
