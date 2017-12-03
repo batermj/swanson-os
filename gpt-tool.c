@@ -86,13 +86,30 @@ static int add_partition(struct fdisk *image, int argc, const char **argv) {
 
 	enum gpt_error err;
 	uint32_t partition_index;
+	unsigned long int partition_size;
+	int i;
 
-	(void) argc;
-	(void) argv;
+	partition_size = 0;
+
+	for (i = 0; i < argc; i++) {
+		if (strcmp(argv[i], "--partition-size") == 0) {
+			if (sscanf(argv[i + 1], "%lu", &partition_size) != 1) {
+				fprintf(stderr, "Invalid partition size '%s'.\n", argv[i + 1]);
+				return EXIT_FAILURE;
+			}
+			i++;
+		} else {
+			fprintf(stderr, "Unknown option '%s'.\n", argv[i]);
+			return EXIT_FAILURE;
+		}
+	}
+
+	if (partition_size == 0)
+		partition_size = 512 * 1024;
 
 	/* add the partition for the file system. */
 
-	err = gpt_add_partition(&image->base.stream, &partition_index);
+	err = gpt_add_partition(&image->base.stream, &partition_index, (uint64_t) partition_size);
 	if (err != GPT_ERROR_NONE) {
 		fprintf(stderr, "Failed to add partition: %s\n", gpt_strerror(err));
 		return EXIT_FAILURE;
@@ -214,11 +231,11 @@ int main(int argc, const char **argv) {
 
 	for (; i < argc; i++) {
 		if (strcmp(argv[i], "add-partition") == 0) {
-			err = add_partition(&image, argc - 1, &argv[i]);
+			err = add_partition(&image, argc - (i + 1), &argv[i + 1]);
 		} else if (strcmp(argv[i], "format") == 0) {
-			err = format(&image, argc - i, &argv[i]);
+			err = format(&image, argc - (i + 1), &argv[i + 1]);
 		} else if (strcmp(argv[i], "print") == 0) {
-			err = print(&image, argc - i, &argv[i]);
+			err = print(&image, argc - (i + 1), &argv[i + 1]);
 		} else if (strcmp(argv[i], "help") == 0) {
 			help(argv[0]);
 			fdisk_close(&image);
