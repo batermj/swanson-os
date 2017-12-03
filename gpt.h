@@ -165,7 +165,7 @@ struct gpt_header {
 	/** Disk GUID */
 	struct guid disk_guid;
 	/** The starting LBA of the partition header entries. */
-	uint64_t partitions_array_lba;
+	uint64_t partition_array_lba;
 	/** The number of partitions that exist. */
 	uint32_t partition_count;
 	/** The size of a single partition header. */

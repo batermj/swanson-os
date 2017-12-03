@@ -60,7 +60,7 @@ void gpt_header_init(struct gpt_header *header) {
 	header->first_usable_lba = ~0x00ULL;
 	header->last_usable_lba = ~0x00ULL;
 	guid_init(&header->disk_guid);
-	header->partitions_array_lba = ~0x00ULL;
+	header->partition_array_lba = 2ULL;
 	header->partition_count = 0;
 	header->partition_entry_size = 128;
 	header->partition_array_crc32 = 0;
@@ -96,7 +96,7 @@ enum gpt_error gpt_header_read(struct stream *stream,
 
 	read_count += stream_read(&sector.stream, header->disk_guid.buffer, GUID_SIZE);
 
-	read_count += stream_decode_uint64le(&sector.stream, &header->partitions_array_lba);
+	read_count += stream_decode_uint64le(&sector.stream, &header->partition_array_lba);
 	read_count += stream_decode_uint32le(&sector.stream, &header->partition_count);
 	read_count += stream_decode_uint32le(&sector.stream, &header->partition_entry_size);
 	read_count += stream_decode_uint32le(&sector.stream, &header->partition_array_crc32);
@@ -145,7 +145,7 @@ enum gpt_error gpt_header_write(struct stream *stream,
 
 	write_count += stream_write(&sector.stream, header->disk_guid.buffer, GUID_SIZE);
 
-	write_count += stream_encode_uint64le(&sector.stream, header->partitions_array_lba);
+	write_count += stream_encode_uint64le(&sector.stream, header->partition_array_lba);
 	write_count += stream_encode_uint32le(&sector.stream, header->partition_count);
 	write_count += stream_encode_uint32le(&sector.stream, header->partition_entry_size);
 	write_count += stream_encode_uint32le(&sector.stream, header->partition_array_crc32);
@@ -212,6 +212,7 @@ enum gpt_error gpt_format(struct stream *stream) {
 
 	backup_header.backup_lba = 1;
 	backup_header.current_lba = last_lba;
+	backup_header.partition_array_lba = last_lba - 128;
 
 	err = stream_setpos(stream, (last_lba - 1) * 512);
 	if (err != 0)
@@ -260,7 +261,7 @@ int gpt_access(struct stream *stream,
 	if (header.partition_count == 0)
 		return 0;
 
-	err = stream_setpos(stream, header.partitions_array_lba * 512);
+	err = stream_setpos(stream, header.partition_array_lba * 512);
 	if (err != 0)
 		return err;
 
