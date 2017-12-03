@@ -29,6 +29,19 @@
 extern "C" {
 #endif
 
+/** Errors that may occur
+ * in a virtual file system function.
+ * */
+
+enum vfs_error {
+	/** No error occured. */
+	VFS_ERROR_NONE,
+	/** An unknown error occured. */
+	VFS_ERROR_UNKNOWN,
+	/** Functionality not implemented yet. */
+	VFS_ERROR_NOT_IMPLEMENTED
+};
+
 /** A directory entry in the virtual file system.
  * */
 
@@ -65,6 +78,8 @@ struct vfs_dir {
 struct vfs {
 	/** Implementation data. */
 	void *data;
+	/** Fetches the root directory. */
+	enum vfs_error (*get_root_dir)(void *data, struct vfs_dir *root_dir);
 };
 
 /** Initializes the virtual file system.
