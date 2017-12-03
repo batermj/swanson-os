@@ -22,6 +22,7 @@
 #define SWANSON_KERNEL_H
 
 #include "memmap.h"
+#include "partition.h"
 #include "vfs.h"
 
 #include <stdint.h>
@@ -58,6 +59,9 @@ struct kernel {
 	/** The number of disks in the
 	 * disk array. */
 	uint64_t disk_count;
+	/** The partition containing the
+	 * operating system. */
+	struct partition main_partition;
 };
 
 /** Initializes the kernel structure.

@@ -91,6 +91,7 @@ void kernel_init(struct kernel *kernel) {
 	memmap_init(&kernel->memmap);
 	kernel->disk_array = NULL;
 	kernel->disk_count = 0;
+	partition_init(&kernel->main_partition);
 }
 
 enum kernel_exitcode kernel_main(struct kernel *kernel) {
