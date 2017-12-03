@@ -34,6 +34,8 @@ const char *gpt_strerror(enum gpt_error error) {
 		return "Invalid Header Checksum";
 	else if (error == GPT_ERROR_BAD_PARTITION_HEADERS)
 		return "Invalid Partition Headers Checksum";
+	else if (error == GPT_ERROR_NEED_SPACE)
+		return "Need More Space";
 	else if (error == GPT_ERROR_NONE)
 		return "No Error";
 	else
@@ -67,7 +69,6 @@ void gpt_header_init(struct gpt_header *header) {
 enum gpt_error gpt_header_read(struct stream *stream,
                                struct gpt_header *header) {
 
-	int err;
 	uint64_t read_count;
 	char buf[512];
 	struct sstream sector;
@@ -75,10 +76,6 @@ enum gpt_error gpt_header_read(struct stream *stream,
 	sstream_init(&sector);
 
 	sstream_setbuf(&sector, buf, sizeof(buf));
-
-	err = stream_setpos(stream, 512);
-	if (err != 0)
-		return GPT_ERROR_UNKNOWN;
 
 	read_count = stream_read(stream, buf, sizeof(buf));
 	if (read_count != sizeof(buf))
@@ -170,10 +167,6 @@ enum gpt_error gpt_header_write(struct stream *stream,
 
 	/* TODO : calculate partition header array checksum */
 
-	err = stream_setpos(stream, 512);
-	if (err != 0)
-		return GPT_ERROR_UNKNOWN;
-
 	write_count = stream_write(stream, buf, sizeof(buf));
 	if (write_count != sizeof(buf))
 		return GPT_ERROR_UNKNOWN;
@@ -183,11 +176,52 @@ enum gpt_error gpt_header_write(struct stream *stream,
 
 enum gpt_error gpt_format(struct stream *stream) {
 
+	int err;
+	uint64_t stream_size;
+	uint64_t last_lba;
 	struct gpt_header header;
+	struct gpt_header backup_header;
+
+	/* Set the stream size to zero,
+	 * just in case the stream implementation
+	 * returns successfully, but does not set
+	 * the size. */
+	stream_size = 0;
+
+	err = stream_getsize(stream, &stream_size);
+	if (err != 0)
+		return GPT_ERROR_UNKNOWN;
+	else if (stream_size < GPT_MINIMUM_DISK_SIZE)
+		return GPT_ERROR_NEED_SPACE;
+
+	last_lba = stream_size / 512;
 
 	gpt_header_init(&header);
 
-	return gpt_header_write(stream, &header);
+	header.backup_lba = last_lba;
+
+	err = stream_setpos(stream, 512);
+	if (err != 0)
+		return GPT_ERROR_UNKNOWN;
+
+	err = gpt_header_write(stream, &header);
+	if (err != GPT_ERROR_NONE)
+		return err;
+
+	gpt_header_init(&backup_header);
+
+	backup_header.backup_lba = 1;
+	backup_header.current_lba = last_lba;
+
+	err = stream_setpos(stream, (last_lba - 1) * 512);
+	if (err != 0)
+		return GPT_ERROR_UNKNOWN;
+
+	err = gpt_header_write(stream, &header);
+	if (err != GPT_ERROR_NONE)
+		return err;
+
+	return GPT_ERROR_NONE;
 }
 
 void gpt_accessor_init(struct gpt_accessor *accessor) {
@@ -205,6 +239,10 @@ int gpt_access(struct stream *stream,
 	int err;
 	struct gpt_header header;
 	uint32_t i;
+
+	err = stream_setpos(stream, 512);
+	if (err != 0)
+		return -1;
 
 	err = gpt_header_read(stream, &header);
 	if (err != GPT_ERROR_NONE) {
@@ -236,15 +274,23 @@ int gpt_access(struct stream *stream,
 enum gpt_error gpt_add_partition(struct stream *stream,
                                  uint32_t *partition_index) {
 
-	enum gpt_error err;
+	int err;
 	struct gpt_header header;
 	struct gpt_partition partition;
+
+	err = stream_setpos(stream, 512);
+	if (err != 0)
+		return GPT_ERROR_UNKNOWN;
 
 	err = gpt_header_read(stream, &header);
 	if (err != GPT_ERROR_NONE)
 		return err;
 
 	/* TODO */
+
+	err = stream_setpos(stream, 512);
+	if (err != 0)
+		return GPT_ERROR_UNKNOWN;
 
 	err = gpt_header_write(stream, &header);
 	if (err != GPT_ERROR_NONE)
