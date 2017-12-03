@@ -27,6 +27,40 @@
 #define MiB (1 * 1024 * 1024)
 #endif
 
+/** Used for printing the
+ * contents of a GUID partition table.
+ * */
+
+struct gpt_printer {
+	/** Accessor class that contains the
+	 * callback functions. */
+	struct gpt_accessor accessor;
+	/** The file to print the information
+	 * to. */
+	FILE *output;
+};
+
+static int gpt_printer_header(void *printer_ptr, const struct gpt_header *header) {
+
+	struct gpt_printer *printer;
+
+	printer = (struct gpt_printer *) printer_ptr;
+
+	fprintf(printer->output, "GPT Header:\n");
+	fprintf(printer->output, "\tVersion: %08x\n", header->version);
+	fprintf(printer->output, "\tHeader Size: %08u\n", header->header_size);
+	fprintf(printer->output, "\tHeader CRC32: %08x\n", header->header_crc32);
+
+	return 0;
+}
+
+static void gpt_printer_init(struct gpt_printer *printer) {
+	gpt_accessor_init(&printer->accessor);
+	printer->accessor.data = printer;
+	printer->accessor.header = gpt_printer_header;
+	printer->output = stdout;
+}
+
 static int add_partition(struct fdisk *image, int argc, const char **argv) {
 
 	enum gpt_error err;
@@ -80,6 +114,23 @@ static int format(struct fdisk *image, int argc, const char **argv) {
 	return EXIT_SUCCESS;
 }
 
+static int print(struct fdisk *image, int argc, const char **argv) {
+
+	int err;
+	struct gpt_printer gpt_printer;
+
+	(void) argc;
+	(void) argv;
+
+	gpt_printer_init(&gpt_printer);
+
+	err = gpt_access(&image->base.stream, &gpt_printer.accessor);
+	if (err != 0)
+		return EXIT_FAILURE;
+
+	return EXIT_SUCCESS;
+}
+
 static void help(const char *argv0) {
 	printf("Usage: %s [options] <command>\n", argv0);
 	printf("\n");
@@ -87,6 +138,7 @@ static void help(const char *argv0) {
 	printf("\tadd-partition : Add a new partition.\n");
 	printf("\tformat        : Format an image file.\n");
 	printf("\thelp          : Print this help message.\n");
+	printf("\tprint         : Print GPT contents.\n");
 	printf("\n");
 	printf("Options:\n");
 	printf("\t--image-path PATH : Path of the image.\n");
@@ -97,7 +149,7 @@ int main(int argc, const char **argv) {
 	int i = 1;
 	int err = 0;
 	struct fdisk image;
-	const char *image_path = "disk.img";
+	const char *image_path = "swanson.img";
 
 	for (i = 1; i < argc; i++) {
 		if (argv[i][0] != '-') {
@@ -134,6 +186,8 @@ int main(int argc, const char **argv) {
 			err = add_partition(&image, argc - 1, &argv[i]);
 		} else if (strcmp(argv[i], "format") == 0) {
 			err = format(&image, argc - i, &argv[i]);
+		} else if (strcmp(argv[i], "print") == 0) {
+			err = print(&image, argc - i, &argv[i]);
 		} else if (strcmp(argv[i], "help") == 0) {
 			help(argv[0]);
 			return EXIT_FAILURE;
