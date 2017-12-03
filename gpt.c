@@ -189,7 +189,9 @@ enum gpt_error gpt_format(struct stream *stream) {
 void gpt_accessor_init(struct gpt_accessor *accessor) {
 	accessor->data = NULL;
 	accessor->header = NULL;
+	accessor->backup_header = NULL;
 	accessor->partition = NULL;
+	accessor->backup_partition = NULL;
 	accessor->error = NULL;
 }
 
@@ -226,3 +228,27 @@ int gpt_access(struct stream *stream,
 
 	return 0;
 }
+
+enum gpt_error gpt_add_partition(struct stream *stream,
+                                 uint32_t *partition_index) {
+
+	enum gpt_error err;
+	struct gpt_header header;
+	struct gpt_partition partition;
+
+	err = gpt_header_read(stream, &header);
+	if (err != GPT_ERROR_NONE)
+		return err;
+
+	/* TODO */
+
+	err = gpt_header_write(stream, &header);
+	if (err != GPT_ERROR_NONE)
+		return err;
+
+	(void) partition;
+	(void) partition_index;
+
+	return GPT_ERROR_NONE;
+}
+

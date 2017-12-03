@@ -31,6 +31,23 @@ extern "C" {
 
 struct stream;
 
+/** The minimum size required for a disk
+ * to be formatted with a GPT. This includes
+ * the size for the master boot record, GPT
+ * header, 128 partition headers (each 128 bytes
+ * long), a backup GPT header and a backup GPT
+ * partition header array.
+ * */
+
+#define GPT_MINIMUM_DISK_SIZE 34304
+
+/** The maximum amount of partitions
+ * that may be created in a GPT formatted
+ * disk.
+ * */
+
+#define GPT_MAX_PARTITION_COUNT 128
+
 /** The GUID for a Swanson partition.
  * */
 
@@ -58,7 +75,10 @@ enum gpt_error {
 	/** The header contains an
 	 * invalid checksum for the
 	 * partition header array. */
-	GPT_ERROR_BAD_PARTITION_HEADERS
+	GPT_ERROR_BAD_PARTITION_HEADERS,
+	/** There is not enough space
+	 * available for the GPT function. */
+	GPT_ERROR_NO_SPACE
 };
 
 /** GPT partition attributes. Used
@@ -224,8 +244,12 @@ struct gpt_accessor {
 	void *data;
 	/** Accesses the GPT header. */
 	int (*header)(void *data, const struct gpt_header *header);
+	/** Accesses the backup GPT header. */
+	int (*backup_header)(void *data, const struct gpt_header *header);
 	/** Accesses a GPT partition header. */
 	int (*partition)(void *data, const struct gpt_partition *partition);
+	/** Accesses a backup GPT partition header. */
+	int (*backup_partition)(void *data, const struct gpt_partition *partition);
 	/** Called if an error occurs while reading the GPT stream. */
 	void (*error)(void *data, enum gpt_error error);
 };
@@ -293,6 +317,22 @@ int gpt_mutate(struct stream *stream, const struct gpt_mutator *mutator);
  * */
 
 enum gpt_error gpt_format(struct stream *stream);
+
+/** Creates a new partition.
+ * The partition is created as a
+ * Swanson partition, and has without
+ * any space allocated for it.
+ * @param stream The stream to add the
+ * partition to. The stream must be GPT
+ * formatted first.
+ * @param partition_index The index of
+ * the new partition. This index can be
+ * used in subsequent calls.
+ * @returns See @ref gpt_error.
+ * */
+
+enum gpt_error gpt_add_partition(struct stream *stream,
+                                 uint32_t *partition_index);
 
 #ifdef __cplusplus
 } /* extern "C" { */
