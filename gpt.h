@@ -82,9 +82,18 @@ struct stream;
 #define GPT_MINIMUM_DISK_SIZE (GPT_START_OFFSET + (GPT_MAX_PARTITION_COUNT * 512) + (2 * (GPT_PARTITION_ARRAY_SIZE + GPT_HEADER_SIZE)))
 
 /** The GUID for a Swanson partition.
+ * @see gpt_guid_swanson
  * */
 
 #define GPT_GUID_SWANSON "86D277DA-CA76-49DC-9F6E-511CE31AF4D1"
+
+/** The GUID for a Swanson partition.
+ * This may be more practical to use
+ * for guid functions than the macro,
+ * @ref GPT_GUID_SWANSON.
+ * */
+
+extern const struct guid gpt_guid_swanson;
 
 /** Enumerates a list of errors
  * that may occur in a GPT function.
