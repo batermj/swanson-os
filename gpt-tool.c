@@ -142,12 +142,16 @@ static void help(const char *argv0) {
 	printf("\n");
 	printf("Options:\n");
 	printf("\t--image-path PATH : Path of the image.\n");
+	printf("\t--create          : If set, the command will\n");
+	printf("\t                    create a new image file,\n");
+	printf("\t                    discarding the old contents.\n");
 }
 
 int main(int argc, const char **argv) {
 
 	int i = 1;
 	int err = 0;
+	int create_flag = 0;
 	struct fdisk image;
 	const char *image_path = "swanson.img";
 
@@ -157,6 +161,8 @@ int main(int argc, const char **argv) {
 		} else if (strcmp(argv[i], "--image-path") == 0) {
 			image_path = argv[i + 1];
 			i++;
+		} else if (strcmp(argv[i], "--create") == 0) {
+			create_flag = 1;
 		} else {
 			fprintf(stderr, "Unknown option '%s'.\n", argv[i]);
 			return EXIT_FAILURE;
@@ -175,7 +181,11 @@ int main(int argc, const char **argv) {
 
 	fdisk_init(&image);
 
-	err = fdisk_open(&image, image_path, "r+");
+	if (create_flag)
+		err = fdisk_open(&image, image_path, "w+");
+	else
+		err = fdisk_open(&image, image_path, "r+");
+
 	if (err != 0) {
 		fprintf(stderr, "Failed to open image file '%s'\n", image_path);
 		return EXIT_FAILURE;
