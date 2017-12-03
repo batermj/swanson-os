@@ -61,7 +61,7 @@ struct kernel {
 	uint64_t disk_count;
 	/** The partition containing the
 	 * operating system. */
-	struct partition main_partition;
+	struct partition root_partition;
 };
 
 /** Initializes the kernel structure.

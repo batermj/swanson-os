@@ -37,15 +37,34 @@ static int probe_gpt_header(void *kernel_ptr, const struct gpt_header *header) {
 
 static int probe_gpt_partition(void *kernel_ptr, const struct gpt_partition *partition) {
 
-	(void) kernel_ptr;
-	(void) partition;
+	struct kernel *kernel;
 
+	/* Check to see if this is a Swanson partition type. */
 	if (guid_cmp(&partition->partition_type_guid, &gpt_guid_swanson) != 0) {
-		/* Not a Swanson partition. */
+		/* Not a Swanson partition type. */
 		return 0;
 	}
 
-	debug("Found Swanson partition.\n");
+	/* Check to see if this is the partition that
+	 * contains the root file system. */
+	if (guid_cmp(&partition->partition_guid, &gpt_guid_root) != 0) {
+		/* Does not contain the root file system. */
+		return 0;
+	}
+
+	/* Do a quick check and make sure that the
+	 * partition LBA markers won't cause an integer
+	 * overflow when subtracted. */
+	if (partition->last_lba < partition->first_lba) {
+		/* TODO : add partition GUID here */
+		debug("Root partition entry starts after it ends.\n");
+		return -1;
+	}
+
+	kernel = (struct kernel *) kernel_ptr;
+
+	kernel->root_partition.offset = partition->first_lba * 512;
+	kernel->root_partition.length = ((partition->last_lba - partition->first_lba) + 1) * 512;
 
 	return 0;
 }
@@ -70,6 +89,17 @@ static enum kernel_exitcode probe_disk(struct kernel *kernel,
 	err = gpt_access(&disk->stream, &partition_finder);
 	if (err != 0)
 		debug("Failed to access GPT partitions.\n");
+
+	/* Check to see if a root partition was found. */
+	if ((kernel->root_partition.offset > 0)
+	 && (kernel->root_partition.length > 0)) {
+		/* Root partition was found, assign
+		 * the disk to the partition so that
+		 * it can be used for the file system.
+		 * */
+		kernel->root_partition.disk = *disk;
+		return KERNEL_SUCCESS;
+	}
 
 	return KERNEL_FAILURE;
 }
@@ -98,7 +128,7 @@ void kernel_init(struct kernel *kernel) {
 	memmap_init(&kernel->memmap);
 	kernel->disk_array = NULL;
 	kernel->disk_count = 0;
-	partition_init(&kernel->main_partition);
+	partition_init(&kernel->root_partition);
 }
 
 enum kernel_exitcode kernel_main(struct kernel *kernel) {
