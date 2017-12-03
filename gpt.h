@@ -87,13 +87,26 @@ struct stream;
 
 #define GPT_GUID_SWANSON "86D277DA-CA76-49DC-9F6E-511CE31AF4D1"
 
-/** The GUID for a Swanson partition.
- * This may be more practical to use
- * for guid functions than the macro,
- * @ref GPT_GUID_SWANSON.
+/** The GUID for the partition that contains the
+ * root file system.
+ * */
+
+#define GPT_GUID_ROOT "BD25C4F2-5E71-48F1-AE96-EF08F6AE028B"
+
+/** The GUID for a Swanson partition
+ * type. This may be more practical
+ * to use for guid functions than the
+ * macro, @ref GPT_GUID_SWANSON.
  * */
 
 extern const struct guid gpt_guid_swanson;
+
+/** The GUID for a partition containing
+ * the root file system. Used by the kernel
+ * to find the file system.
+ * */
+
+extern const struct guid gpt_guid_root;
 
 /** Enumerates a list of errors
  * that may occur in a GPT function.

@@ -35,6 +35,16 @@ const struct guid gpt_guid_swanson = {
 	}
 };
 
+const struct guid gpt_guid_root = {
+	{
+		0xbd, 0x25, 0xc4, 0xf2,
+		0x5e, 0x71,
+		0x48, 0xf1,
+		0xae, 0x96,
+		0xef, 0x08, 0xf6, 0xae, 0x02, 0x8b
+	}
+};
+
 const char *gpt_strerror(enum gpt_error error) {
 	if (error == GPT_ERROR_BAD_STREAM)
 		return "Invalid Stream";
@@ -187,8 +197,9 @@ enum gpt_error gpt_header_write(struct stream *stream,
 }
 
 void gpt_partition_init(struct gpt_partition *partition) {
+	/** TODO : these GUIDs should be set elsewhere. */
 	guid_copy(&partition->partition_type_guid, &gpt_guid_swanson);
-	guid_init(&partition->partition_guid);
+	guid_copy(&partition->partition_guid, &gpt_guid_root);
 	partition->first_lba = 0;
 	partition->last_lba = 0;
 	partition->attributes = 0;
