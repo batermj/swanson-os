@@ -23,7 +23,11 @@ cmake --build .
 
 Here's a list of dependencies for building the project.
 
-| Name     | Comment                           | Required |
-|----------|-----------------------------------|----------|
-| doxygen  | Used for generating documentation | No       |
-| graphviz | Used for generating documentation | No       |
+| Name     | Comment                            | Required |
+|----------|------------------------------------|----------|
+| cmake    | Used for building the project.     | Yes      |
+| doxygen  | Used for generating documentation. | No       |
+| graphviz | Used for generating documentation. | No       |
+
+It's assumed you will have either GCC, Clang or Microsoft Visual Studio already installed.
+
