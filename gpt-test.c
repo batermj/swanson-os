@@ -27,6 +27,7 @@ void test_format(void) {
 
 	char *buf;
 	char *ptr;
+	enum gpt_error error;
 	struct sstream sstream;
 
 	buf = malloc(GPT_MINIMUM_DISK_SIZE);
@@ -38,7 +39,8 @@ void test_format(void) {
 
 	sstream_setbuf(&sstream, buf, GPT_MINIMUM_DISK_SIZE);
 
-	gpt_format(&sstream.stream);
+	error = gpt_format(&sstream.stream);
+	assert(error == GPT_ERROR_NONE);
 
 	/* move pointer to start of
 	 * GPT header */
