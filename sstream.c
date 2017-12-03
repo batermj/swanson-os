@@ -107,12 +107,25 @@ static uint64_t sstream_write(void *sstream_ptr,
 	return buf_size;
 }
 
+static int sstream_getsize(void *sstream_ptr,
+                           uint64_t *size) {
+
+	struct sstream *sstream = (struct sstream *) sstream_ptr;
+
+	if (size != NULL)
+		*size = sstream->buf_len;
+
+	return 0;
+}
+
 void sstream_init(struct sstream *sstream) {
+	stream_init(&sstream->stream);
 	sstream->stream.data = sstream;
 	sstream->stream.read = sstream_read;
 	sstream->stream.write = sstream_write;
 	sstream->stream.getpos = sstream_getpos;
 	sstream->stream.setpos = sstream_setpos;
+	sstream->stream.getsize = sstream_getsize;
 	sstream->buf = NULL;
 	sstream->buf_len = 0;
 	sstream->buf_pos = 0;
