@@ -86,12 +86,45 @@ static uint64_t fdisk_write(void *fdisk_ptr,
 	return fwrite(buf, 1, buf_size, fdisk->file);
 }
 
+static int fdisk_getsize(void *fdisk_ptr,
+                         uint64_t *size) {
+
+	int err;
+	struct fdisk *fdisk;
+	long int original_pos;
+	long int file_size;
+
+	fdisk = (struct fdisk *) fdisk_ptr;
+
+	original_pos = ftell(fdisk->file);
+	if (original_pos < 0L)
+		return -1;
+
+	err = fseek(fdisk->file, 0L, SEEK_END);
+	if (err != 0)
+		return -1;
+
+	file_size = ftell(fdisk->file);
+	if (file_size < 0L)
+		return -1;
+
+	err = fseek(fdisk->file, original_pos, SEEK_SET);
+	if (err != 0)
+		return -1;
+
+	if (size != NULL)
+		*size = file_size;
+
+	return 0;
+}
+
 void fdisk_init(struct fdisk *fdisk) {
 	fdisk->base.stream.data = fdisk;
 	fdisk->base.stream.read = fdisk_read;
 	fdisk->base.stream.write = fdisk_write;
 	fdisk->base.stream.getpos = fdisk_getpos;
 	fdisk->base.stream.setpos = fdisk_setpos;
+	fdisk->base.stream.getsize = fdisk_getsize;
 	fdisk->file = NULL;
 }
 
