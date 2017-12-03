@@ -139,7 +139,7 @@ enum gpt_error gpt_header_write(struct stream *stream,
 
 	write_count += stream_encode_uint32le(&sector.stream, header->version);
 	write_count += stream_encode_uint32le(&sector.stream, header->header_size);
-	write_count += stream_encode_uint32le(&sector.stream, header->header_crc32);
+	write_count += stream_encode_uint32le(&sector.stream, 0 /* header checksum */);
 	write_count += stream_encode_uint32le(&sector.stream, header->reserved);
 	write_count += stream_encode_uint64le(&sector.stream, header->current_lba);
 	write_count += stream_encode_uint64le(&sector.stream, header->backup_lba);
