@@ -37,8 +37,8 @@ add_library("swanson"
 	"vfs.c")
 target_compile_options("swanson" PRIVATE ${SWANSON_CFLAGS})
 
-add_executable("make-image" "make-image.c")
-target_link_libraries("make-image" "swanson")
+add_executable("image-tool" "image-tool.c")
+target_link_libraries("image-tool" "swanson")
 
 add_executable("swanson-host" "main.c")
 set_target_properties("swanson-host" PROPERTIES OUTPUT_NAME "swanson")
@@ -46,7 +46,7 @@ target_link_libraries("swanson-host" "swanson")
 target_compile_options("swanson-host" PRIVATE ${SWANSON_CFLAGS})
 add_custom_command(TARGET "swanson-host"
 	POST_BUILD
-	COMMAND $<TARGET_FILE:make-image> "--image-path" "swanson.img"
+	COMMAND $<TARGET_FILE:image-tool> "--image-path" "swanson.img"
 	COMMENT "Generating swanson.img")
 
 install(TARGETS "swanson" "swanson-host"
