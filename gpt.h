@@ -411,19 +411,23 @@ enum gpt_error gpt_find_space(struct stream *stream,
 
 /** Creates a new partition.
  * The partition is created as a
- * Swanson partition, and has without
- * any space allocated for it.
+ * Swanson partition.
  * @param stream The stream to add the
  * partition to. The stream must be GPT
  * formatted first.
  * @param partition_index The index of
  * the new partition. This index can be
  * used in subsequent calls.
+ * @param partition_size The size of the
+ * new partition. This must be greater than
+ * zero. If zero is passed to this function,
+ * then it is rounded up to the nearest LBA.
  * @returns See @ref gpt_error.
  * */
 
 enum gpt_error gpt_add_partition(struct stream *stream,
-                                 uint32_t *partition_index);
+                                 uint32_t *partition_index,
+                                 uint64_t partition_size);
 
 #ifdef __cplusplus
 } /* extern "C" { */

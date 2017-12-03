@@ -226,7 +226,12 @@ void gpt_partition_set_lba(struct gpt_partition *partition,
 
 void gpt_partition_set_size(struct gpt_partition *partition,
                             uint64_t size) {
-	partition->last_lba = partition->first_lba + (size + 512) / 512;
+
+	/* should be at least one byte */
+	if (size <= 0)
+		size = 1;
+
+	partition->last_lba = partition->first_lba + ((size - 1) / 512);
 }
 
 enum gpt_error gpt_partition_write(struct stream *stream,
@@ -378,14 +383,48 @@ int gpt_access(struct stream *stream,
 enum gpt_error gpt_find_space(struct stream *stream,
                               uint64_t size,
                               uint64_t *lba) {
-	(void) stream;
-	(void) size;
-	(void) lba;
+
+	int err;
+	uint64_t lba_count;
+	uint64_t lba_available;
+	struct gpt_header header;
+
+	lba_count = (size + 512) / 512;
+
+	/* TODO : Implement this function.
+	 * It currently finds space only if
+	 * there's no existing partitions. */
+
+	gpt_header_init(&header);
+
+	err = stream_setpos(stream, 512);
+	if (err != 0)
+		return GPT_ERROR_UNKNOWN;
+
+	err = gpt_header_read(stream, &header);
+	if (err != GPT_ERROR_NONE)
+		return err;
+
+	if (header.partition_count > 0) {
+		return GPT_ERROR_NEED_SPACE;
+	}
+
+	lba_available = header.first_usable_lba;
+	lba_available -= header.last_usable_lba;
+	lba_available += 1;
+
+	if (lba_available < lba_count)
+		return GPT_ERROR_NEED_SPACE;
+
+	if (lba != NULL)
+		*lba = header.first_usable_lba;
+
 	return GPT_ERROR_NONE;
 }
 
 enum gpt_error gpt_add_partition(struct stream *stream,
-                                 uint32_t *partition_index_ptr) {
+                                 uint32_t *partition_index_ptr,
+                                 uint64_t partition_size) {
 
 	int err;
 	struct gpt_header header;
@@ -394,7 +433,9 @@ enum gpt_error gpt_add_partition(struct stream *stream,
 	uint64_t partition_offset;
 	uint64_t partition_lba;
 
-	err = gpt_find_space(stream, 512, &partition_lba);
+	debug("HERE 1\n");
+
+	err = gpt_find_space(stream, partition_size, &partition_lba);
 	if (err != GPT_ERROR_NONE)
 		return err;
 
@@ -415,17 +456,23 @@ enum gpt_error gpt_add_partition(struct stream *stream,
 
 	partition_offset = (header.partition_array_lba + partition_index) * 512;
 
+	debug("HERE 2\n");
+
 	err = stream_setpos(stream, partition_offset);
 	if (err != 0)
 		return GPT_ERROR_UNKNOWN;
 
 	gpt_partition_init(&partition);
 
+	gpt_partition_set_lba(&partition, partition_lba);
+
+	gpt_partition_set_size(&partition, partition_size);
+
 	err = gpt_partition_write(stream, &partition);
 	if (err != GPT_ERROR_NONE)
 		return err;
 
-	/* TODO */
+	debug("HERE 3\n");
 
 	err = stream_setpos(stream, 512);
 	if (err != 0)
@@ -438,7 +485,7 @@ enum gpt_error gpt_add_partition(struct stream *stream,
 	if (partition_index_ptr != NULL)
 		*partition_index_ptr = partition_index;
 
-	(void) partition;
+	debug("HERE 4\n");
 
 	return GPT_ERROR_NONE;
 }
