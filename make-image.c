@@ -54,7 +54,7 @@ int main(int argc, const char **argv) {
 			printf("\n");
 			printf("Options:\n");
 			printf("\t--image-path PATH : Specify path of image.\n");
-			printf("\t--image-size  N   : Specify the size of the image (in mebibytes).\n");
+			printf("\t--image-size N    : Specify the size of the image (in mebibytes).\n");
 			printf("\t--help            : Print help and exit.\n");
 		} else {
 			fprintf(stderr, "Unknown option '%s' (see --help)\n", argv[i]);
@@ -72,7 +72,7 @@ int main(int argc, const char **argv) {
 
 	fdisk_init(&image);
 
-	err = fdisk_open(&image, image_path, "wb");
+	err = fdisk_open(&image, image_path, "r+");
 	if (err != 0) {
 		fprintf(stderr, "Failed to open image '%s' for writing.\n", image_path);
 		fdisk_close(&image);
