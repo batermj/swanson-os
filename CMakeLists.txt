@@ -50,7 +50,7 @@ add_swanson_executable("swanson-pc" "main.c")
 
 add_custom_command(TARGET "swanson-pc"
 	POST_BUILD
-	COMMAND $<TARGET_FILE:gpt-tool> "--image-path" "swanson.img" "format"
+	COMMAND $<TARGET_FILE:gpt-tool> "--create" "--image-path" "swanson.img" "format"
 	COMMAND $<TARGET_FILE:gpt-tool> "--image-path" "swanson.img" "add-partition"
 	COMMENT "Generating swanson.img")
 
