@@ -27,6 +27,8 @@
 extern "C" {
 #endif
 
+struct stream;
+
 /** Defines the number of bytes in
  * a GUID.
  * */
@@ -48,6 +50,16 @@ struct guid {
  * */
 
 void guid_init(struct guid *guid);
+
+/** Writes a GUID to a stream.
+ * @param stream An initialized stream structure.
+ * @param guid The GUID to write.
+ * @returns The number of bytes written to the
+ * stream.
+ * */
+
+uint64_t guid_write(struct stream *stream,
+                    const struct guid *guid);
 
 #ifdef __cplusplus
 } /* extern "C" { */

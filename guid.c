@@ -18,6 +18,8 @@
 
 #include "guid.h"
 
+#include "stream.h"
+
 void guid_init(struct guid *guid) {
 	guid->buffer[0] = 0;
 	guid->buffer[1] = 0;
@@ -27,4 +29,9 @@ void guid_init(struct guid *guid) {
 	guid->buffer[5] = 0;
 	guid->buffer[6] = 0;
 	guid->buffer[7] = 0;
+}
+
+uint64_t guid_write(struct stream *stream,
+                    const struct guid *guid) {
+	return stream_write(stream, guid->buffer, GUID_SIZE);
 }
