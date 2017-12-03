@@ -19,3 +19,11 @@ cmake ..
 cmake --build .
 ```
 
+### Dependencies
+
+Here's a list of dependencies for building the project.
+
+| Name     | Comment                           | Required |
+|----------|-----------------------------------|----------|
+| doxygen  | Used for generating documentation | No       |
+| graphviz | Used for generating documentation | No       |
