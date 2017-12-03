@@ -30,7 +30,7 @@ void test_format(void) {
 	struct sstream sstream;
 
 	buf = malloc(GPT_MINIMUM_DISK_SIZE);
-	assert(buf == NULL);
+	assert(buf != NULL);
 
 	sstream_init(&sstream);
 
