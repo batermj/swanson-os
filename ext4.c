@@ -19,5 +19,36 @@
 #include "ext4.h"
 
 void ext4_superblock_init(struct ext4_superblock *superblock) {
-	(void) superblock;
+	superblock->inode_count = 0;
+	superblock->block_count = 0;
+	superblock->root_block_count = 0;
+	superblock->free_block_count = 0;
+	superblock->free_inode_count = 0;
+	superblock->first_data_block = 0;
+	superblock->logarithmic_block_size = 0;
+	superblock->logarithmic_cluster_size = 0;
+	superblock->blocks_per_group = 0;
+	superblock->clusters_per_group = 0;
+	superblock->inodes_per_group = 0;
+	superblock->mount_time = 0;
+	superblock->write_time = 0;
+	superblock->mount_count = 0;
+	superblock->max_mount_count = 14;
+	superblock->signature = 0xef53;
+	/* 0x01 means that the file system
+	 * was unmounted cleanly. */
+	superblock->state = 0x01;
+	/* 0x03 means panic if there are
+	 * errors. */
+	superblock->error_behavior = 0x03;
+	superblock->minor_version = 0;
+	superblock->last_check = 0;
+	/* two weeks */
+	superblock->check_interval = 1209600;
+	/* zero means Linux, there's no
+	 * actual 'null' value. */
+	superblock->creator_os = 0x00;
+	superblock->version = 0;
+	superblock->reserved_uid = 0;
+	superblock->reserved_gid = 0;
 }
