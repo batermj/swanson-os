@@ -44,13 +44,14 @@ add_swanson_library("swanson"
 	"vfs.h"
 	"vfs.c")
 
-add_swanson_executable("image-tool" "image-tool.c")
+add_swanson_executable("gpt-tool" "gpt-tool.c")
 
 add_swanson_executable("swanson-pc" "main.c")
 
 add_custom_command(TARGET "swanson-pc"
 	POST_BUILD
-	COMMAND $<TARGET_FILE:image-tool> "--image-path" "swanson.img"
+	COMMAND $<TARGET_FILE:gpt-tool> "--image-path" "swanson.img" "format"
+	COMMAND $<TARGET_FILE:gpt-tool> "--image-path" "swanson.img" "add-partition"
 	COMMENT "Generating swanson.img")
 
 install(TARGETS "swanson" "swanson-pc"
