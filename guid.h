@@ -51,6 +51,28 @@ struct guid {
 
 void guid_init(struct guid *guid);
 
+/** Compares two GUID structures.
+ * @param a A GUID structure.
+ * @param b Another GUID structure.
+ * @returns Less than zero if @p a
+ * is 'less than' @p b, greater than
+ * zero if @p is 'greater than' @p b
+ * and zero if they are both equal.
+ * */
+
+int guid_cmp(const struct guid *a,
+             const struct guid *b);
+
+/** Copy a GUID from one location
+ * to another.
+ * @param dst The GUID structure that
+ * will contain the copied GUID.
+ * @param src The GUID to copy.
+ * */
+
+void guid_copy(struct guid *dst,
+               const struct guid *src);
+
 /** Reads a GUID from a stream.
  * @param stream An initialized stream structure.
  * @param guid The GUID structure that will receive

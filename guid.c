@@ -31,6 +31,25 @@ void guid_init(struct guid *guid) {
 	guid->buffer[7] = 0;
 }
 
+int guid_cmp(const struct guid *a,
+             const struct guid *b) {
+	unsigned int i;
+	for (i = 0; i < GUID_SIZE; i++) {
+		if (a->buffer[i] < b->buffer[i])
+			return -1;
+		else if (a->buffer[i] > b->buffer[i])
+			return 1;
+	}
+	return 0;
+}
+
+void guid_copy(struct guid *dst,
+               const struct guid *src) {
+	unsigned int i;
+	for (i = 0; i < GUID_SIZE; i++)
+		dst->buffer[i] = src->buffer[i];
+}
+
 uint64_t guid_read(struct stream *stream,
                    struct guid *guid) {
 	return stream_read(stream, guid->buffer, GUID_SIZE);
