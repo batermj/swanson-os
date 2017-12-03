@@ -72,6 +72,7 @@ enum gpt_error gpt_header_read(struct stream *stream,
                                struct gpt_header *header) {
 
 	uint64_t read_count;
+	uint32_t header_crc32;
 	char buf[512];
 	struct sstream sector;
 
@@ -113,7 +114,8 @@ enum gpt_error gpt_header_read(struct stream *stream,
 	buf[18] = 0;
 	buf[19] = 0;
 
-	if (crc32(buf, sizeof(buf)) != header->header_crc32)
+	header_crc32 = crc32(buf, header->header_size);
+	if (header_crc32 != header->header_crc32)
 		return GPT_ERROR_BAD_HEADER;
 
 	return GPT_ERROR_NONE;
@@ -157,7 +159,7 @@ enum gpt_error gpt_header_write(struct stream *stream,
 
 	/* calculate header checksum */
 
-	header_checksum = crc32(buf, sizeof(buf));
+	header_checksum = crc32(buf, header->header_size);
 
 	err = stream_setpos(&sector.stream, 16);
 	if (err != 0)
