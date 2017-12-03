@@ -50,14 +50,35 @@ static int gpt_printer_header(void *printer_ptr, const struct gpt_header *header
 	fprintf(printer->output, "\tVersion: %08x\n", header->version);
 	fprintf(printer->output, "\tHeader Size: %08u\n", header->header_size);
 	fprintf(printer->output, "\tHeader CRC32: %08x\n", header->header_crc32);
+	fprintf(printer->output, "\tPartition Count: %08x\n", header->partition_count);
 
 	return 0;
+}
+
+static int gpt_printer_partition(void *printer_ptr, const struct gpt_partition *partition) {
+
+	struct gpt_printer *printer;
+
+	printer = (struct gpt_printer *) printer_ptr;
+
+	fprintf(printer->output, "GPT Partition:\n");
+	fprintf(printer->output, "\tFirst LBA: %016lx\n", (unsigned long int) partition->first_lba);
+	fprintf(printer->output, "\tLast LBA: %016lx\n", (unsigned long int) partition->last_lba);
+
+	return 0;
+}
+
+static void gpt_printer_error(void *printer_ptr, enum gpt_error error) {
+	(void) printer_ptr;
+	fprintf(stderr, "GPT Error: %s\n", gpt_strerror(error));
 }
 
 static void gpt_printer_init(struct gpt_printer *printer) {
 	gpt_accessor_init(&printer->accessor);
 	printer->accessor.data = printer;
 	printer->accessor.header = gpt_printer_header;
+	printer->accessor.partition = gpt_printer_partition;
+	printer->accessor.error = gpt_printer_error;
 	printer->output = stdout;
 }
 
