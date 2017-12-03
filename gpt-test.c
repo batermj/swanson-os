@@ -25,13 +25,16 @@
 
 void test_format(void) {
 
-	char buf[1024];
+	char *buf;
 
 	struct sstream sstream;
 
+	buf = malloc(GPT_MINIMUM_DISK_SIZE);
+	assert(buf == NULL);
+
 	sstream_init(&sstream);
 
-	sstream_setbuf(&sstream, &buf, sizeof(buf));
+	sstream_setbuf(&sstream, &buf, GPT_MINIMUM_DISK_SIZE);
 
 	gpt_format(&sstream.stream);
 
@@ -65,6 +68,19 @@ void test_format(void) {
 	assert(buf[512 + 25] == 0x00);
 	assert(buf[512 + 26] == 0x00);
 	assert(buf[512 + 27] == 0x00);
+	assert(buf[512 + 28] == 0x00);
+	assert(buf[512 + 29] == 0x00);
+	assert(buf[512 + 30] == 0x00);
+	assert(buf[512 + 31] == 0x00);
+	/* backup LBA (should be 0x4400) */
+	assert(buf[512 + 32] == 0x00);
+	assert(buf[512 + 33] == 0x44);
+	assert(buf[512 + 34] == 0x00);
+	assert(buf[512 + 35] == 0x00);
+	assert(buf[512 + 36] == 0x00);
+	assert(buf[512 + 37] == 0x00);
+	assert(buf[512 + 38] == 0x00);
+	assert(buf[512 + 39] == 0x00);
 	/* TODO : the rest */
 }
 
