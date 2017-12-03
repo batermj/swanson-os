@@ -36,8 +36,11 @@ struct stream;
 
 #define GPT_HEADER_SIZE 92
 
-/** The size of a partition header
- * entry within the partition header array.
+/** The size of a partition header.
+ * Note that a partition entry occupies
+ * one LBA. For indexing a partition entry,
+ * use the LBA size. For checking read and
+ * write functions, use this value.
  * */
 
 #define GPT_PARTITION_ENTRY_SIZE 128
@@ -231,6 +234,13 @@ struct gpt_partition {
 	uint16_t name[36];
 };
 
+/** Initializes a partition's internal members.
+ * This should be called before the partition structure
+ * is used.
+ * */
+
+void gpt_partition_init(struct gpt_partition *partition);
+
 /** Reads a partition header
  * at the current location of
  * the stream.
@@ -242,7 +252,7 @@ struct gpt_partition {
  * */
 
 enum gpt_error gpt_partition_read(struct stream *stream,
-                                  const struct gpt_partition *partition);
+                                  struct gpt_partition *partition);
 
 /** Writes a partition header at the
  * current location of the stream.
