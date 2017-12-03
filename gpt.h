@@ -36,6 +36,13 @@ struct stream;
 
 #define GPT_HEADER_SIZE 92
 
+/** The maximum amount of characters
+ * allowed in GPT partition name. This
+ * includes the null-terminating character.
+ * */
+
+#define GPT_PARTITION_NAME_MAX 36
+
 /** The size of a partition header.
  * Note that a partition entry occupies
  * one LBA. For indexing a partition entry,
@@ -238,6 +245,7 @@ struct gpt_partition {
 /** Initializes a partition's internal members.
  * This should be called before the partition structure
  * is used.
+ * @param partition An uninitialized partition structure.
  * */
 
 void gpt_partition_init(struct gpt_partition *partition);

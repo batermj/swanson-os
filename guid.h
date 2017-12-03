@@ -56,7 +56,7 @@ void guid_init(struct guid *guid);
  * @param guid The GUID structure that will receive
  * the data.
  * @returns The number of bytes read from the stream.
- * This should be equal to @ref GPT_GUID_PARTITION_SIZE
+ * This should be equal to @ref GUID_SIZE
  * on success.
  * */
 
@@ -67,7 +67,7 @@ uint64_t guid_read(struct stream *stream,
  * @param stream An initialized stream structure.
  * @param guid The GUID to write.
  * @returns The number of bytes written to the
- * stream. This should be equal to @ref GPT_GUID_PARTITION_SIZE
+ * stream. This should be equal to @ref GUID_SIZE
  * on success.
  * */
 
