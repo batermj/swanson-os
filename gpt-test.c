@@ -26,7 +26,7 @@
 void test_format(void) {
 
 	char *buf;
-
+	char *ptr;
 	struct sstream sstream;
 
 	buf = malloc(GPT_MINIMUM_DISK_SIZE);
@@ -40,49 +40,52 @@ void test_format(void) {
 
 	gpt_format(&sstream.stream);
 
+	/* move pointer to start of
+	 * GPT header */
+	ptr = &buf[GPT_START_OFFSET];
 	/* signature */
-	assert(buf[512 + 0] == 'E');
-	assert(buf[512 + 1] == 'F');
-	assert(buf[512 + 2] == 'I');
-	assert(buf[512 + 3] == ' ');
-	assert(buf[512 + 4] == 'P');
-	assert(buf[512 + 5] == 'A');
-	assert(buf[512 + 6] == 'R');
-	assert(buf[512 + 7] == 'T');
+	assert(ptr[0] == 'E');
+	assert(ptr[1] == 'F');
+	assert(ptr[2] == 'I');
+	assert(ptr[3] == ' ');
+	assert(ptr[4] == 'P');
+	assert(ptr[5] == 'A');
+	assert(ptr[6] == 'R');
+	assert(ptr[7] == 'T');
 	/* version */
-	assert(buf[512 + 8] == 0x00);
-	assert(buf[512 + 9] == 0x00);
-	assert(buf[512 + 10] == 0x01);
-	assert(buf[512 + 11] == 0x00);
+	assert(ptr[8] == 0x00);
+	assert(ptr[9] == 0x00);
+	assert(ptr[10] == 0x01);
+	assert(ptr[11] == 0x00);
 	/* header size */
-	assert(buf[512 + 12] == 0x5c);
-	assert(buf[512 + 13] == 0x00);
-	assert(buf[512 + 14] == 0x00);
-	assert(buf[512 + 15] == 0x00);
+	assert(ptr[12] == 0x5c);
+	assert(ptr[13] == 0x00);
+	assert(ptr[14] == 0x00);
+	assert(ptr[15] == 0x00);
 	/* TODO : header crc32 */
 	/* reserved */
-	assert(buf[512 + 20] == 0x00);
-	assert(buf[512 + 21] == 0x00);
-	assert(buf[512 + 22] == 0x00);
-	assert(buf[512 + 23] == 0x00);
+	assert(ptr[20] == 0x00);
+	assert(ptr[21] == 0x00);
+	assert(ptr[22] == 0x00);
+	assert(ptr[23] == 0x00);
 	/* current LBA */
-	assert(buf[512 + 24] == 0x01);
-	assert(buf[512 + 25] == 0x00);
-	assert(buf[512 + 26] == 0x00);
-	assert(buf[512 + 27] == 0x00);
-	assert(buf[512 + 28] == 0x00);
-	assert(buf[512 + 29] == 0x00);
-	assert(buf[512 + 30] == 0x00);
-	assert(buf[512 + 31] == 0x00);
+	assert(ptr[24] == 0x01);
+	assert(ptr[25] == 0x00);
+	assert(ptr[26] == 0x00);
+	assert(ptr[27] == 0x00);
+	assert(ptr[28] == 0x00);
+	assert(ptr[29] == 0x00);
+	assert(ptr[30] == 0x00);
+	assert(ptr[31] == 0x00);
 	/* backup LBA (should be 0x4400) */
-	assert(buf[512 + 32] == 0x00);
-	assert(buf[512 + 33] == 0x44);
-	assert(buf[512 + 34] == 0x00);
-	assert(buf[512 + 35] == 0x00);
-	assert(buf[512 + 36] == 0x00);
-	assert(buf[512 + 37] == 0x00);
-	assert(buf[512 + 38] == 0x00);
-	assert(buf[512 + 39] == 0x00);
+	assert(ptr[32] == 0x00);
+	assert(ptr[33] == 0x44);
+	assert(ptr[34] == 0x00);
+	assert(ptr[35] == 0x00);
+	assert(ptr[36] == 0x00);
+	assert(ptr[37] == 0x00);
+	assert(ptr[38] == 0x00);
+	assert(ptr[39] == 0x00);
 	/* TODO : the rest */
 }
 
