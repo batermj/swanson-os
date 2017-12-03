@@ -32,6 +32,7 @@ int main(int argc, const char **argv) {
 	const char *image_path = NULL;
 	char zero_buffer[512];
 	size_t write_count;
+	uint32_t partition_index;
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--mebibytes") == 0) {
@@ -81,6 +82,15 @@ int main(int argc, const char **argv) {
 	err = gpt_format(&image.base.stream);
 	if (err != GPT_ERROR_NONE) {
 		fprintf(stderr, "Failed to format partition table: %s\n", gpt_strerror(err));
+		fdisk_close(&image);
+		return EXIT_FAILURE;
+	}
+
+	/* add the partition for the file system. */
+
+	err = gpt_add_partition(&image.base.stream, &partition_index);
+	if (err != GPT_ERROR_NONE) {
+		fprintf(stderr, "Failed to add partition: %s\n", gpt_strerror(err));
 		fdisk_close(&image);
 		return EXIT_FAILURE;
 	}
