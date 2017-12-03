@@ -31,6 +31,11 @@ void guid_init(struct guid *guid) {
 	guid->buffer[7] = 0;
 }
 
+uint64_t guid_read(struct stream *stream,
+                   struct guid *guid) {
+	return stream_read(stream, guid->buffer, GUID_SIZE);
+}
+
 uint64_t guid_write(struct stream *stream,
                     const struct guid *guid) {
 	return stream_write(stream, guid->buffer, GUID_SIZE);
