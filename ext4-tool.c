@@ -23,13 +23,77 @@
 #include "ext4.h"
 #include "fdisk.h"
 
+/** An ext4 accessor that prints
+ * information about the file system.
+ * */
+
+struct ext4_printer {
+	/** Base accessor structure. */
+	struct ext4_accessor accessor;
+	/** The output file that the information
+	 * will be printed to. */
+	FILE *output;
+};
+
+static int
+ext4_printer_superblock(void *printer_ptr,
+                        const struct ext4_superblock *superblock) {
+
+	struct ext4_printer *printer;
+
+	printer = (struct ext4_printer *) printer_ptr;
+
+	fprintf(printer->output, "superblock:\n");
+	fprintf(printer->output, "\tinode count: %lu\n", (unsigned long int) superblock->inode_count);
+	fprintf(printer->output, "\tmount count: %lu\n", (unsigned long int) superblock->mount_count);
+
+	return 0;
+}
+
+/** Initializes the ext4 printer.
+ * @param printer An uninitialized ext4 printer.
+ * */
+
+static void
+ext4_printer_init(struct ext4_printer *printer) {
+	ext4_accessor_init(&printer->accessor);
+	printer->accessor.data = printer;
+	printer->accessor.superblock = ext4_printer_superblock;
+	printer->output = stdout;
+}
+
 static int format(const char *image_path, int argc, const char **argv) {
 
+	int err;
 	struct fdisk image;
+	char zero_buffer[512];
+	unsigned int i;
 
 	fdisk_init(&image);
 
-	fdisk_open(&image, image_path, "w+");
+	err = fdisk_open(&image, image_path, "w+");
+	if (err != 0) {
+		fprintf(stderr, "Failed to open '%s' for writing.\n", image_path);
+		return EXIT_FAILURE;
+	}
+
+	/* zero the disk contents */
+
+	memset(zero_buffer, 0, sizeof(zero_buffer));
+
+	for (i = 0; i < 64; i++) {
+		stream_write(&image.base.stream, zero_buffer, sizeof(zero_buffer));
+	}
+
+	/* format that disk */
+
+	err = ext4_format(&image.base.stream);
+	if (err != EXT4_ERROR_NONE) {
+		/* TODO error description should go here. */
+		fprintf(stderr, "Failed to format image.\n");
+		fdisk_close(&image);
+		return EXIT_FAILURE;
+	}
 
 	fdisk_close(&image);
 
@@ -48,6 +112,33 @@ static void help(const char *argv0) {
 	printf("Commands:\n");
 	printf("\tformat : Format an ext4 image.\n");
 	printf("\thelp   : Print this help message and exit.\n");
+}
+
+static int info(const char *image_path) {
+
+	int err;
+	struct fdisk image;
+	struct ext4_printer printer;
+
+	fdisk_init(&image);
+
+	err = fdisk_open(&image, image_path, "r+");
+	if (err != 0) {
+		fprintf(stderr, "Failed to open ext4 image '%s'\n", image_path);
+		return EXIT_FAILURE;
+	}
+
+	ext4_printer_init(&printer);
+
+	err = ext4_access(&printer.accessor, &image.base.stream);
+	if (err != 0) {
+		fdisk_close(&image);
+		return EXIT_FAILURE;
+	}
+
+	fdisk_close(&image);
+
+	return EXIT_SUCCESS;
 }
 
 int main(int argc, const char **argv) {
@@ -93,7 +184,7 @@ int main(int argc, const char **argv) {
 	} else if (strcmp(argv[i], "xxd") == 0) {
 
 	} else if (strcmp(argv[i], "info") == 0) {
-
+		return info(image_path);
 	} else {
 		fprintf(stderr, "Unknown command '%s'.\n", argv[i]);
 		return EXIT_FAILURE;
