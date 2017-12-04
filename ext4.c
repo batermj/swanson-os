@@ -18,7 +18,14 @@
 
 #include "ext4.h"
 
-void ext4_superblock_init(struct ext4_superblock *superblock) {
+#include "stream.h"
+
+#ifndef NULL
+#define NULL ((void *) 0x00)
+#endif
+
+void
+ext4_superblock_init(struct ext4_superblock *superblock) {
 	superblock->inode_count = 0;
 	superblock->block_count = 0;
 	superblock->root_block_count = 0;
@@ -34,7 +41,7 @@ void ext4_superblock_init(struct ext4_superblock *superblock) {
 	superblock->write_time = 0;
 	superblock->mount_count = 0;
 	superblock->max_mount_count = 14;
-	superblock->signature = 0xef53;
+	superblock->signature = EXT4_SIGNATURE;
 	/* 0x01 means that the file system
 	 * was unmounted cleanly. */
 	superblock->state = 0x01;
@@ -52,3 +59,135 @@ void ext4_superblock_init(struct ext4_superblock *superblock) {
 	superblock->reserved_uid = 0;
 	superblock->reserved_gid = 0;
 }
+
+enum ext4_error
+ext4_superblock_read(struct ext4_superblock *superblock,
+                     struct stream *stream) {
+
+	uint64_t read_count;
+
+	read_count = 0;
+	read_count += stream_decode_uint32le(stream, &superblock->inode_count);
+	read_count += stream_decode_uint32le(stream, &superblock->block_count);
+	read_count += stream_decode_uint32le(stream, &superblock->root_block_count);
+	read_count += stream_decode_uint32le(stream, &superblock->free_block_count);
+	read_count += stream_decode_uint32le(stream, &superblock->free_inode_count);
+	read_count += stream_decode_uint32le(stream, &superblock->first_data_block);
+	read_count += stream_decode_uint32le(stream, &superblock->logarithmic_block_size);
+	read_count += stream_decode_uint32le(stream, &superblock->logarithmic_cluster_size);
+	read_count += stream_decode_uint32le(stream, &superblock->blocks_per_group);
+	read_count += stream_decode_uint32le(stream, &superblock->clusters_per_group);
+	read_count += stream_decode_uint32le(stream, &superblock->inodes_per_group);
+	read_count += stream_decode_uint32le(stream, &superblock->mount_time);
+	read_count += stream_decode_uint32le(stream, &superblock->write_time);
+	read_count += stream_decode_uint16le(stream, &superblock->mount_count);
+	read_count += stream_decode_uint16le(stream, &superblock->max_mount_count);
+	read_count += stream_decode_uint16le(stream, &superblock->signature);
+	read_count += stream_decode_uint16le(stream, &superblock->state);
+	read_count += stream_decode_uint16le(stream, &superblock->error_behavior);
+	read_count += stream_decode_uint16le(stream, &superblock->minor_version);
+	read_count += stream_decode_uint32le(stream, &superblock->last_check);
+	read_count += stream_decode_uint32le(stream, &superblock->check_interval);
+	read_count += stream_decode_uint32le(stream, &superblock->creator_os);
+	read_count += stream_decode_uint32le(stream, &superblock->version);
+	read_count += stream_decode_uint16le(stream, &superblock->reserved_uid);
+	read_count += stream_decode_uint16le(stream, &superblock->reserved_gid);
+
+	if (read_count == 0)
+		return EXT4_ERROR_PARTIAL_READ;
+	else if (superblock->signature != EXT4_SIGNATURE)
+		return EXT4_ERROR_BAD_SIGNATURE;
+
+	return EXT4_ERROR_NONE;
+}
+
+enum ext4_error
+ext4_superblock_write(const struct ext4_superblock *superblock,
+                      struct stream *stream) {
+
+	uint64_t write_count;
+
+	write_count = 0;
+	write_count += stream_encode_uint32le(stream, superblock->inode_count);
+	write_count += stream_encode_uint32le(stream, superblock->block_count);
+	write_count += stream_encode_uint32le(stream, superblock->root_block_count);
+	write_count += stream_encode_uint32le(stream, superblock->free_block_count);
+	write_count += stream_encode_uint32le(stream, superblock->free_inode_count);
+	write_count += stream_encode_uint32le(stream, superblock->first_data_block);
+	write_count += stream_encode_uint32le(stream, superblock->logarithmic_block_size);
+	write_count += stream_encode_uint32le(stream, superblock->logarithmic_cluster_size);
+	write_count += stream_encode_uint32le(stream, superblock->blocks_per_group);
+	write_count += stream_encode_uint32le(stream, superblock->clusters_per_group);
+	write_count += stream_encode_uint32le(stream, superblock->inodes_per_group);
+	write_count += stream_encode_uint32le(stream, superblock->mount_time);
+	write_count += stream_encode_uint32le(stream, superblock->write_time);
+	write_count += stream_encode_uint16le(stream, superblock->mount_count);
+	write_count += stream_encode_uint16le(stream, superblock->max_mount_count);
+	write_count += stream_encode_uint16le(stream, superblock->signature);
+	write_count += stream_encode_uint16le(stream, superblock->state);
+	write_count += stream_encode_uint16le(stream, superblock->error_behavior);
+	write_count += stream_encode_uint16le(stream, superblock->minor_version);
+	write_count += stream_encode_uint32le(stream, superblock->last_check);
+	write_count += stream_encode_uint32le(stream, superblock->check_interval);
+	write_count += stream_encode_uint32le(stream, superblock->creator_os);
+	write_count += stream_encode_uint32le(stream, superblock->version);
+	write_count += stream_encode_uint16le(stream, superblock->reserved_uid);
+	write_count += stream_encode_uint16le(stream, superblock->reserved_gid);
+
+	if (write_count == 0)
+		return EXT4_ERROR_PARTIAL_WRITE;
+
+	return EXT4_ERROR_NONE;
+}
+
+enum ext4_error
+ext4_format(struct stream *stream) {
+
+	int err;
+	struct ext4_superblock superblock;
+
+	ext4_superblock_init(&superblock);
+
+	err = stream_setpos(stream, 1024);
+	if (err != 0)
+		return err;
+
+	err = ext4_superblock_write(&superblock, stream);
+	if (err != EXT4_ERROR_NONE)
+		return err;
+
+	return EXT4_ERROR_NONE;
+}
+
+void
+ext4_accessor_init(struct ext4_accessor *accessor) {
+	accessor->data = NULL;
+	accessor->superblock = NULL;
+}
+
+int
+ext4_access(struct ext4_accessor *accessor,
+            struct stream *stream) {
+
+	int err;
+	struct ext4_superblock superblock;
+
+	err = stream_setpos(stream, 1024);
+	if (err != 0)
+		return -1;
+
+	ext4_superblock_init(&superblock);
+
+	err = ext4_superblock_read(&superblock, stream);
+	if (err != EXT4_ERROR_NONE)
+		return -1;
+
+	if (accessor->superblock != NULL) {
+		err = accessor->superblock(accessor->data, &superblock);
+		if (err != 0)
+			return err;
+	}
+
+	return 0;
+}
+

@@ -27,6 +27,34 @@
 extern "C" {
 #endif
 
+struct stream;
+
+/** The signature for a ext4 file
+ * system. This is contained by the
+ * superblock.
+ * @see ext4_superblock
+ * */
+
+#define EXT4_SIGNATURE 0xef53
+
+/** A list of possible errors
+ * that may occur from an ext4
+ * function. */
+
+enum ext4_error {
+	/** No error occured. */
+	EXT4_ERROR_NONE,
+	/** An unknown error occured. */
+	EXT4_ERROR_UNKNOWN,
+	/** A read operation did not finish correctly. */
+	EXT4_ERROR_PARTIAL_READ,
+	/** A write operation did not finish correctly. */
+	EXT4_ERROR_PARTIAL_WRITE,
+	/** The ext4 superblock does not contain a valid
+	 * file system signature. */
+	EXT4_ERROR_BAD_SIGNATURE
+};
+
 /** A superblock in the ext4 file system.
  * This is the first data structure in a
  * block group.
@@ -108,7 +136,77 @@ struct ext4_superblock {
  * @param superblock An uninitialized superblock.
  * */
 
-void ext4_superblock_init(struct ext4_superblock *superblock);
+void
+ext4_superblock_init(struct ext4_superblock *superblock);
+
+/** Reads a superblock from a stream.
+ * This function does not set the stream position.
+ * The caller must ensure that the stream points
+ * to where a superblock might be.
+ * @param superblock The data structure to
+ * receive the data from the stream.
+ * @param The stream containing the superblock.
+ * @returns See @ref ext4_error.
+ * */
+
+enum ext4_error
+ext4_superblock_read(struct ext4_superblock *superblock,
+                     struct stream *stream);
+
+/** Writes a superblock to a stream.
+ * This function does not set the stream position,
+ * that must be done by the caller.
+ * @param superblock An initialzied superblock.
+ * @param stream The stream to write the superblock to.
+ * @returns See @ref ext4_error.
+ * */
+
+enum ext4_error
+ext4_superblock_write(const struct ext4_superblock *superblock,
+                      struct stream *stream);
+
+/** Formats a stream with ext4.
+ * @param stream An initialized stream
+ * structure.
+ * @returns See @ref ext4_error.
+ * */
+
+enum ext4_error
+ext4_format(struct stream *stream);
+
+/** Used for reading ext4 data
+ * structures. It abstracts the method
+ * by which the data structures are decoded.
+ * */
+
+struct ext4_accessor {
+	/** Implementation data. */
+	void *data;
+	/** Called when the accessor finds a superblock. */
+	int (*superblock)(void *data, const struct ext4_superblock *superblock);
+};
+
+/** Initializes an accessor structure.
+ * This function should be called before
+ * the accessor is used.
+ * @param accessor An uninitialized accessor
+ * structure.
+ * */
+
+void
+ext4_accessor_init(struct ext4_accessor *accessor);
+
+/** Reads ext4 data structures and passes
+ * them to the accessor.
+ * @param accessor An initialized accessor.
+ * @param stream A stream containing an ext4
+ * formatted partition or drive.
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+ext4_access(struct ext4_accessor *accessor,
+            struct stream *stream);
 
 #ifdef __cplusplus
 } /* extern "C" { */
