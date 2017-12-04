@@ -191,3 +191,8 @@ ext4_access(struct ext4_accessor *accessor,
 	return 0;
 }
 
+void
+ext4_fs_init(struct ext4_fs *fs) {
+	stream_init(&fs->stream);
+	vfs_init(&fs->vfs);
+}

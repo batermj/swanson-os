@@ -21,13 +21,14 @@
 #ifndef SWANSON_EXT4_H
 #define SWANSON_EXT4_H
 
+#include "stream.h"
+#include "vfs.h"
+
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-struct stream;
 
 /** The signature for a ext4 file
  * system. This is contained by the
@@ -207,6 +208,28 @@ ext4_accessor_init(struct ext4_accessor *accessor);
 int
 ext4_access(struct ext4_accessor *accessor,
             struct stream *stream);
+
+/** An ext4 file system.
+ * */
+
+struct ext4_fs {
+	/** The stream used for reading from
+	 * and writing to the file system. */
+	struct stream stream;
+	/** The virtual file system structure,
+	 * used by the kernel to operate on the
+	 * file system in a generic manner. */
+	struct vfs vfs;
+};
+
+/** Initializes the ext4 file system
+ * structure.
+ * @param fs An uninitialized file system
+ * structure.
+ * */
+
+void
+ext4_fs_init(struct ext4_fs *fs);
 
 #ifdef __cplusplus
 } /* extern "C" { */
