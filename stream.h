@@ -77,6 +77,18 @@ uint64_t stream_write(struct stream *stream,
                       const void *buf,
                       uint64_t buf_size);
 
+/** Decodes a binary, 16-bit, little-endian number
+ * from a stream at the current position.
+ * @param stream An initialized stream structure.
+ * @param n A pointer to a 16-bit unsigned integer
+ * that the number will be decoded to.
+ * @returns The number of bytes read. On success,
+ * this number should be equal to four.
+ * */
+
+uint64_t stream_decode_uint16le(struct stream *stream,
+                                uint16_t *n);
+
 /** Decodes a binary, 32-bit, little-endian number
  * from a stream at the current position.
  * @param stream An initialized stream structure.
@@ -100,6 +112,16 @@ uint64_t stream_decode_uint32le(struct stream *stream,
 
 uint64_t stream_decode_uint64le(struct stream *stream,
                                 uint64_t *n);
+
+/** Encodes a binary, 16-bit, little-endian number
+ * into a stream at the current position.
+ * @param stream An initialized stream structure.
+ * @param n The number to encode.
+ * @returns The number of bytes written.
+ * */
+
+uint64_t stream_encode_uint16le(struct stream *stream,
+                                uint16_t n);
 
 /** Encodes a binary, 32-bit, little-endian number
  * into a stream at the current position.
