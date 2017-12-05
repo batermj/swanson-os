@@ -18,7 +18,15 @@
 
 #include "fs/any.h"
 
-void any_fs_init(struct any_fs *fs) {
+void
+any_fs_init(struct any_fs *fs) {
 	vfs_init(&fs->vfs);
 }
 
+int
+any_fs_detect(struct any_fs *fs,
+              struct stream *stream) {
+	(void) fs;
+	(void) stream;
+	return 0;
+}

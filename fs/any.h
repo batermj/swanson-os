@@ -27,6 +27,19 @@
 extern "C" {
 #endif
 
+/** Identifies which file system
+ * any fs has taken the form of.
+ * */
+
+enum any_fs_type {
+	/** No active file system. */
+	ANY_FS_TYPE_NONE,
+	/** The file system is 'ext4'. */
+	ANY_FS_TYPE_EXT4,
+	/** The file system is 'host'. */
+	ANY_FS_TYPE_HOST
+};
+
 /** A variant of all file systems
  * supported by the Swanson project.
  * */
@@ -34,6 +47,9 @@ extern "C" {
 struct any_fs {
 	/** The virtual file system callbacks. */
 	struct vfs vfs;
+	/** Identifies which file system is
+	 * currently being used. */
+	enum any_fs_type type;
 	/** A union of all the supported file
 	 * systems. */
 	union {
@@ -51,6 +67,19 @@ struct any_fs {
  * */
 
 void any_fs_init(struct any_fs *fs);
+
+/** Detect the file system contained
+ * on a stream.
+ * @param fs The file system stucture
+ * to initialize if a file system is detected.
+ * @param stream The stream to look for
+ * a file system on.
+ * @returns Zero if a file system was detected,
+ * non-zero if no supported file system was found.
+ * */
+
+int any_fs_detect(struct any_fs *fs,
+                  struct stream *stream);
 
 #ifdef __cplusplus
 } /* extern "C" { */
