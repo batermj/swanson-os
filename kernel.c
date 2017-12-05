@@ -124,7 +124,7 @@ static enum kernel_exitcode find_fs(struct kernel *kernel) {
 }
 
 void kernel_init(struct kernel *kernel) {
-	vfs_init(&kernel->vfs);
+	any_fs_init(&kernel->root_fs);
 	memmap_init(&kernel->memmap);
 	kernel->disk_array = NULL;
 	kernel->disk_count = 0;
@@ -134,6 +134,7 @@ void kernel_init(struct kernel *kernel) {
 enum kernel_exitcode kernel_main(struct kernel *kernel) {
 
 	int err;
+	struct vfs *vfs;
 	struct vfs_file init_file;
 	const char *init_path = "/sbin/init";
 
@@ -143,7 +144,9 @@ enum kernel_exitcode kernel_main(struct kernel *kernel) {
 		return err;
 	}
 
-	err = vfs_open_file(&kernel->vfs, &init_file, init_path);
+	vfs = &kernel->root_fs.vfs;
+
+	err = vfs_open_file(vfs, &init_file, init_path);
 	if (err != 0) {
 		debug("Failed to open '%s'.\n", init_path);
 		return KERNEL_FAILURE;

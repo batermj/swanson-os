@@ -23,7 +23,7 @@
 
 #include "memmap.h"
 #include "partition.h"
-#include "fs/vfs.h"
+#include "fs/any.h"
 
 #include <stdint.h>
 
@@ -49,8 +49,6 @@ enum kernel_exitcode {
 struct kernel {
 	/** Implementation data. */
 	void *data;
-	/** The kernel's virtual file system. */
-	struct vfs vfs;
 	/** The kernel's memory map. */
 	struct memmap memmap;
 	/** The array of disks that the
@@ -62,6 +60,8 @@ struct kernel {
 	/** The partition containing the
 	 * operating system. */
 	struct partition root_partition;
+	/** The root file system. */
+	struct any_fs root_fs;
 };
 
 /** Initializes the kernel structure.
