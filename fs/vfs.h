@@ -70,7 +70,22 @@ struct vfs_file {
 struct vfs_dir {
 	/** Implementation data. */
 	void *data;
+	/** Get an entry structure. */
+	int (*get_entry)(void *dir_ptr, struct vfs_entry *vfs_entry);
+	/** Get the number of entries in the directory. */
+	int (*get_entry_count)(void *data, intmax_t *entry_count);
 };
+
+/** Initializes a virtual file
+ * system directory. This function
+ * must be called before this structure
+ * is used elsewhere.
+ * @param dir The directory structure to
+ * initialize.
+ * */
+
+void
+vfs_dir_init(struct vfs_dir *dir);
 
 /** Virtual file system.
  * */

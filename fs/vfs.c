@@ -23,6 +23,11 @@
 #endif
 
 void
+vfs_dir_init(struct vfs_dir *dir) {
+	dir->data = NULL;
+}
+
+void
 vfs_init(struct vfs *vfs) {
 	vfs->data = NULL;
 }
