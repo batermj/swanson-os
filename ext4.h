@@ -209,6 +209,95 @@ int
 ext4_access(struct ext4_accessor *accessor,
             struct stream *stream);
 
+/** An inode in the ext4 file
+ * system. Used to describe information
+ * about a file.
+ * */
+
+struct ext4_inode {
+	/** File mode. */
+	uint16_t mode;
+	/** Owner's user id. */
+	uint16_t owner_uid;
+	/** Lower 32-bit of the size. */
+	uint32_t size_low;
+	/** Last access time, in seconds since epoch. */
+	uint32_t access_time;
+	/** Last change time of the inode, in seconds
+	 * since epoch. */
+	uint32_t change_time;
+	/** Last modification time of the data, in seconds
+	 * since epoch. */
+	uint32_t modification_time;
+	/** Time that the inode was deleted, in seconds
+	 * since epoch. */
+	uint32_t deletion_time;
+	/** Group ID */
+	uint16_t gid;
+	/** Hard link count. */
+	uint16_t link_count;
+	/** Lower 32-bits of the block count. */
+	uint32_t block_count_low;
+	/** Flags for the inode. */
+	uint32_t flags;
+	/** Kernel-specific data */
+	union {
+		/** Linux-specific data */
+		struct {
+			/** Version of the inode. */
+			uint32_t version;
+		} linux1;
+	} osd1;
+	uint8_t block[60];
+	/** File version (for NFS) */
+	uint32_t generation;
+	/** Lower 32-bits of the extended
+	 * attribute block. */
+	uint32_t file_acl_low;
+	/** Upper 32-bit of the size. */
+	uint32_t size_high;
+	/** Obsolete */
+	uint32_t obsolete;
+	/** More kernel-specific data. */
+	union {
+		/** Linux-specific data */
+		struct {
+			/** Upper 16-bits of the block count. */
+			uint16_t block_count_high;
+			/** Upper 16-bits of the extended
+			 * attribute block. */
+			uint16_t file_acl_high;
+			/** Upper 16-bits of the owner ID. */
+			uint16_t owner_uid_high;
+			/** Upper 16-bits of the group ID. */
+			uint16_t gid_high;
+			/** Lower 16-bits of the checksum. */
+			uint16_t checksum_low;
+			/** Reserved. */
+			uint16_t reserved;
+		} linux;
+	} osd2;
+	/** Size of this inode, minus 128. The inode
+	 * is always at least 128 bytes. */
+	uint16_t extra_size;
+	/** The upper 16-bits of the inode checksum. */
+	uint16_t checksum_high;
+	/** Extra change time bits. */
+	uint32_t extra_change_time;
+	/** Extra modification time bits. */
+	uint32_t extra_modification_time;
+	/** Extra access time bits. */
+	uint32_t extra_access_time;
+	/** Creation time, in seconds since epoch. */
+	uint32_t creation_time;
+	/** Extra creation time bits. */
+	uint32_t extra_creation_time;
+	/** Upper 32-bits of the inode version. */
+	uint32_t version_high;
+	/** Project ID. */
+	uint32_t project_id;
+};
+
 /** An ext4 file system.
  * */
 
