@@ -451,6 +451,27 @@ enum gpt_error gpt_add_partition(struct stream *stream,
                                  uint32_t *partition_index,
                                  uint64_t partition_size);
 
+struct gpt_source {
+	/** Implementation data. */
+	void *data;
+	/** Reads the GPT header from source. */
+	int (*read_header)(void *data, struct gpt_header *header);
+	/** Reads the backup GPT header from source. */
+	int (*read_header_backup)(void *data, struct gpt_header *header);
+	/** Writes the GPT header to source. */
+	int (*write_header)(void *data, const struct gpt_header *header);
+	/** Writes the GPT backup header to source. */
+	int (*write_header_backup)(void *data, const struct gpt_header *header);
+	/** Reads a partition entry from the GPT source. */
+	int (*read_partition)(void *data, uint32_t index, struct gpt_partition *partition);
+	/** Reads a partition backup entry from the GPT source. */
+	int (*read_partition_backup)(void *data, uint32_t index, struct gpt_partition *partition);
+	/** Writes a partition entry to the GPT source. */
+	int (*write_partition)(void *data, uint32_t index, const struct gpt_partition *partition);
+	/** Writes a partition backup entry to the GPT source. */
+	int (*write_partition_backup)(void *data, uint32_t index, const struct gpt_partition *partition);
+};
+
 #ifdef __cplusplus
 } /* extern "C" { */
 #endif
