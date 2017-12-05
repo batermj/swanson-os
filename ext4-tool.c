@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ext4.h"
+#include "fs/ext4.h"
 #include "fdisk.h"
 
 /** An ext4 accessor that prints

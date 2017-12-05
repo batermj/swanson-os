@@ -23,7 +23,7 @@
 
 #include "memmap.h"
 #include "partition.h"
-#include "vfs.h"
+#include "fs/vfs.h"
 
 #include <stdint.h>
 

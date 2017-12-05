@@ -275,7 +275,7 @@ struct ext4_inode {
 			uint16_t checksum_low;
 			/** Reserved. */
 			uint16_t reserved;
-		} linux;
+		} linux2;
 	} osd2;
 	/** Size of this inode, minus 128. The inode
 	 * is always at least 128 bytes. */

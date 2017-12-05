@@ -9,11 +9,12 @@ if (MSVC)
 	# 4996 warnings about 'unsafe' libc functions
 	# 4710 warnings about functions like 'printf'
 	#      not being inlined.
-	set (SWANSON_CFLAGS /Wall /WX /wd4820 /wd4996 /wd4710)
+	list (APPEND SWANSON_CFLAGS /Wall /WX /wd4820 /wd4996 /wd4710)
 endif (MSVC)
 
 if (CMAKE_COMPILER_IS_GNUCC)
-	set (SWANSON_CFLAGS -Wall -Wextra -Werror -Wfatal-errors)
+	list (APPEND SWANSON_CFLAGS -Wall -Wextra -Werror -Wfatal-errors)
+	list (APPEND SWANSON_CFLAGS -iquote "${CMAKE_CURRENT_SOURCE_DIR}")
 endif (CMAKE_COMPILER_IS_GNUCC)
 
 # Use these functions for adding targets
@@ -29,8 +30,12 @@ add_swanson_library("swanson"
 	"debug.c"
 	"disk.h"
 	"disk.c"
-	"ext4.h"
-	"ext4.c"
+	"fs/ext4.h"
+	"fs/ext4.c"
+	"fs/host.h"
+	"fs/host.c"
+	"fs/vfs.h"
+	"fs/vfs.c"
 	"fdisk.h"
 	"fdisk.c"
 	"gpt.h"
@@ -46,9 +51,7 @@ add_swanson_library("swanson"
 	"stream.h"
 	"stream.c"
 	"sstream.h"
-	"sstream.c"
-	"vfs.h"
-	"vfs.c")
+	"sstream.c")
 
 add_swanson_executable("gpt-tool" "gpt-tool.c")
 
