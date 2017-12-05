@@ -18,7 +18,33 @@
 
 #include "host.h"
 
-void host_fs_init(struct host_fs *fs) {
+#ifndef NULL
+#define NULL ((void *) 0x00)
+#endif
+
+static enum vfs_error
+host_fs_get_root_dir(void *fs_ptr,
+                     struct vfs_dir *root_dir) {
+
+	struct host_fs *fs;
+
+	fs = (struct host_fs *) fs_ptr;
+
+	*root_dir = fs->root_dir.dir;
+
+	return VFS_ERROR_NONE;
+}
+
+void
+host_dir_init(struct host_dir *dir) {
+	vfs_dir_init(&dir->dir);
+	dir->fs = NULL;
+}
+
+void
+host_fs_init(struct host_fs *fs) {
 	vfs_init(&fs->vfs);
+	fs->vfs.get_root_dir = host_fs_get_root_dir;
 	fs->root_path = "";
+	host_dir_init(&fs->root_dir);
 }

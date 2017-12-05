@@ -25,6 +25,28 @@
 extern "C" {
 #endif
 
+/** A directory on the host file
+ * system.
+ * */
+
+struct host_dir {
+	/** Contains the callbacks to the
+	 * virtual file system directory. */
+	struct vfs_dir dir;
+	/** A pointer to the file
+	 * system. */
+	struct host_fs *fs;
+};
+
+/** Initiializes a host directory
+ * structure.
+ * @param dir The directory structure
+ * to initialize.
+ * */
+
+void
+host_dir_init(struct host_dir *dir);
+
 /** A file system located in the
  * host operating system.
  * */
@@ -37,6 +59,10 @@ struct host_fs {
 	 * that the host file system
 	 * will be located at. */
 	const char *root_path;
+	/** The root directory of the
+	 * host file system.
+	 * */
+	struct host_dir root_dir;
 };
 
 /** Initializes a host file system.
@@ -44,7 +70,8 @@ struct host_fs {
  * file system structure.
  * */
 
-void host_fs_init(struct host_fs *fs);
+void
+host_fs_init(struct host_fs *fs);
 
 #ifdef __cplusplus
 } /* extern "C" { */
