@@ -87,7 +87,8 @@ struct vfs {
  * system structure.
  * */
 
-void vfs_init(struct vfs *vfs);
+void
+vfs_init(struct vfs *vfs);
 
 /** Attempts to open a file from the
  * virtual file system.
@@ -101,9 +102,10 @@ void vfs_init(struct vfs *vfs);
  * a non-zero error code.
  * */
 
-int vfs_open_file(struct vfs *vfs,
-                  struct vfs_file *file,
-                  const char *path);
+int
+vfs_open_file(struct vfs *vfs,
+              struct vfs_file *file,
+              const char *path);
 
 #ifdef __cplusplus
 } /* extern "C" { */

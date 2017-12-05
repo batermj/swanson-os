@@ -22,12 +22,14 @@
 #define NULL ((void *) 0x00)
 #endif
 
-void vfs_init(struct vfs *vfs) {
+void
+vfs_init(struct vfs *vfs) {
 	vfs->data = NULL;
 }
 
-int vfs_open_file(struct vfs *vfs,
-                  struct vfs_file *file,
+int
+vfs_open_file(struct vfs *vfs,
+              struct vfs_file *file,
                   const char *path) {
 	(void) vfs;
 	(void) file;
