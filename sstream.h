@@ -51,7 +51,18 @@ struct sstream {
  * @param sstream An uninitialized string stream.
  * */
 
-void sstream_init(struct sstream *sstream);
+void
+sstream_init(struct sstream *sstream);
+
+/** Convert a string stream to
+ * a base stream structure.
+ * @param sstream An initialized string stream.
+ * @returns A base stream structure. This
+ * function does not return a null pointer.
+ * */
+
+struct stream *
+sstream_to_stream(struct sstream *sstream);
 
 /** Assigns the buffer to use for
  * the string data.
@@ -62,9 +73,10 @@ void sstream_init(struct sstream *sstream);
  * @param buf_size The size of the buffer.
  * */
 
-void sstream_setbuf(struct sstream *sstream,
-                    void *buf,
-                    uint64_t buf_size);
+void
+sstream_setbuf(struct sstream *sstream,
+               void *buf,
+               uint64_t buf_size);
 
 #ifdef __cplusplus
 } /* extern "C" { */

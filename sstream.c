@@ -24,7 +24,8 @@
 #define NULL ((void *) 0x00)
 #endif
 
-static int sstream_getpos(void *sstream_ptr, uint64_t *pos) {
+static int
+sstream_getpos(void *sstream_ptr, uint64_t *pos) {
 
 	struct sstream *sstream = (struct sstream *) sstream_ptr;
 
@@ -33,7 +34,8 @@ static int sstream_getpos(void *sstream_ptr, uint64_t *pos) {
 	return 0;
 }
 
-static int sstream_setpos(void *sstream_ptr, uint64_t pos) {
+static int
+sstream_setpos(void *sstream_ptr, uint64_t pos) {
 
 	struct sstream *sstream = (struct sstream *) sstream_ptr;
 
@@ -45,9 +47,10 @@ static int sstream_setpos(void *sstream_ptr, uint64_t pos) {
 	return 0;
 }
 
-static uint64_t sstream_read(void *sstream_ptr,
-                             void *buf,
-                             uint64_t buf_size) {
+static uint64_t
+sstream_read(void *sstream_ptr,
+             void *buf,
+             uint64_t buf_size) {
 
 	unsigned char *dst;
 	const unsigned char *src;
@@ -76,9 +79,10 @@ static uint64_t sstream_read(void *sstream_ptr,
 	return buf_size;
 }
 
-static uint64_t sstream_write(void *sstream_ptr,
-                              const void *buf,
-                              uint64_t buf_size) {
+static uint64_t
+sstream_write(void *sstream_ptr,
+              const void *buf,
+              uint64_t buf_size) {
 
 	unsigned char *dst;
 	const unsigned char *src;
@@ -107,8 +111,9 @@ static uint64_t sstream_write(void *sstream_ptr,
 	return buf_size;
 }
 
-static int sstream_getsize(void *sstream_ptr,
-                           uint64_t *size) {
+static int
+sstream_getsize(void *sstream_ptr,
+                uint64_t *size) {
 
 	struct sstream *sstream = (struct sstream *) sstream_ptr;
 
@@ -118,7 +123,8 @@ static int sstream_getsize(void *sstream_ptr,
 	return 0;
 }
 
-void sstream_init(struct sstream *sstream) {
+void
+sstream_init(struct sstream *sstream) {
 	stream_init(&sstream->stream);
 	sstream->stream.data = sstream;
 	sstream->stream.read = sstream_read;
@@ -131,9 +137,15 @@ void sstream_init(struct sstream *sstream) {
 	sstream->buf_pos = 0;
 }
 
-void sstream_setbuf(struct sstream *sstream,
-                    void *buf,
-                    uint64_t buf_len) {
+struct stream *
+sstream_to_stream(struct sstream *sstream) {
+	return &sstream->stream;
+}
+
+void
+sstream_setbuf(struct sstream *sstream,
+               void *buf,
+               uint64_t buf_len) {
 	sstream->buf = buf;
 	sstream->buf_len = buf_len;
 	sstream->buf_pos = 0;
