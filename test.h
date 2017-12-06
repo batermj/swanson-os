@@ -25,6 +25,19 @@
 extern "C" {
 #endif
 
+#ifdef ASSERT_EQ
+#undef ASSERT_EQ
+#endif
+
+/** Tests if to values are equal.
+ * */
+
+#define ASSERT_EQ(a,b) \
+	if (a != b) { \
+		fprintf(options->error_log, "%s:%u assertion failed.\n", __FILE__, __LINE__); \
+		return TEST_FAILURE; \
+	}
+
 /** Indicates whether or not
  * the test passed.
  * */

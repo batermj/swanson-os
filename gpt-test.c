@@ -26,6 +26,7 @@
 
 struct mock_source {
 	struct gpt_source source;
+	const struct test_options *options;
 };
 
 static int
@@ -33,11 +34,12 @@ mock_write_header(void *source_ptr,
                   const struct gpt_header *header) {
 
 	struct mock_source *source;
+	const struct test_options *options;
 
 	source = (struct mock_source *) source_ptr;
+	options = source->options;
 
-	(void) source;
-	(void) header;
+	ASSERT_EQ(header->partition_count, 0);
 
 	return 0;
 }
@@ -47,11 +49,12 @@ mock_write_header_backup(void *source_ptr,
                          const struct gpt_header *header) {
 
 	struct mock_source *source;
+	const struct test_options *options;
 
 	source = (struct mock_source *) source_ptr;
+	options = source->options;
 
-	(void) source;
-	(void) header;
+	ASSERT_EQ(header->partition_count, 1);
 
 	return 0;
 }
@@ -73,9 +76,10 @@ test_format(const struct test_options *options) {
 	(void) options;
 
 	mock_source_init(&source);
+	source.options = options;
 
 	error = gpt_source_format(&source.source);
-	assert(error == GPT_ERROR_NONE);
+	ASSERT_EQ(error, GPT_ERROR_NONE);
 
 	return TEST_SUCCESS;
 }

@@ -50,7 +50,7 @@ test_run(const struct test_options *options) {
 	enum test_exitcode exitcode;
 
 	exitcode = gpt_test(options);
-	if (exitcode != TEST_FAILURE)
+	if (exitcode == TEST_FAILURE)
 		return exitcode;
 
 	return TEST_SUCCESS;
