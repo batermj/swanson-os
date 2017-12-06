@@ -53,7 +53,19 @@ struct stream {
  * stream structure.
  * */
 
-void stream_init(struct stream *stream);
+void
+stream_init(struct stream *stream);
+
+/** Copy one stream to another.
+ * @param dst The stream to initialize
+ * with the copy.
+ * @param src The stream that will
+ * be copied.
+ * */
+
+void
+stream_copy(struct stream *dst,
+            struct stream *src);
 
 /** Read from a stream.
  * @param stream The stream to read from.
@@ -62,9 +74,10 @@ void stream_init(struct stream *stream);
  * @returns The number of bytes read.
  * */
 
-uint64_t stream_read(struct stream *stream,
-                     void *buf,
-                     uint64_t buf_size);
+uint64_t
+stream_read(struct stream *stream,
+            void *buf,
+            uint64_t buf_size);
 
 /** Write to a stream.
  * @param stream The stream to write to.
@@ -73,9 +86,10 @@ uint64_t stream_read(struct stream *stream,
  * @returns the number of bytes written.
  * */
 
-uint64_t stream_write(struct stream *stream,
-                      const void *buf,
-                      uint64_t buf_size);
+uint64_t
+stream_write(struct stream *stream,
+             const void *buf,
+             uint64_t buf_size);
 
 /** Decodes a binary, 16-bit, little-endian number
  * from a stream at the current position.
@@ -86,8 +100,9 @@ uint64_t stream_write(struct stream *stream,
  * this number should be equal to four.
  * */
 
-uint64_t stream_decode_uint16le(struct stream *stream,
-                                uint16_t *n);
+uint64_t
+stream_decode_uint16le(struct stream *stream,
+                       uint16_t *n);
 
 /** Decodes a binary, 32-bit, little-endian number
  * from a stream at the current position.
@@ -98,8 +113,9 @@ uint64_t stream_decode_uint16le(struct stream *stream,
  * this number should be equal to four.
  * */
 
-uint64_t stream_decode_uint32le(struct stream *stream,
-                                uint32_t *n);
+uint64_t
+stream_decode_uint32le(struct stream *stream,
+                       uint32_t *n);
 
 /** Decodes a binary, 64-bit, little-endian number
  * from a stream at the current position.
@@ -110,8 +126,9 @@ uint64_t stream_decode_uint32le(struct stream *stream,
  * this number should be equal to eight.
  * */
 
-uint64_t stream_decode_uint64le(struct stream *stream,
-                                uint64_t *n);
+uint64_t
+stream_decode_uint64le(struct stream *stream,
+                       uint64_t *n);
 
 /** Encodes a binary, 16-bit, little-endian number
  * into a stream at the current position.
@@ -120,8 +137,9 @@ uint64_t stream_decode_uint64le(struct stream *stream,
  * @returns The number of bytes written.
  * */
 
-uint64_t stream_encode_uint16le(struct stream *stream,
-                                uint16_t n);
+uint64_t
+stream_encode_uint16le(struct stream *stream,
+                       uint16_t n);
 
 /** Encodes a binary, 32-bit, little-endian number
  * into a stream at the current position.
@@ -130,8 +148,9 @@ uint64_t stream_encode_uint16le(struct stream *stream,
  * @returns The number of bytes written.
  * */
 
-uint64_t stream_encode_uint32le(struct stream *stream,
-                                uint32_t n);
+uint64_t
+stream_encode_uint32le(struct stream *stream,
+                       uint32_t n);
 
 /** Encodes a binary, 64-bit, little-endian number
  * into a stream at the current position.
@@ -140,8 +159,9 @@ uint64_t stream_encode_uint32le(struct stream *stream,
  * @returns The number of bytes written.
  * */
 
-uint64_t stream_encode_uint64le(struct stream *stream,
-                                uint64_t n);
+uint64_t
+stream_encode_uint64le(struct stream *stream,
+                       uint64_t n);
 
 /** Get the stream position.
  * @param stream The stream to get the position of.
@@ -149,8 +169,9 @@ uint64_t stream_encode_uint64le(struct stream *stream,
  * @returns Zero on success, non-zero otherwise.
  * */
 
-int stream_getpos(struct stream *stream,
-                  uint64_t *offset);
+int
+stream_getpos(struct stream *stream,
+              uint64_t *offset);
 
 /** Set the stream position.
  * @param stream The stream to set the position of.
@@ -158,8 +179,9 @@ int stream_getpos(struct stream *stream,
  * @returns Zero on success, non-zero otherwise.
  * */
 
-int stream_setpos(struct stream *stream,
-                  uint64_t offset);
+int
+stream_setpos(struct stream *stream,
+              uint64_t offset);
 
 /** Get the size of the stream. In other
  * words, get the number of bytes occupied
@@ -171,8 +193,9 @@ int stream_setpos(struct stream *stream,
  * code otherwise.
  * */
 
-int stream_getsize(struct stream *stream,
-                   uint64_t *size);
+int
+stream_getsize(struct stream *stream,
+               uint64_t *size);
 
 #ifdef __cplusplus
 } /* extern "C" { */

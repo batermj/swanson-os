@@ -20,7 +20,8 @@
 
 #include "null.h"
 
-void stream_init(struct stream *stream) {
+void
+stream_init(struct stream *stream) {
 	stream->data = NULL;
 	stream->getpos = NULL;
 	stream->setpos = NULL;
@@ -29,42 +30,58 @@ void stream_init(struct stream *stream) {
 	stream->getsize = NULL;
 }
 
-int stream_getpos(struct stream *stream,
-                  uint64_t *pos) {
+void
+stream_copy(struct stream *dst,
+            struct stream *src) {
+	dst->data = src->data;
+	dst->getpos = src->getpos;
+	dst->setpos = src->setpos;
+	dst->read = src->read;
+	dst->write = src->write;
+	dst->getsize = src->getsize;
+}
+
+int
+stream_getpos(struct stream *stream,
+              uint64_t *pos) {
 	if (stream->getpos == NULL)
 		return -1;
 	else
 		return stream->getpos(stream->data, pos);
 }
 
-int stream_setpos(struct stream *stream,
-                  uint64_t pos) {
+int
+stream_setpos(struct stream *stream,
+              uint64_t pos) {
 	if (stream->setpos == NULL)
 		return -1;
 	else
 		return stream->setpos(stream->data, pos);
 }
 
-uint64_t stream_read(struct stream *stream,
-                     void *buf,
-                     uint64_t buf_size) {
+uint64_t
+stream_read(struct stream *stream,
+            void *buf,
+            uint64_t buf_size) {
 	if (stream->read == NULL)
 		return 0;
 	else
 		return stream->read(stream->data, buf, buf_size);
 }
 
-uint64_t stream_write(struct stream *stream,
-                      const void *buf,
-                      uint64_t buf_size) {
+uint64_t
+stream_write(struct stream *stream,
+             const void *buf,
+             uint64_t buf_size) {
 	if (stream->write == NULL)
 		return 0;
 	else
 		return stream->write(stream->data, buf, buf_size);
 }
 
-uint64_t stream_decode_uint16le(struct stream *stream,
-                                uint16_t *n_ptr) {
+uint64_t
+stream_decode_uint16le(struct stream *stream,
+                       uint16_t *n_ptr) {
 
 	uint8_t buf[2];
 	uint64_t read_count;
@@ -84,8 +101,9 @@ uint64_t stream_decode_uint16le(struct stream *stream,
 	return read_count;
 }
 
-uint64_t stream_decode_uint32le(struct stream *stream,
-                                uint32_t *n_ptr) {
+uint64_t
+stream_decode_uint32le(struct stream *stream,
+                       uint32_t *n_ptr) {
 
 	uint8_t buf[4];
 	uint64_t read_count;
@@ -107,8 +125,9 @@ uint64_t stream_decode_uint32le(struct stream *stream,
 	return read_count;
 }
 
-uint64_t stream_decode_uint64le(struct stream *stream,
-                                uint64_t *n_ptr) {
+uint64_t
+stream_decode_uint64le(struct stream *stream,
+                       uint64_t *n_ptr) {
 
 	uint8_t buf[8];
 	uint64_t read_count;
@@ -138,16 +157,18 @@ uint64_t stream_decode_uint64le(struct stream *stream,
 	return read_count;
 }
 
-uint64_t stream_encode_uint16le(struct stream *stream,
-                                uint16_t n) {
+uint64_t
+stream_encode_uint16le(struct stream *stream,
+                       uint16_t n) {
 	uint8_t buf[2];
 	buf[0] = (n >> 0x00) & 0xff;
 	buf[1] = (n >> 0x08) & 0xff;
 	return stream_write(stream, buf, 2);
 }
 
-uint64_t stream_encode_uint32le(struct stream *stream,
-                                uint32_t n) {
+uint64_t
+stream_encode_uint32le(struct stream *stream,
+                       uint32_t n) {
 
 	uint8_t buf[4];
 
@@ -159,8 +180,9 @@ uint64_t stream_encode_uint32le(struct stream *stream,
 	return stream_write(stream, buf, 4);
 }
 
-uint64_t stream_encode_uint64le(struct stream *stream,
-                                uint64_t n) {
+uint64_t
+stream_encode_uint64le(struct stream *stream,
+                       uint64_t n) {
 
 	uint8_t buf[8];
 
@@ -176,8 +198,9 @@ uint64_t stream_encode_uint64le(struct stream *stream,
 	return stream_write(stream, buf, 8);
 }
 
-int stream_getsize(struct stream *stream,
-                   uint64_t *size) {
+int
+stream_getsize(struct stream *stream,
+               uint64_t *size) {
 	if (stream->getsize == NULL)
 		return -1;
 	else
