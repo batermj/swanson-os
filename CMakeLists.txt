@@ -4,6 +4,10 @@ project("Swanson OS" C)
 
 option(SWANSON_DOCUMENTATION "Build the documentation with Doxygen." ON)
 
+if ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+	set (SWANSON_WITH_CLANG ON)
+endif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+
 if (MSVC)
 	# 4820 warnings about added structure padding
 	# 4996 warnings about 'unsafe' libc functions
@@ -12,10 +16,10 @@ if (MSVC)
 	list (APPEND SWANSON_CFLAGS /Wall /WX /wd4820 /wd4996 /wd4710)
 endif (MSVC)
 
-if (CMAKE_COMPILER_IS_GNUCC)
+if (CMAKE_COMPILER_IS_GNUCC OR SWANSON_WITH_CLANG)
 	list (APPEND SWANSON_CFLAGS -Wall -Wextra -Werror -Wfatal-errors)
 	list (APPEND SWANSON_CFLAGS -iquote "${CMAKE_CURRENT_SOURCE_DIR}")
-endif (CMAKE_COMPILER_IS_GNUCC)
+endif (CMAKE_COMPILER_IS_GNUCC OR SWANSON_WITH_CLANG)
 
 # Use these functions for adding targets
 # in this build script.
