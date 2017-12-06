@@ -16,20 +16,17 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SWANSON_GPT_TEST_H
-#define SWANSON_GPT_TEST_H
+#ifndef SWANSON_MEMMAP_TEST_H
+#define SWANSON_MEMMAP_TEST_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/** Run the GPT tests.
- * */
-
-TEST_F(gpt_test);
+TEST_F(test_alloc);
 
 #ifdef __cplusplus
 } /* extern "C" { */
 #endif
 
-#endif /* SWANSON_GPT_TEST_H */
+#endif /* SWANSON_MEMMAP_TEST_H */

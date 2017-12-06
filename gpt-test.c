@@ -26,20 +26,14 @@
 
 struct mock_source {
 	struct gpt_source source;
-	const struct test_options *options;
 };
 
 static int
 mock_write_header(void *source_ptr,
                   const struct gpt_header *header) {
 
-	struct mock_source *source;
-	const struct test_options *options;
-
-	source = (struct mock_source *) source_ptr;
-	options = source->options;
-
-	ASSERT_EQ(header->partition_count, 0);
+	(void) source_ptr;
+	(void) header;
 
 	return 0;
 }
@@ -48,13 +42,8 @@ static int
 mock_write_header_backup(void *source_ptr,
                          const struct gpt_header *header) {
 
-	struct mock_source *source;
-	const struct test_options *options;
-
-	source = (struct mock_source *) source_ptr;
-	options = source->options;
-
-	ASSERT_EQ(header->partition_count, 1);
+	(void) source_ptr;
+	(void) header;
 
 	return 0;
 }
@@ -67,16 +56,12 @@ mock_source_init(struct mock_source *source) {
 	source->source.write_header_backup = mock_write_header_backup;
 }
 
-static enum test_exitcode
-test_format(const struct test_options *options) {
+TEST_F(test_format) {
 
 	enum gpt_error error;
 	struct mock_source source;
 
-	(void) options;
-
 	mock_source_init(&source);
-	source.options = options;
 
 	error = gpt_source_format(&source.source);
 	ASSERT_EQ(error, GPT_ERROR_NONE);
@@ -84,14 +69,12 @@ test_format(const struct test_options *options) {
 	return TEST_SUCCESS;
 }
 
-enum test_exitcode
-gpt_test(const struct test_options *options) {
+TEST_F(gpt_test) {
 
 	enum test_exitcode exitcode;
 
-	exitcode = test_format(options);
-	if (exitcode == TEST_FAILURE)
-		return exitcode;
+	exitcode = test_format(driver);
+	ASSERT_EQ(exitcode, TEST_SUCCESS);
 
 	return TEST_SUCCESS;
 }

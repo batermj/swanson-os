@@ -79,6 +79,8 @@ install(TARGETS "swanson" "swanson-pc"
 add_swanson_test("swanson-test"
 	"test.h"
 	"test.c"
+	"memmap-test.h"
+	"memmap-test.c"
 	"gpt-test.h"
 	"gpt-test.c")
 

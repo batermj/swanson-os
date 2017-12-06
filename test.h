@@ -25,19 +25,6 @@
 extern "C" {
 #endif
 
-#ifdef ASSERT_EQ
-#undef ASSERT_EQ
-#endif
-
-/** Tests if to values are equal.
- * */
-
-#define ASSERT_EQ(a,b) \
-	if (a != b) { \
-		fprintf(options->error_log, "%s:%u assertion failed.\n", __FILE__, __LINE__); \
-		return TEST_FAILURE; \
-	}
-
 /** Indicates whether or not
  * the test passed.
  * */
@@ -49,28 +36,73 @@ enum test_exitcode {
 	TEST_FAILURE
 };
 
-struct test_options {
-	/** File for output logging. */
-	FILE *output_log;
-	/** File for error logging. */
-	FILE *error_log;
+/** Runs the tests.
+ * Used for logging and displaying
+ * test results.
+ * */
+
+struct test_driver {
+	/** The file to write the errors to. */
+	FILE *errlog;
 };
 
-/** Initializes the test options
- * to their default values.
- * */
+void
+test_driver_init(struct test_driver *driver);
 
 void
-test_options_init(struct test_options *options);
+test_driver_log_error(struct test_driver *driver,
+                      const char *fmt, ...);
 
-/** Runs all tests.
- * @param options An options structure
- * that gets passed to all tests.
- * @returns See @ref test_exitcode.
+void
+test_driver_dump(struct test_driver *driver,
+                 const char *variable_name,
+                 const void *buf,
+                 const void *buf_size);
+
+/** A unit test.
+ * This will typically be
+ * useful when declared as
+ * an array.
  * */
 
-enum test_exitcode
-test_run(const struct test_options *options);
+struct test {
+	/** The name of the unit test. */
+	const char *name;
+	/** The callback function. This
+	 * will run the unit test. */
+	enum test_exitcode (*run)(struct test_driver *driver);
+};
+
+/** Tests if to values are equal.
+ * Must be called in a function defined
+ * with @ref TEST_F.
+ * */
+
+#define ASSERT_EQ(a,b) \
+	if (a != b) { \
+		fprintf(driver->errlog, "%s:%u assertion failed.\n", __FILE__, __LINE__); \
+		return TEST_FAILURE; \
+	}
+
+/** Defines a test function.
+ * A test function is a function used
+ * for running a unit test.
+ * */
+
+#define TEST_F(function) \
+	enum test_exitcode \
+	function(struct test_driver *driver)
+
+/** Used as a convient way to
+ * add a @ref test structure to
+ * a test array when the name of
+ * the test and the name of the
+ * function that runs it are the
+ * same.
+ * */
+
+#define UNIT_TEST(function) \
+	{ #function, function }
 
 #ifdef __cplusplus
 } /* extern "C" { */
