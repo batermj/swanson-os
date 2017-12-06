@@ -501,3 +501,33 @@ enum gpt_error gpt_add_partition(struct stream *stream,
 	return GPT_ERROR_NONE;
 }
 
+void gpt_source_init(struct gpt_source *source) {
+	source->data = NULL;
+	source->read_header = NULL;
+	source->read_header_backup = NULL;
+	source->write_header = NULL;
+	source->write_header_backup = NULL;
+	source->read_partition = NULL;
+	source->read_partition_backup = NULL;
+	source->write_partition = NULL;
+	source->write_partition_backup = NULL;
+}
+
+enum gpt_error gpt_source_format(struct gpt_source *source) {
+
+	enum gpt_error error;
+	struct gpt_header header;
+
+	gpt_header_init(&header);
+
+	error = gpt_source_write_header(source, &header);
+	if (error != GPT_ERROR_NONE)
+		return error;
+
+	error = gpt_source_write_header_backup(source, &header);
+	if (error != GPT_ERROR_NONE)
+		return error;
+
+	return GPT_ERROR_NONE;
+}
+

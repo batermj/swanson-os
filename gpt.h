@@ -472,6 +472,36 @@ struct gpt_source {
 	int (*write_partition_backup)(void *data, uint32_t index, const struct gpt_partition *partition);
 };
 
+/** Initializes a GPT source structure.
+ * */
+
+void gpt_source_init(struct gpt_source *source);
+
+/** Writes the primary GPT header to the source.
+ * @param source An initialized GPT source structure.
+ * @param header The header to write.
+ * @returns See @ref gpt_error.
+ * */
+
+enum gpt_error gpt_source_write_header(struct gpt_source *source,
+                                       const struct gpt_header *header);
+
+/** Writes the backup GPT header to the source.
+ * @param source An initialized GPT source structure.
+ * @param header The header to write.
+ * @returns See @ref gpt_error.
+ * */
+
+enum gpt_error gpt_source_write_header_backup(struct gpt_source *source,
+                                              const struct gpt_header *header);
+
+/** Format a GPT source.
+ * @param source An initialized GPT source structure.
+ * @returns See @ref gpt_error.
+ * */
+
+enum gpt_error gpt_source_format(struct gpt_source *source);
+
 #ifdef __cplusplus
 } /* extern "C" { */
 #endif
