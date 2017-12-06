@@ -72,8 +72,11 @@ install(TARGETS "swanson" "swanson-pc"
 	ARCHIVE DESTINATION "lib"
 	LIBRARY DESTINATION "lib")
 
-# add_unit_test("memmap-test" "memmap-test.c")
-add_swanson_test("gpt-test" "gpt-test.c")
+add_swanson_test("swanson-test"
+	"test.h"
+	"test.c"
+	"gpt-test.h"
+	"gpt-test.c")
 
 enable_testing()
 

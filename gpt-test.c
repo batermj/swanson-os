@@ -22,76 +22,72 @@
 
 #include "gpt.h"
 #include "sstream.h"
+#include "test.h"
 
-void test_format(void) {
+struct mock_source {
+	struct gpt_source source;
+};
 
-	char *buf;
-	char *ptr;
-	enum gpt_error error;
-	struct sstream sstream;
+static int
+mock_write_header(void *source_ptr,
+                  const struct gpt_header *header) {
 
-	buf = malloc(GPT_MINIMUM_DISK_SIZE);
-	assert(buf != NULL);
+	struct mock_source *source;
 
-	memset(buf, 0, GPT_MINIMUM_DISK_SIZE);
+	source = (struct mock_source *) source_ptr;
 
-	sstream_init(&sstream);
+	(void) source;
+	(void) header;
 
-	sstream_setbuf(&sstream, buf, GPT_MINIMUM_DISK_SIZE);
-
-	error = gpt_format(&sstream.stream);
-	assert(error == GPT_ERROR_NONE);
-
-	/* move pointer to start of
-	 * GPT header */
-	ptr = &buf[GPT_START_OFFSET];
-	/* signature */
-	assert(ptr[0] == 'E');
-	assert(ptr[1] == 'F');
-	assert(ptr[2] == 'I');
-	assert(ptr[3] == ' ');
-	assert(ptr[4] == 'P');
-	assert(ptr[5] == 'A');
-	assert(ptr[6] == 'R');
-	assert(ptr[7] == 'T');
-	/* version */
-	assert(ptr[8] == 0x00);
-	assert(ptr[9] == 0x00);
-	assert(ptr[10] == 0x01);
-	assert(ptr[11] == 0x00);
-	/* header size */
-	assert(ptr[12] == 0x5c);
-	assert(ptr[13] == 0x00);
-	assert(ptr[14] == 0x00);
-	assert(ptr[15] == 0x00);
-	/* TODO : header crc32 */
-	/* reserved */
-	assert(ptr[20] == 0x00);
-	assert(ptr[21] == 0x00);
-	assert(ptr[22] == 0x00);
-	assert(ptr[23] == 0x00);
-	/* current LBA */
-	assert(ptr[24] == 0x01);
-	assert(ptr[25] == 0x00);
-	assert(ptr[26] == 0x00);
-	assert(ptr[27] == 0x00);
-	assert(ptr[28] == 0x00);
-	assert(ptr[29] == 0x00);
-	assert(ptr[30] == 0x00);
-	assert(ptr[31] == 0x00);
-	/* backup LBA (should be 0x4400) */
-	assert(ptr[32] == 0x00);
-	assert(ptr[33] == 0x44);
-	assert(ptr[34] == 0x00);
-	assert(ptr[35] == 0x00);
-	assert(ptr[36] == 0x00);
-	assert(ptr[37] == 0x00);
-	assert(ptr[38] == 0x00);
-	assert(ptr[39] == 0x00);
-	/* TODO : the rest */
+	return 0;
 }
 
-int main(void) {
-	test_format();
-	return EXIT_SUCCESS;
+static int
+mock_write_header_backup(void *source_ptr,
+                         const struct gpt_header *header) {
+
+	struct mock_source *source;
+
+	source = (struct mock_source *) source_ptr;
+
+	(void) source;
+	(void) header;
+
+	return 0;
+}
+
+static void
+mock_source_init(struct mock_source *source) {
+	gpt_source_init(&source->source);
+	source->source.data = source;
+	source->source.write_header = mock_write_header;
+	source->source.write_header_backup = mock_write_header_backup;
+}
+
+static enum test_exitcode
+test_format(const struct test_options *options) {
+
+	enum gpt_error error;
+	struct mock_source source;
+
+	(void) options;
+
+	mock_source_init(&source);
+
+	error = gpt_source_format(&source.source);
+	assert(error == GPT_ERROR_NONE);
+
+	return TEST_SUCCESS;
+}
+
+enum test_exitcode
+gpt_test(const struct test_options *options) {
+
+	enum test_exitcode exitcode;
+
+	exitcode = test_format(options);
+	if (exitcode == TEST_FAILURE)
+		return exitcode;
+
+	return TEST_SUCCESS;
 }
