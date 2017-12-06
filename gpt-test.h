@@ -41,6 +41,13 @@ gpt_test_add_partition(void);
 void
 gpt_test_add_format(void);
 
+/* TODO:
+ *  - gpt_test_write_header
+ *  - gpt_test_read_header
+ *  - gpt_test_write_partition
+ *  - gpt_test_read_partition
+ */
+
 #ifdef __cplusplus
 } /* extern "C" { */
 #endif
