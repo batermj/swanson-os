@@ -45,7 +45,8 @@ const struct guid gpt_guid_root = {
 	}
 };
 
-const char *gpt_strerror(enum gpt_error error) {
+const char *
+gpt_strerror(enum gpt_error error) {
 	if (error == GPT_ERROR_BAD_STREAM)
 		return "Invalid Stream";
 	else if (error == GPT_ERROR_BAD_SIGNATURE)
@@ -62,7 +63,8 @@ const char *gpt_strerror(enum gpt_error error) {
 		return "Unknown Error";
 }
 
-void gpt_header_init(struct gpt_header *header) {
+void
+gpt_header_init(struct gpt_header *header) {
 	header->signature[0] = 'E';
 	header->signature[1] = 'F';
 	header->signature[2] = 'I';
@@ -86,8 +88,9 @@ void gpt_header_init(struct gpt_header *header) {
 	header->partition_array_crc32 = 0;
 }
 
-enum gpt_error gpt_header_read(struct stream *stream,
-                               struct gpt_header *header) {
+enum gpt_error
+gpt_header_read(struct stream *stream,
+                struct gpt_header *header) {
 
 	uint64_t read_count;
 	uint32_t header_crc32;
@@ -139,8 +142,9 @@ enum gpt_error gpt_header_read(struct stream *stream,
 	return GPT_ERROR_NONE;
 }
 
-enum gpt_error gpt_header_write(struct stream *stream,
-                                const struct gpt_header *header) {
+enum gpt_error
+gpt_header_write(struct stream *stream,
+                 const struct gpt_header *header) {
 
 	int err;
 	char buf[512];
@@ -196,7 +200,8 @@ enum gpt_error gpt_header_write(struct stream *stream,
 	return GPT_ERROR_NONE;
 }
 
-void gpt_partition_init(struct gpt_partition *partition) {
+void
+gpt_partition_init(struct gpt_partition *partition) {
 	/** TODO : these GUIDs should be set elsewhere. */
 	guid_copy(&partition->partition_type_guid, &gpt_guid_swanson);
 	guid_copy(&partition->partition_guid, &gpt_guid_root);
@@ -206,8 +211,9 @@ void gpt_partition_init(struct gpt_partition *partition) {
 	gpt_partition_set_name(partition, "");
 }
 
-enum gpt_error gpt_partition_read(struct stream *stream,
-                                  struct gpt_partition *partition) {
+enum gpt_error
+gpt_partition_read(struct stream *stream,
+                   struct gpt_partition *partition) {
 
 	uint64_t read_count;
 
@@ -225,8 +231,9 @@ enum gpt_error gpt_partition_read(struct stream *stream,
 	return GPT_ERROR_NONE;
 }
 
-void gpt_partition_set_name(struct gpt_partition *partition,
-                            const char *name) {
+void
+gpt_partition_set_name(struct gpt_partition *partition,
+                       const char *name) {
 	unsigned int i;
 	unsigned int i_max;
 	i_max = sizeof(partition->name);
@@ -238,13 +245,15 @@ void gpt_partition_set_name(struct gpt_partition *partition,
 		partition->name[i++] = 0;
 }
 
-void gpt_partition_set_lba(struct gpt_partition *partition,
-                           uint64_t lba) {
+void
+gpt_partition_set_lba(struct gpt_partition *partition,
+                      uint64_t lba) {
 	partition->first_lba = lba;
 }
 
-void gpt_partition_set_size(struct gpt_partition *partition,
-                            uint64_t size) {
+void
+gpt_partition_set_size(struct gpt_partition *partition,
+                       uint64_t size) {
 
 	/* should be at least one byte */
 	if (size <= 0)
@@ -253,8 +262,9 @@ void gpt_partition_set_size(struct gpt_partition *partition,
 	partition->last_lba = partition->first_lba + ((size - 1) / 512);
 }
 
-enum gpt_error gpt_partition_write(struct stream *stream,
-                                   const struct gpt_partition *partition) {
+enum gpt_error
+gpt_partition_write(struct stream *stream,
+                    const struct gpt_partition *partition) {
 
 	uint64_t write_count;
 
@@ -272,7 +282,8 @@ enum gpt_error gpt_partition_write(struct stream *stream,
 	return GPT_ERROR_NONE;
 }
 
-enum gpt_error gpt_format(struct stream *stream) {
+enum gpt_error
+gpt_format(struct stream *stream) {
 
 	int err;
 	uint64_t stream_size;
@@ -332,7 +343,8 @@ enum gpt_error gpt_format(struct stream *stream) {
 	return GPT_ERROR_NONE;
 }
 
-void gpt_accessor_init(struct gpt_accessor *accessor) {
+void
+gpt_accessor_init(struct gpt_accessor *accessor) {
 	accessor->data = NULL;
 	accessor->header = NULL;
 	accessor->backup_header = NULL;
@@ -341,8 +353,9 @@ void gpt_accessor_init(struct gpt_accessor *accessor) {
 	accessor->error = NULL;
 }
 
-int gpt_access(struct stream *stream,
-               struct gpt_accessor *accessor) {
+int
+gpt_access(struct stream *stream,
+           struct gpt_accessor *accessor) {
 
 	int err;
 	struct gpt_header header;
@@ -399,9 +412,10 @@ int gpt_access(struct stream *stream,
 	return 0;
 }
 
-enum gpt_error gpt_find_space(struct stream *stream,
-                              uint64_t size,
-                              uint64_t *lba) {
+enum gpt_error
+gpt_find_space(struct stream *stream,
+               uint64_t size,
+               uint64_t *lba) {
 
 	int err;
 	uint64_t lba_count;
@@ -441,9 +455,10 @@ enum gpt_error gpt_find_space(struct stream *stream,
 	return GPT_ERROR_NONE;
 }
 
-enum gpt_error gpt_add_partition(struct stream *stream,
-                                 uint32_t *partition_index_ptr,
-                                 uint64_t partition_size) {
+enum gpt_error
+gpt_add_partition(struct stream *stream,
+                  uint32_t *partition_index_ptr,
+                  uint64_t partition_size) {
 
 	int err;
 	struct gpt_header header;
@@ -501,7 +516,8 @@ enum gpt_error gpt_add_partition(struct stream *stream,
 	return GPT_ERROR_NONE;
 }
 
-void gpt_source_init(struct gpt_source *source) {
+void
+gpt_source_init(struct gpt_source *source) {
 	source->data = NULL;
 	source->read_header = NULL;
 	source->read_header_backup = NULL;
@@ -513,7 +529,8 @@ void gpt_source_init(struct gpt_source *source) {
 	source->write_partition_backup = NULL;
 }
 
-enum gpt_error gpt_source_format(struct gpt_source *source) {
+enum gpt_error
+gpt_source_format(struct gpt_source *source) {
 
 	enum gpt_error error;
 	struct gpt_header header;

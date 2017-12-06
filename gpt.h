@@ -161,7 +161,8 @@ enum gpt_attr {
  * that describes the error code.
  * */
 
-const char *gpt_strerror(enum gpt_error error);
+const char *
+gpt_strerror(enum gpt_error error);
 
 /** Represents a GPT header.
  * This is usually used to find the partition
@@ -213,7 +214,8 @@ struct gpt_header {
  * to initialize.
  * */
 
-void gpt_header_init(struct gpt_header *header);
+void
+gpt_header_init(struct gpt_header *header);
 
 /** Reads the GPT header.
  * This function also verifies header signature
@@ -225,8 +227,9 @@ void gpt_header_init(struct gpt_header *header);
  * @returns See @ref gpt_error.
  * */
 
-enum gpt_error gpt_header_read(struct stream *stream,
-                               struct gpt_header *header);
+enum gpt_error
+gpt_header_read(struct stream *stream,
+                struct gpt_header *header);
 
 /** Writes the GPT Header.
  * This function calculates the checksum for the
@@ -241,8 +244,9 @@ enum gpt_error gpt_header_read(struct stream *stream,
  * @returns See @ref gpt_error.
  * */
 
-enum gpt_error gpt_header_write(struct stream *stream,
-                                const struct gpt_header *header);
+enum gpt_error
+gpt_header_write(struct stream *stream,
+                 const struct gpt_header *header);
 
 /** A GPT partition header.
  * This is used to describe where the partition
@@ -270,7 +274,8 @@ struct gpt_partition {
  * @param partition An uninitialized partition structure.
  * */
 
-void gpt_partition_init(struct gpt_partition *partition);
+void
+gpt_partition_init(struct gpt_partition *partition);
 
 /** Sets the name of the partition.
  * @param partition An initialized partition.
@@ -279,8 +284,9 @@ void gpt_partition_init(struct gpt_partition *partition);
  * the name will be truncated to fit.
  * */
 
-void gpt_partition_set_name(struct gpt_partition *partition,
-                            const char *name);
+void
+gpt_partition_set_name(struct gpt_partition *partition,
+                       const char *name);
 
 /** Sets the starting LBA of the partition.
  * After calling this function, @ref gpt_partition_set_size
@@ -293,8 +299,9 @@ void gpt_partition_set_name(struct gpt_partition *partition,
  * up to 130.
  * */
 
-void gpt_partition_set_lba(struct gpt_partition *partition,
-                           uint64_t lba);
+void
+gpt_partition_set_lba(struct gpt_partition *partition,
+                      uint64_t lba);
 
 /** Set the size of the partition, rounded up to the
  * nearest 512 boundary. @ref gpt_partition_set_lba must
@@ -304,8 +311,9 @@ void gpt_partition_set_lba(struct gpt_partition *partition,
  * This is rounded up to a 512 boundary.
  * */
 
-void gpt_partition_set_size(struct gpt_partition *partition,
-                            uint64_t size);
+void
+gpt_partition_set_size(struct gpt_partition *partition,
+                       uint64_t size);
 
 /** Reads a partition header
  * at the current location of
@@ -317,8 +325,9 @@ void gpt_partition_set_size(struct gpt_partition *partition,
  * @returns See @ref gpt_error.
  * */
 
-enum gpt_error gpt_partition_read(struct stream *stream,
-                                  struct gpt_partition *partition);
+enum gpt_error
+gpt_partition_read(struct stream *stream,
+                   struct gpt_partition *partition);
 
 /** Writes a partition header at the
  * current location of the stream.
@@ -329,8 +338,9 @@ enum gpt_error gpt_partition_read(struct stream *stream,
  * @returns See @ref gpt_error.
  * */
 
-enum gpt_error gpt_partition_write(struct stream *stream,
-                                   const struct gpt_partition *partition);
+enum gpt_error
+gpt_partition_write(struct stream *stream,
+                    const struct gpt_partition *partition);
 
 /** An accessor structure for GPT.
  * Used for reading data structures
@@ -360,7 +370,8 @@ struct gpt_accessor {
  * @param accessor An uninitialized GPT accessor.
  * */
 
-void gpt_accessor_init(struct gpt_accessor *accessor);
+void
+gpt_accessor_init(struct gpt_accessor *accessor);
 
 /** Reads a GPT stream and passes the
  * data structures to the accessor.
@@ -374,7 +385,9 @@ void gpt_accessor_init(struct gpt_accessor *accessor);
  * then a negative one is returned.
  * */
 
-int gpt_access(struct stream *stream, struct gpt_accessor *accessor);
+int
+gpt_access(struct stream *stream,
+           struct gpt_accessor *accessor);
 
 /** A mutator structure for GPT.
  * Used for modifying data structures
@@ -404,7 +417,9 @@ struct gpt_mutator {
  * then a negative one is returned.
  * */
 
-int gpt_mutate(struct stream *stream, const struct gpt_mutator *mutator);
+int
+gpt_mutate(struct stream *stream,
+           const struct gpt_mutator *mutator);
 
 /** Formats a stream with an empty GUID
  * partition table. This function will overwrite
@@ -414,7 +429,8 @@ int gpt_mutate(struct stream *stream, const struct gpt_mutator *mutator);
  * @returns See @ref gpt_error.
  * */
 
-enum gpt_error gpt_format(struct stream *stream);
+enum gpt_error
+gpt_format(struct stream *stream);
 
 /** Searches for an LBA that can
  * fit a specified amount of storage.
@@ -427,9 +443,10 @@ enum gpt_error gpt_format(struct stream *stream);
  * @returns See @ref gpt_error.
  * */
 
-enum gpt_error gpt_find_space(struct stream *stream,
-                              uint64_t size,
-                              uint64_t *lba);
+enum gpt_error
+gpt_find_space(struct stream *stream,
+               uint64_t size,
+               uint64_t *lba);
 
 /** Creates a new partition.
  * The partition is created as a
@@ -447,9 +464,10 @@ enum gpt_error gpt_find_space(struct stream *stream,
  * @returns See @ref gpt_error.
  * */
 
-enum gpt_error gpt_add_partition(struct stream *stream,
-                                 uint32_t *partition_index,
-                                 uint64_t partition_size);
+enum gpt_error
+gpt_add_partition(struct stream *stream,
+                  uint32_t *partition_index,
+                  uint64_t partition_size);
 
 struct gpt_source {
 	/** Implementation data. */
@@ -475,7 +493,8 @@ struct gpt_source {
 /** Initializes a GPT source structure.
  * */
 
-void gpt_source_init(struct gpt_source *source);
+void
+gpt_source_init(struct gpt_source *source);
 
 /** Writes the primary GPT header to the source.
  * @param source An initialized GPT source structure.
@@ -483,8 +502,9 @@ void gpt_source_init(struct gpt_source *source);
  * @returns See @ref gpt_error.
  * */
 
-enum gpt_error gpt_source_write_header(struct gpt_source *source,
-                                       const struct gpt_header *header);
+enum gpt_error
+gpt_source_write_header(struct gpt_source *source,
+                        const struct gpt_header *header);
 
 /** Writes the backup GPT header to the source.
  * @param source An initialized GPT source structure.
@@ -492,15 +512,17 @@ enum gpt_error gpt_source_write_header(struct gpt_source *source,
  * @returns See @ref gpt_error.
  * */
 
-enum gpt_error gpt_source_write_header_backup(struct gpt_source *source,
-                                              const struct gpt_header *header);
+enum gpt_error
+gpt_source_write_header_backup(struct gpt_source *source,
+                               const struct gpt_header *header);
 
 /** Format a GPT source.
  * @param source An initialized GPT source structure.
  * @returns See @ref gpt_error.
  * */
 
-enum gpt_error gpt_source_format(struct gpt_source *source);
+enum gpt_error
+gpt_source_format(struct gpt_source *source);
 
 #ifdef __cplusplus
 } /* extern "C" { */
