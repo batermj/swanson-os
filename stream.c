@@ -18,9 +18,7 @@
 
 #include "stream.h"
 
-#ifndef NULL
-#define NULL ((void *) 0x00)
-#endif
+#include "null.h"
 
 void stream_init(struct stream *stream) {
 	stream->data = NULL;
