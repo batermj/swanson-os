@@ -57,6 +57,8 @@ gpt_strerror(enum gpt_error error) {
 		return "Invalid Partition Headers Checksum";
 	else if (error == GPT_ERROR_NEED_SPACE)
 		return "Need More Space";
+	else if (error == GPT_ERROR_NOT_IMPLEMENTED)
+		return "Not Implemented";
 	else if (error == GPT_ERROR_NONE)
 		return "No Error";
 	else
@@ -527,6 +529,24 @@ gpt_source_init(struct gpt_source *source) {
 	source->read_partition_backup = NULL;
 	source->write_partition = NULL;
 	source->write_partition_backup = NULL;
+}
+
+enum gpt_error
+gpt_source_write_header(struct gpt_source *source,
+                        const struct gpt_header *header) {
+	if (source->write_header == NULL)
+		return GPT_ERROR_NOT_IMPLEMENTED;
+	else
+		return source->write_header(source->data, header);
+}
+
+enum gpt_error
+gpt_source_write_header_backup(struct gpt_source *source,
+                               const struct gpt_header *header) {
+	if (source->write_header_backup == NULL)
+		return GPT_ERROR_NOT_IMPLEMENTED;
+	else
+		return source->write_header_backup(source->data, header);
 }
 
 enum gpt_error

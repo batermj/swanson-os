@@ -133,7 +133,9 @@ enum gpt_error {
 	GPT_ERROR_BAD_PARTITION_HEADERS,
 	/** There is not enough space
 	 * available for the GPT function. */
-	GPT_ERROR_NEED_SPACE
+	GPT_ERROR_NEED_SPACE,
+	/** Functionality was not implemented. */
+	GPT_ERROR_NOT_IMPLEMENTED
 };
 
 /** GPT partition attributes. Used
