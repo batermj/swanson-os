@@ -18,37 +18,19 @@
 
 #include "test.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-
+#include "gpt-test.h"
 #include "memmap-test.h"
+
+#include <stdlib.h>
 
 int
 main(void) {
-
-	enum test_exitcode exitcode;
-
-	struct test_driver driver;
-
-	const struct test test_array[] = {
-		UNIT_TEST(test_alloc)
-	};
-
-	unsigned int i;
-	unsigned int test_count;
-
-	driver.errlog = stderr;
-
-	test_count = 0;
-	test_count += sizeof(test_array);
-	test_count /= sizeof(test_array[0]);
-
-	for (i = 0; i < test_count; i++) {
-		printf("Running test '%s'.\n", test_array[i].name);
-		exitcode = test_array[i].run(&driver);
-		if (exitcode == TEST_FAILURE)
-			return EXIT_FAILURE;
-	}
-
+	run_tests();
 	return EXIT_SUCCESS;
+}
+
+void
+run_tests(void) {
+	gpt_test();
+	memmap_test();
 }

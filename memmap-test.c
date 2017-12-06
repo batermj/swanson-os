@@ -16,10 +16,22 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "test.h"
+#include "memmap-test.h"
 #include "memmap.h"
 
-TEST_F(test_alloc) {
+#include <assert.h>
+
+#ifndef NULL
+#define NULL ((void *) 0x00)
+#endif
+
+void
+memmap_test(void) {
+	memmap_test_alloc();
+}
+
+void
+memmap_test_alloc(void) {
 
 	char section_one[64];
 	char section_two[64];
@@ -45,16 +57,14 @@ TEST_F(test_alloc) {
 	addr = NULL;
 	/* one section for the address that was allocated,
 	 * and one section for the used section array itself */
-	ASSERT_EQ(memmap.used_section_count, 2);
+	assert(memmap.used_section_count == 2);
 	/* memmap uses the first address in the first
 	 * unused section to account for used sections. */
-	ASSERT_EQ(memmap.used_section_array, ((void *) section_one));
-	ASSERT_EQ(memmap.used_section_array[0].addr, section_one);
-	ASSERT_EQ(memmap.used_section_array[0].size, (sizeof(struct memmap_section) * 2));
-	ASSERT_EQ(memmap.used_section_array[1].addr, &section_one[sizeof(struct memmap_section) * 2]);
-	ASSERT_EQ(memmap.used_section_array[1].size, 1);
-	ASSERT_EQ(addr, memmap.used_section_array[1].addr);
-
-	return TEST_SUCCESS;
+	assert(memmap.used_section_array == ((void *) section_one));
+	assert(memmap.used_section_array[0].addr == section_one);
+	assert(memmap.used_section_array[0].size == (sizeof(struct memmap_section) * 2));
+	assert(memmap.used_section_array[1].addr == &section_one[sizeof(struct memmap_section) * 2]);
+	assert(memmap.used_section_array[1].size == 1);
+	assert(addr == memmap.used_section_array[1].addr);
 }
 

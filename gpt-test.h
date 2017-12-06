@@ -26,7 +26,20 @@ extern "C" {
 /** Run the GPT tests.
  * */
 
-TEST_F(gpt_test);
+void
+gpt_test(void);
+
+/** Run the 'add_partition' test.
+ * */
+
+void
+gpt_test_add_partition(void);
+
+/** Run the 'test_format' test.
+ * */
+
+void
+gpt_test_add_format(void);
 
 #ifdef __cplusplus
 } /* extern "C" { */

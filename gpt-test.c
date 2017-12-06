@@ -16,65 +16,20 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include "gpt-test.h"
 
-#include "gpt.h"
-#include "sstream.h"
-#include "test.h"
+void
+gpt_test_add_partition(void) {
 
-struct mock_source {
-	struct gpt_source source;
-};
-
-static int
-mock_write_header(void *source_ptr,
-                  const struct gpt_header *header) {
-
-	(void) source_ptr;
-	(void) header;
-
-	return 0;
 }
 
-static int
-mock_write_header_backup(void *source_ptr,
-                         const struct gpt_header *header) {
+void
+gpt_test_format(void) {
 
-	(void) source_ptr;
-	(void) header;
-
-	return 0;
 }
 
-static void
-mock_source_init(struct mock_source *source) {
-	gpt_source_init(&source->source);
-	source->source.data = source;
-	source->source.write_header = mock_write_header;
-	source->source.write_header_backup = mock_write_header_backup;
-}
-
-TEST_F(test_format) {
-
-	enum gpt_error error;
-	struct mock_source source;
-
-	mock_source_init(&source);
-
-	error = gpt_source_format(&source.source);
-	ASSERT_EQ(error, GPT_ERROR_NONE);
-
-	return TEST_SUCCESS;
-}
-
-TEST_F(gpt_test) {
-
-	enum test_exitcode exitcode;
-
-	exitcode = test_format(driver);
-	ASSERT_EQ(exitcode, TEST_SUCCESS);
-
-	return TEST_SUCCESS;
+void
+gpt_test(void) {
+	gpt_test_add_partition();
+	gpt_test_format();
 }

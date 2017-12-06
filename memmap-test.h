@@ -23,7 +23,17 @@
 extern "C" {
 #endif
 
-TEST_F(test_alloc);
+/** Run the memory map tests.
+ * */
+
+void
+memmap_test(void);
+
+/** Run the memory allocation test.
+ * */
+
+void
+memmap_test_alloc(void);
 
 #ifdef __cplusplus
 } /* extern "C" { */
