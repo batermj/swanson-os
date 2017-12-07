@@ -576,6 +576,16 @@ gpt_source_update_header(struct gpt_source *source,
 }
 
 enum gpt_error
+gpt_source_read_partition(struct gpt_source *source,
+                          uint32_t partition_index,
+                          struct gpt_partition *partition) {
+	if (source->read_partition == NULL)
+		return GPT_ERROR_NOT_IMPLEMENTED;
+	else
+		return source->read_partition(source->data, partition_index, partition);
+}
+
+enum gpt_error
 gpt_source_write_partition(struct gpt_source *source,
                            uint32_t partition_index,
                            const struct gpt_partition *partition) {
@@ -635,10 +645,51 @@ gpt_source_format(struct gpt_source *source) {
 enum gpt_error
 gpt_source_allocate(struct gpt_source *source,
                     uint64_t size,
-                    uint64_t *starting_lba) {
-	(void) source;
-	(void) size;
-	(void) starting_lba;
+                    uint64_t *starting_lba_ptr) {
+
+	enum gpt_error error;
+	struct gpt_header header;
+	struct gpt_partition partition;
+	uint64_t size_available;
+	uint64_t i;
+	uint64_t starting_lba;
+	uint64_t lba_count;
+
+	gpt_header_init(&header);
+
+	error = gpt_source_read_header(source, &header);
+	if (error != GPT_ERROR_NONE)
+		return error;
+
+	if (header.last_usable_lba < header.first_usable_lba)
+		return GPT_ERROR_UNKNOWN;
+
+	size_available = 512 * ((header.last_usable_lba - header.first_usable_lba) + 1);
+
+	if (size_available < size)
+		return GPT_ERROR_NEED_SPACE;
+
+	starting_lba = header.first_usable_lba;
+
+	for (i = 0; i < header.partition_count; i++) {
+
+		gpt_partition_init(&partition);
+
+		error = gpt_source_read_partition(source, i, &partition);
+		if (error != GPT_ERROR_NONE)
+			return error;
+
+		if (partition.last_lba >= starting_lba) {
+			starting_lba = partition.last_lba + 1;
+			lba_count = (header.last_usable_lba - starting_lba) + 1;
+			if ((lba_count * 512) < size)
+				return GPT_ERROR_NEED_SPACE;
+		}
+	}
+
+	if (starting_lba_ptr != NULL)
+		*starting_lba_ptr = starting_lba;
+
 	return GPT_ERROR_NONE;
 }
 
