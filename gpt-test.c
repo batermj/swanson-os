@@ -135,31 +135,51 @@ gpt_test_allocate(void) {
 	source = gpt_fake_source_to_source(&fake_source);
 	assert(source != NULL);
 
-	/* first call should pass because
+	/* First call should pass because
 	 * there is 1024 bytes total for
-	 * partition data */
+	 * partition data. */
 
 	error = gpt_source_allocate(source, 512, &starting_lba);
 	assert(error == GPT_ERROR_NONE);
 	assert(starting_lba == 44);
 
-	/* second call should fail because
+	/* Act as if the space were allocated by
+	 * a partition. */
+
+	fake_source.header.partition_count++;
+	fake_source.header_backup.partition_count++;
+	fake_source.partitions[0].first_lba = 44;
+	fake_source.partitions[0].last_lba = 44;
+	fake_source.partition_backups[0].first_lba = 44;
+	fake_source.partition_backups[0].last_lba = 44;
+
+	/* Second call should fail because
 	 * there is only 512 bytes left for
-	 * partition data */
+	 * partition data. */
 
 	error = gpt_source_allocate(source, 1024, &starting_lba);
 	assert(error == GPT_ERROR_NEED_SPACE);
 
-	/* third call should pass because there
+	/* Third call should pass because there
 	 * is 512 bytes left for partition data. */
 
 	error = gpt_source_allocate(source, 512, &starting_lba);
 	assert(error == GPT_ERROR_NONE);
 	assert(starting_lba == 45);
 
-	/* fourth call should fail because there
+	/* Act as if the space were allocated
+	 * by a second partition. */
+
+	fake_source.header.partition_count++;
+	fake_source.header_backup.partition_count++;
+	fake_source.partitions[1].first_lba = 45;
+	fake_source.partitions[1].last_lba = 45;
+	fake_source.partition_backups[1].first_lba = 45;
+	fake_source.partition_backups[1].last_lba = 45;
+
+	/* Fourth call should fail because there
 	 * is no more space leftover for partition
-	 * data */
+	 * data. */
 
 	error = gpt_source_allocate(source, 512, &starting_lba);
 	assert(error == GPT_ERROR_NEED_SPACE);
