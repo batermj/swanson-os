@@ -154,9 +154,51 @@ int
 memmap_add(struct memmap *memmap,
            void *addr,
            unsigned long int size) {
-	(void) memmap;
-	(void) addr;
-	(void) size;
+
+	if (memmap->unused_section_array == NULL) {
+
+		/* Bootstrap section arrays
+		 * with new memory section. */
+
+		/* Make sure the new memory section
+		 * can fit an entry in the unused
+		 * section array and two in the
+		 * used section array. */
+
+		if (size < (sizeof(struct memmap_section) * 3)) {
+			return -1;
+		}
+
+		/* Setup the unused section array.
+		 * It will contain one entry, and that
+		 * is for the new buffer that was just
+		 * added.
+		 * */
+
+		memmap->unused_section_array = (struct memmap_section *) addr;
+
+		memmap->unused_section_array[0].addr = addr;
+		memmap->unused_section_array[0].size = size;
+
+		memmap->unused_section_count = 1;
+
+		/* Setup the used section array.
+		 * The number of entries is two because
+		 * one is for the section array and one
+		 * is for the used section array.
+		 * */
+
+		memmap->used_section_array = ((struct memmap_section *) addr) + 1;
+
+		memmap->used_section_array[0].addr = memmap->unused_section_array;
+		memmap->used_section_array[0].size = sizeof(struct memmap_section);
+
+		memmap->used_section_array[1].addr = memmap->used_section_array;
+		memmap->used_section_array[1].size = sizeof(struct memmap_section) * 2;
+
+		memmap->used_section_count = 2;
+	}
+
 	return 0;
 }
 
