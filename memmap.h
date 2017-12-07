@@ -58,7 +58,10 @@ void
 memmap_init(struct memmap *memmap);
 
 /** Adds a section of memory for the
- * memory map to use.
+ * memory map to use. The very first
+ * section of memory should be able to
+ * fit at least three @ref memmap_section
+ * structures.
  * @param memmap An initialized memory map.
  * @param addr The address of the memory to add.
  * @param size The size of the memory block.
