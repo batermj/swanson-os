@@ -45,12 +45,29 @@ memmap_test_add(void) {
 	unsigned long int buf_size;
 	struct memmap memmap;
 
-	buf_size = 48;
+	buf_size = sizeof(struct memmap_section) * 3;
 
 	buf = malloc(buf_size);
 	assert(buf != NULL);
 
 	memmap_init(&memmap);
+
+	/** This function should fail
+	 * if the section does not contain
+	 * any bytes. */
+
+	err = memmap_add(&memmap, buf, 0);
+	assert(err == MEMMAP_ERROR_NEED_SPACE);
+
+	/** This function should fail if the
+	 * first section of memory is not large
+	 * enough to bootstrap the memory map. */
+
+	err = memmap_add(&memmap, buf, (sizeof(struct memmap_section) * 3) - 1);
+	assert(err == MEMMAP_ERROR_NEED_SPACE);
+
+	/** This function should pass because
+	 * the buffer is large enough. */
 
 	err = memmap_add(&memmap, buf, buf_size);
 	assert(err == 0);
