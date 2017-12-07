@@ -16,41 +16,19 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gpt-test.h"
-
-#include "gpt.h"
-#include "null.h"
-
 #include "assert.h"
 
-void
-gpt_test_allocate(void) {
+#include "debug.h"
 
-}
-
-void
-gpt_test_add_partition(void) {
-
-	enum gpt_error error;
-	struct gpt_source source;
-
-	gpt_source_init(&source);
-
-	error = gpt_source_format(&source);
-	assert(error == GPT_ERROR_NONE);
-
-	error = gpt_source_add_partition(&source, 0, NULL);
-	assert(error == GPT_ERROR_NONE);
-}
+#include <stdlib.h>
 
 void
-gpt_test_format(void) {
+assert_failure(const char *filename,
+               unsigned long int line,
+               const char *expr) {
 
-}
+	debug("%s:%lu assertion failed '%s'.\n",
+	      filename, line, expr);
 
-void
-gpt_test(void) {
-	gpt_test_allocate();
-	gpt_test_add_partition();
-	gpt_test_format();
+	exit(EXIT_FAILURE);
 }

@@ -16,41 +16,40 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gpt-test.h"
+/** @file */
 
-#include "gpt.h"
-#include "null.h"
+#ifndef SWANSON_ASSERT_H
+#define SWANSON_ASSERT_H
 
-#include "assert.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void
-gpt_test_allocate(void) {
+/** Used for detected programming
+ * errors.
+ * */
 
-}
+#define assert(expr) \
+	if (!(expr)) \
+		assert_failure(__FILE__, __LINE__, #expr)
 
-void
-gpt_test_add_partition(void) {
-
-	enum gpt_error error;
-	struct gpt_source source;
-
-	gpt_source_init(&source);
-
-	error = gpt_source_format(&source);
-	assert(error == GPT_ERROR_NONE);
-
-	error = gpt_source_add_partition(&source, 0, NULL);
-	assert(error == GPT_ERROR_NONE);
-}
-
-void
-gpt_test_format(void) {
-
-}
+/** Called when a call to
+ * @ref assert evaluates to be false.
+ * @param filename The filename of code
+ * containing the assertion.
+ * @param line The line within the file
+ * that the assertion is placed.
+ * @param expr The expression that evaluated
+ * to be false.
+ * */
 
 void
-gpt_test(void) {
-	gpt_test_allocate();
-	gpt_test_add_partition();
-	gpt_test_format();
-}
+assert_failure(const char *filename,
+               unsigned long int line,
+               const char *expr);
+
+#ifdef __cplusplus
+} /* extern "C" { */
+#endif
+
+#endif /* SWANSON_ASSERT_H */

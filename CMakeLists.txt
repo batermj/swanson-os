@@ -28,6 +28,8 @@ include("cmake/AddSwansonExecutable.cmake")
 include("cmake/AddSwansonTest.cmake")
 
 add_swanson_library("swanson"
+	"assert.h"
+	"assert.c"
 	"crc32.h"
 	"crc32.c"
 	"debug.h"

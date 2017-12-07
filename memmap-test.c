@@ -17,9 +17,9 @@
  */
 
 #include "memmap-test.h"
-#include "memmap.h"
 
-#include <assert.h>
+#include "assert.h"
+#include "memmap.h"
 
 #ifndef NULL
 #define NULL ((void *) 0x00)
