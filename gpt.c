@@ -633,6 +633,16 @@ gpt_source_format(struct gpt_source *source) {
 }
 
 enum gpt_error
+gpt_source_allocate(struct gpt_source *source,
+                    uint64_t size,
+                    uint64_t *starting_lba) {
+	(void) source;
+	(void) size;
+	(void) starting_lba;
+	return GPT_ERROR_NONE;
+}
+
+enum gpt_error
 gpt_source_add_partition(struct gpt_source *source,
                          uint64_t partition_size,
                          uint32_t *partition_index_ptr) {

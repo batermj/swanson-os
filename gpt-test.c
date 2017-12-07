@@ -23,9 +23,146 @@
 
 #include "assert.h"
 
+struct gpt_fake_source {
+	struct gpt_source source;
+	struct gpt_header header;
+	struct gpt_header header_backup;
+	struct gpt_partition partitions[2];
+	struct gpt_partition partition_backups[2];
+};
+
+static int
+read_header(void *fake_source_ptr,
+            struct gpt_header *header) {
+
+	struct gpt_fake_source *fake_source;
+
+	fake_source = (struct gpt_fake_source *) fake_source_ptr;
+
+	*header = fake_source->header;
+
+	return 0;
+}
+
+static int
+read_header_backup(void *fake_source_ptr,
+                   struct gpt_header *header) {
+
+	struct gpt_fake_source *fake_source;
+
+	fake_source = (struct gpt_fake_source *) fake_source_ptr;
+
+	*header = fake_source->header_backup;
+
+	return 0;
+}
+
+static int
+read_partition(void *fake_source_ptr,
+               uint32_t partition_index,
+               struct gpt_partition *partition) {
+
+	struct gpt_fake_source *fake_source;
+
+	fake_source = (struct gpt_fake_source *) fake_source_ptr;
+
+	assert(partition_index <= 1);
+
+	*partition = fake_source->partitions[partition_index];
+
+	return 0;
+}
+
+static int
+read_partition_backup(void *fake_source_ptr,
+                      uint32_t partition_index,
+                      struct gpt_partition *partition) {
+
+	struct gpt_fake_source *fake_source;
+
+	fake_source = (struct gpt_fake_source *) fake_source_ptr;
+
+	assert(partition_index <= 1);
+
+	*partition = fake_source->partition_backups[partition_index];
+
+	return 0;
+}
+
+void
+gpt_fake_source_init(struct gpt_fake_source *fake_source) {
+
+	gpt_source_init(&fake_source->source);
+
+	gpt_header_init(&fake_source->header);
+
+	gpt_header_init(&fake_source->header_backup);
+
+	gpt_partition_init(&fake_source->partitions[0]);
+	gpt_partition_init(&fake_source->partitions[1]);
+
+	gpt_partition_init(&fake_source->partition_backups[0]);
+	gpt_partition_init(&fake_source->partition_backups[1]);
+
+	fake_source->source.data = fake_source;
+	fake_source->source.read_header = read_header;
+	fake_source->source.read_header_backup = read_header_backup;
+	fake_source->source.read_partition = read_partition;
+	fake_source->source.read_partition_backup = read_partition_backup;
+}
+
+static struct gpt_source *
+gpt_fake_source_to_source(struct gpt_fake_source *fake_source) {
+	return &fake_source->source;
+}
+
 void
 gpt_test_allocate(void) {
 
+	enum gpt_error error;
+	struct gpt_source *source;
+	struct gpt_fake_source fake_source;
+	uint64_t starting_lba;
+
+	gpt_fake_source_init(&fake_source);
+
+	/* two blocks available for partition
+	 * data */
+
+	fake_source.header.first_usable_lba = 44;
+	fake_source.header.last_usable_lba = 45;
+
+	source = gpt_fake_source_to_source(&fake_source);
+	assert(source != NULL);
+
+	/* first call should pass because
+	 * there is 1024 bytes total for
+	 * partition data */
+
+	error = gpt_source_allocate(source, 512, &starting_lba);
+	assert(error == GPT_ERROR_NONE);
+	assert(starting_lba == 44);
+
+	/* second call should fail because
+	 * there is only 512 bytes left for
+	 * partition data */
+
+	error = gpt_source_allocate(source, 1024, &starting_lba);
+	assert(error == GPT_ERROR_NEED_SPACE);
+
+	/* third call should pass because there
+	 * is 512 bytes left for partition data. */
+
+	error = gpt_source_allocate(source, 512, &starting_lba);
+	assert(error == GPT_ERROR_NONE);
+	assert(starting_lba == 45);
+
+	/* fourth call should fail because there
+	 * is no more space leftover for partition
+	 * data */
+
+	error = gpt_source_allocate(source, 512, &starting_lba);
+	assert(error == GPT_ERROR_NEED_SPACE);
 }
 
 void
