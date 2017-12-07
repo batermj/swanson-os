@@ -41,6 +41,12 @@ gpt_test_add_partition(void);
 void
 gpt_test_add_format(void);
 
+/** Test allocation of a GPT source.
+ * */
+
+void
+gpt_test_allocate(void);
+
 /* TODO:
  *  - gpt_test_write_header
  *  - gpt_test_read_header

@@ -18,9 +18,29 @@
 
 #include "gpt-test.h"
 
+#include "gpt.h"
+#include "null.h"
+
+#include <assert.h>
+
+void
+gpt_test_allocate(void) {
+
+}
+
 void
 gpt_test_add_partition(void) {
 
+	enum gpt_error error;
+	struct gpt_source source;
+
+	gpt_source_init(&source);
+
+	error = gpt_source_format(&source);
+	assert(error == GPT_ERROR_NONE);
+
+	error = gpt_source_add_partition(&source, 0, NULL);
+	assert(error == GPT_ERROR_NONE);
 }
 
 void
@@ -30,6 +50,7 @@ gpt_test_format(void) {
 
 void
 gpt_test(void) {
+	gpt_test_allocate();
 	gpt_test_add_partition();
 	gpt_test_format();
 }

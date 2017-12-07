@@ -532,6 +532,15 @@ gpt_source_init(struct gpt_source *source) {
 }
 
 enum gpt_error
+gpt_source_read_header(struct gpt_source *source,
+                       struct gpt_header *header) {
+	if (source->read_header == NULL)
+		return GPT_ERROR_NOT_IMPLEMENTED;
+	else
+		return source->read_header(source->data, header);
+}
+
+enum gpt_error
 gpt_source_write_header(struct gpt_source *source,
                         const struct gpt_header *header) {
 	if (source->write_header == NULL)
@@ -550,6 +559,61 @@ gpt_source_write_header_backup(struct gpt_source *source,
 }
 
 enum gpt_error
+gpt_source_update_header(struct gpt_source *source,
+                         const struct gpt_header *header) {
+
+	enum gpt_error error;
+
+	error = gpt_source_write_header(source, header);
+	if (error != GPT_ERROR_NONE)
+		return error;
+
+	error = gpt_source_write_header_backup(source, header);
+	if (error != GPT_ERROR_NONE)
+		return error;
+
+	return GPT_ERROR_NONE;
+}
+
+enum gpt_error
+gpt_source_write_partition(struct gpt_source *source,
+                           uint32_t partition_index,
+                           const struct gpt_partition *partition) {
+	if (source->write_partition == NULL)
+		return GPT_ERROR_NOT_IMPLEMENTED;
+	else
+		return source->write_partition(source->data, partition_index, partition);
+}
+
+enum gpt_error
+gpt_source_write_partition_backup(struct gpt_source *source,
+                                  uint32_t partition_index,
+                                  const struct gpt_partition *partition) {
+	if (source->write_partition_backup == NULL)
+		return GPT_ERROR_NOT_IMPLEMENTED;
+	else
+		return source->write_partition_backup(source->data, partition_index, partition);
+}
+
+enum gpt_error
+gpt_source_update_partition(struct gpt_source *source,
+                            uint32_t partition_index,
+                            const struct gpt_partition *partition) {
+
+	enum gpt_error error;
+
+	error = gpt_source_write_partition(source, partition_index, partition);
+	if (error != GPT_ERROR_NONE)
+		return error;
+
+	error = gpt_source_write_partition_backup(source, partition_index, partition);
+	if (error != GPT_ERROR_NONE)
+		return error;
+
+	return GPT_ERROR_NONE;
+}
+
+enum gpt_error
 gpt_source_format(struct gpt_source *source) {
 
 	enum gpt_error error;
@@ -564,6 +628,55 @@ gpt_source_format(struct gpt_source *source) {
 	error = gpt_source_write_header_backup(source, &header);
 	if (error != GPT_ERROR_NONE)
 		return error;
+
+	return GPT_ERROR_NONE;
+}
+
+enum gpt_error
+gpt_source_add_partition(struct gpt_source *source,
+                         uint64_t partition_size,
+                         uint32_t *partition_index_ptr) {
+
+	enum gpt_error error;
+	struct gpt_header header;
+	struct gpt_partition partition;
+	uint32_t partition_index;
+	uint32_t lba_count;
+
+	if (partition_size == 0)
+		lba_count = 1;
+	else if ((partition_size % 512) == 0)
+		lba_count = partition_size / 512;
+	else
+		lba_count = (partition_size / 512) + 1;
+
+	gpt_header_init(&header);
+
+	error = gpt_source_read_header(source, &header);
+	if (error != GPT_ERROR_NONE)
+		return error;
+
+	header.partition_count++;
+
+	/* TODO : find space for the partition */
+
+	error = gpt_source_update_header(source, &header);
+	if (error != GPT_ERROR_NONE)
+		return error;
+
+	partition_index = header.partition_count - 1;
+
+	gpt_partition_init(&partition);
+
+	partition.first_lba = 0;
+	partition.last_lba = partition.first_lba + (lba_count - 1);
+
+	error = gpt_source_update_partition(source, partition_index, &partition);
+	if (error != GPT_ERROR_NONE)
+		return error;
+
+	if (partition_index_ptr != NULL)
+		return partition_index;
 
 	return GPT_ERROR_NONE;
 }
