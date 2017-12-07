@@ -54,7 +54,8 @@ struct memmap {
  * @param memmap An uninitialized memory map.
  * */
 
-void memmap_init(struct memmap *memmap);
+void
+memmap_init(struct memmap *memmap);
 
 /** Allocates memory from the memory map.
  * @param memmap An initialized memory map.
@@ -63,7 +64,9 @@ void memmap_init(struct memmap *memmap);
  * block. On failure, zero (or NULL).
  * */
 
-void *memmap_alloc(struct memmap *memmap, unsigned long int size);
+void *
+memmap_alloc(struct memmap *memmap,
+             unsigned long int size);
 
 /** Resizes a block of memory that already exists.
  * @param memmap An initialized memory map.
@@ -73,14 +76,19 @@ void *memmap_alloc(struct memmap *memmap, unsigned long int size);
  * block. On failure, zero (or NULL).
  * */
 
-void *memmap_realloc(struct memmap *memmap, void *addr, unsigned long int size);
+void *
+memmap_realloc(struct memmap *memmap,
+               void *addr,
+               unsigned long int size);
 
 /** Releases a block of memory in the memory map.
  * @param memmap An initialized memory map.
  * @param addr The address of the memory block to free.
  * */
 
-void memmap_free(struct memmap *memmap, void *addr);
+void
+memmap_free(struct memmap *memmap,
+            void *addr);
 
 #ifdef __cplusplus
 } /* extern "C" { */

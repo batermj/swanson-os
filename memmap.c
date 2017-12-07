@@ -24,9 +24,10 @@
 
 /** Checks to see if an unused section can fit a memory
  * block of a specified size. */
-static void *find_addr_in_section(const struct memmap *memmap,
-                                  const struct memmap_section *section,
-                                  unsigned long int size) {
+static void *
+find_addr_in_section(const struct memmap *memmap,
+                     const struct memmap_section *section,
+                     unsigned long int size) {
 
 	unsigned char *addr;
 	unsigned long int i;
@@ -66,7 +67,9 @@ static void *find_addr_in_section(const struct memmap *memmap,
 /** Finds an address that can fit a certain
  * number of bytes. This function does not reserve
  * the address that was found. */
-static void *find_addr(const struct memmap *memmap, unsigned long int size) {
+static void *
+find_addr(const struct memmap *memmap,
+          unsigned long int size) {
 
 	void *addr;
 	unsigned long int i;
@@ -86,7 +89,8 @@ static void *find_addr(const struct memmap *memmap, unsigned long int size) {
 
 /** Creates the used section array by allocating memory in the first
  * suitable unused memory section. */
-static int bootstap_used_section_array(struct memmap *memmap) {
+static int
+bootstap_used_section_array(struct memmap *memmap) {
 
 	struct memmap_section *unused_section;
 	unsigned long int i;
@@ -115,7 +119,8 @@ static int bootstap_used_section_array(struct memmap *memmap) {
 }
 
 /** Allocates a used section for the used section array. */
-static struct memmap_section *alloc_used_section(struct memmap *memmap) {
+static struct memmap_section *
+alloc_used_section(struct memmap *memmap) {
 
 	struct memmap_section *section;
 	struct memmap_section *used_section_array;
@@ -137,14 +142,17 @@ static struct memmap_section *alloc_used_section(struct memmap *memmap) {
 	return section;
 }
 
-void memmap_init(struct memmap *memmap) {
+void
+memmap_init(struct memmap *memmap) {
 	memmap->unused_section_array = NULL;
 	memmap->unused_section_count = 0;
 	memmap->used_section_array = NULL;
 	memmap->used_section_count = 0;
 }
 
-void *memmap_alloc(struct memmap *memmap, unsigned long int size) {
+void *
+memmap_alloc(struct memmap *memmap,
+             unsigned long int size) {
 
 	struct memmap_section *section;
 	void *addr;
@@ -163,7 +171,10 @@ void *memmap_alloc(struct memmap *memmap, unsigned long int size) {
 	return addr;
 }
 
-void *memmap_realloc(struct memmap *memmap, void *old_addr, unsigned long int size) {
+void *
+memmap_realloc(struct memmap *memmap,
+               void *old_addr,
+               unsigned long int size) {
 
 	void *addr;
 
@@ -178,7 +189,9 @@ void *memmap_realloc(struct memmap *memmap, void *old_addr, unsigned long int si
 	return addr;
 }
 
-void memmap_free(struct memmap *memmap, void *addr) {
+void
+memmap_free(struct memmap *memmap,
+            void *addr) {
 	(void) memmap;
 	(void) addr;
 }
