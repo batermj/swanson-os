@@ -166,7 +166,7 @@ memmap_add(struct memmap *memmap,
 		 * used section array. */
 
 		if (size < (sizeof(struct memmap_section) * 3)) {
-			return -1;
+			return MEMMAP_ERROR_NEED_SPACE;
 		}
 
 		/* Setup the unused section array.
@@ -199,7 +199,7 @@ memmap_add(struct memmap *memmap,
 		memmap->used_section_count = 2;
 	}
 
-	return 0;
+	return MEMMAP_ERROR_NONE;
 }
 
 void *
