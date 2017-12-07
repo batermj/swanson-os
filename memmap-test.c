@@ -45,7 +45,7 @@ memmap_test_add(void) {
 	unsigned long int buf_size;
 	struct memmap memmap;
 
-	buf_size = 1024;
+	buf_size = 48;
 
 	buf = malloc(buf_size);
 	assert(buf != NULL);
@@ -56,6 +56,14 @@ memmap_test_add(void) {
 	assert(err == 0);
 
 	assert(memmap.unused_section_count == 1);
+	assert(memmap.unused_section_array[0].addr == buf);
+	assert(memmap.unused_section_array[0].size == buf_size);
+
+	assert(memmap.used_section_count == 2);
+	assert(memmap.used_section_array[0].addr == buf);
+	assert(memmap.used_section_array[0].size == sizeof(struct memmap_section));
+	assert(memmap.used_section_array[1].addr == &buf[sizeof(struct memmap_section)]);
+	assert(memmap.used_section_array[1].size == (sizeof(struct memmap_section) * 2));
 
 	free(buf);
 }
