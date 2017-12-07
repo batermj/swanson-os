@@ -626,20 +626,11 @@ gpt_source_update_partition(struct gpt_source *source,
 enum gpt_error
 gpt_source_format(struct gpt_source *source) {
 
-	enum gpt_error error;
 	struct gpt_header header;
 
 	gpt_header_init(&header);
 
-	error = gpt_source_write_header(source, &header);
-	if (error != GPT_ERROR_NONE)
-		return error;
-
-	error = gpt_source_write_header_backup(source, &header);
-	if (error != GPT_ERROR_NONE)
-		return error;
-
-	return GPT_ERROR_NONE;
+	return gpt_source_update_header(source, &header);
 }
 
 enum gpt_error
