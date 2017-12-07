@@ -51,6 +51,13 @@ struct memmap_section {
 	unsigned long int size;
 };
 
+/** The minimum size of a memory map.
+ * Defined as a memory map that has enough
+ * to allocate zero bytes.
+ * */
+
+#define MEMMAP_MINIMUM_SIZE (sizeof(struct memmap_section) * 3)
+
 /** A memory map of the system.
  * */
 
