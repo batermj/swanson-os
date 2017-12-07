@@ -89,6 +89,32 @@ read_partition_backup(void *fake_source_ptr,
 	return 0;
 }
 
+static int
+write_header(void *fake_source_ptr,
+             const struct gpt_header *header) {
+
+	struct gpt_fake_source *fake_source;
+
+	fake_source = (struct gpt_fake_source *) fake_source_ptr;
+
+	fake_source->header = *header;
+
+	return 0;
+}
+
+static int
+write_header_backup(void *fake_source_ptr,
+                    const struct gpt_header *header) {
+
+	struct gpt_fake_source *fake_source;
+
+	fake_source = (struct gpt_fake_source *) fake_source_ptr;
+
+	fake_source->header_backup = *header;
+
+	return 0;
+}
+
 void
 gpt_fake_source_init(struct gpt_fake_source *fake_source) {
 
@@ -105,8 +131,13 @@ gpt_fake_source_init(struct gpt_fake_source *fake_source) {
 	gpt_partition_init(&fake_source->partition_backups[1]);
 
 	fake_source->source.data = fake_source;
+
 	fake_source->source.read_header = read_header;
 	fake_source->source.read_header_backup = read_header_backup;
+
+	fake_source->source.write_header = write_header;
+	fake_source->source.write_header_backup = write_header_backup;
+
 	fake_source->source.read_partition = read_partition;
 	fake_source->source.read_partition_backup = read_partition_backup;
 }
@@ -189,14 +220,15 @@ void
 gpt_test_add_partition(void) {
 
 	enum gpt_error error;
-	struct gpt_source source;
+	struct gpt_fake_source fake_source;
+	struct gpt_source *source;
 
-	gpt_source_init(&source);
+	gpt_fake_source_init(&fake_source);
 
-	error = gpt_source_format(&source);
-	assert(error == GPT_ERROR_NONE);
+	source = gpt_fake_source_to_source(&fake_source);
+	assert(source != NULL);
 
-	error = gpt_source_add_partition(&source, 0, NULL);
+	error = gpt_source_format(source);
 	assert(error == GPT_ERROR_NONE);
 }
 
