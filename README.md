@@ -7,6 +7,20 @@ It is intended to be a POSIX-complaint operating system that can run entirely in
 
 The idea is to have an operating system that can run on top of another operating system without much overhead.
 
+### Motivation
+
+It can be difficult using an operating system on a PC other than the one that was factory shipped.
+Sometimes, installing the operating system may wreck the one that was factory shipped.
+Other times, it may install successfully but the drivers for it won't work correctly.
+And even if it does work okay, in a lot of cases it voids the warranty for the computer.
+
+This is the case where virtualization comes in handy.
+With technology like QEMU or VirtualBox, it's easy to run an operating system without wrecking the one that came with the computer.
+But there's one more problem with this kind of virtualization, it's kind of slow.
+
+That's where Swanson OS comes into play.
+It's an experimental operating system design with a focus in compartmentalization and abstraction.
+
 ### Building
 
 CMake is the primary build system.
