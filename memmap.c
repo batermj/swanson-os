@@ -150,6 +150,16 @@ memmap_init(struct memmap *memmap) {
 	memmap->used_section_count = 0;
 }
 
+int
+memmap_add(struct memmap *memmap,
+           void *addr,
+           unsigned long int size) {
+	(void) memmap;
+	(void) addr;
+	(void) size;
+	return 0;
+}
+
 void *
 memmap_alloc(struct memmap *memmap,
              unsigned long int size) {

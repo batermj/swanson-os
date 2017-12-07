@@ -57,6 +57,19 @@ struct memmap {
 void
 memmap_init(struct memmap *memmap);
 
+/** Adds a section of memory for the
+ * memory map to use.
+ * @param memmap An initialized memory map.
+ * @param addr The address of the memory to add.
+ * @param size The size of the memory block.
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+memmap_add(struct memmap *memmap,
+           void *addr,
+           unsigned long int size);
+
 /** Allocates memory from the memory map.
  * @param memmap An initialized memory map.
  * @param size The number of bytes to allocate.
