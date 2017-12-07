@@ -21,13 +21,43 @@
 #include "assert.h"
 #include "memmap.h"
 
+#include <stdlib.h>
+
 #ifndef NULL
 #define NULL ((void *) 0x00)
 #endif
 
 void
 memmap_test(void) {
-	memmap_test_alloc();
+	memmap_test_add();
+
+	/* Skipping this for now.
+	 *
+	 * memmap_test_alloc();
+	 */
+}
+
+void
+memmap_test_add(void) {
+
+	int err;
+	unsigned char *buf;
+	unsigned long int buf_size;
+	struct memmap memmap;
+
+	buf_size = 1024;
+
+	buf = malloc(buf_size);
+	assert(buf != NULL);
+
+	memmap_init(&memmap);
+
+	err = memmap_add(&memmap, buf, buf_size);
+	assert(err == 0);
+
+	assert(memmap.unused_section_count == 1);
+
+	free(buf);
 }
 
 void

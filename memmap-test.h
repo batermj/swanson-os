@@ -29,6 +29,13 @@ extern "C" {
 void
 memmap_test(void);
 
+/** Test the addition of new memory
+ * sections.
+ * */
+
+void
+memmap_test_add(void);
+
 /** Run the memory allocation test.
  * */
 
