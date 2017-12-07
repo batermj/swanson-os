@@ -25,6 +25,22 @@
 extern "C" {
 #endif
 
+/** An enumeration of the
+ * possible errors that may
+ * occur in a memory map
+ * function.
+ * */
+
+enum memmap_error {
+	/** No error occured. */
+	MEMMAP_ERROR_NONE,
+	/** An unknown error occurred. */
+	MEMMAP_ERROR_UNKNOWN,
+	/** More space is required for
+	 * the memory map. */
+	MEMMAP_ERROR_NEED_SPACE
+};
+
 /** A section of memory in the memory map.
  * */
 
@@ -61,7 +77,9 @@ memmap_init(struct memmap *memmap);
  * memory map to use. The very first
  * section of memory should be able to
  * fit at least three @ref memmap_section
- * structures.
+ * structures. Larger and fewer sections
+ * of memory are better than smaller and
+ * more sections of memory.
  * @param memmap An initialized memory map.
  * @param addr The address of the memory to add.
  * @param size The size of the memory block.
