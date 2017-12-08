@@ -40,37 +40,51 @@ memmap_test(void) {
 void
 memmap_test_add(void) {
 
-	int err;
+	enum memmap_error err;
 	unsigned char *buf;
+	unsigned char *buf2;
 	unsigned long int buf_size;
 	struct memmap memmap;
+
+	/* Allocate the first section
+	 * of memory that will be used
+	 * for the memory map. */
 
 	buf_size = sizeof(struct memmap_section) * 3;
 
 	buf = malloc(buf_size);
 	assert(buf != NULL);
 
+	/* Initialize the memory map. */
+
 	memmap_init(&memmap);
 
-	/** This function should fail
+	/* This function should fail
 	 * if the section does not contain
 	 * any bytes. */
 
 	err = memmap_add(&memmap, buf, 0);
 	assert(err == MEMMAP_ERROR_NEED_SPACE);
 
-	/** This function should fail if the
+	/* This function should fail if the
 	 * first section of memory is not large
 	 * enough to bootstrap the memory map. */
 
 	err = memmap_add(&memmap, buf, (sizeof(struct memmap_section) * 3) - 1);
 	assert(err == MEMMAP_ERROR_NEED_SPACE);
 
-	/** This function should pass because
+	/* This function should pass because
 	 * the buffer is large enough. */
 
 	err = memmap_add(&memmap, buf, buf_size);
 	assert(err == 0);
+
+	/* Memory map:
+	 *   buf:
+	 *     0x01 : unused section entry
+	 *     0x02 : used section entry
+	 *     0x03 : used section entry
+	 * */
 
 	assert(memmap.unused_section_count == 1);
 	assert(memmap.unused_section_array[0].addr == buf);
@@ -81,6 +95,42 @@ memmap_test_add(void) {
 	assert(memmap.used_section_array[0].size == sizeof(struct memmap_section));
 	assert(memmap.used_section_array[1].addr == &buf[sizeof(struct memmap_section)]);
 	assert(memmap.used_section_array[1].size == (sizeof(struct memmap_section) * 2));
+
+	/* Allocate second section of memory
+	 * for the memory map. */
+
+	buf2 = malloc(buf_size * 2);
+	assert(buf2 != NULL);
+
+	/* Add the second section to memory. */
+
+	err = memmap_add(&memmap, buf2, buf_size * 2);
+	assert(err == MEMMAP_ERROR_NONE);
+
+	/* Memory map:
+	 *   buf:
+	 *     0x01 :
+	 *     0x02 : used section entry
+	 *     0x03 : used section entry
+	 *   buf2:
+	 *     0x00 : unused section entry
+	 *     0x01 : unused section entry
+	 * */
+
+	/* Since the contents of the unused and
+	 * the used section array are going to be
+	 * resized, check that they were resized
+	 * correctly. */
+
+	assert(memmap.unused_section_count == 2);
+	assert(memmap.unused_section_array[0].addr == buf);
+	assert(memmap.unused_section_array[0].size == buf_size);
+	assert(memmap.unused_section_array[1].addr == buf2);
+	assert(memmap.unused_section_array[1].size == (buf_size * 2));
+
+	/* All done with the memory map. */
+
+	free(buf2);
 
 	free(buf);
 }
