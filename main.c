@@ -94,7 +94,7 @@ int main(int argc, const char **argv) {
 	struct opts opts;
 	enum kernel_exitcode exitcode;
 	struct kernel kernel;
-	struct memmap_section primary_memmap_section;
+	void *kernel_memory;
 	struct fdisk disk;
 
 	opts_init(&opts);
@@ -110,20 +110,29 @@ int main(int argc, const char **argv) {
 		return EXIT_FAILURE;
 	}
 
-	primary_memmap_section.addr = malloc(opts.memory);
-	primary_memmap_section.size = opts.memory;
+	kernel_memory = malloc(opts.memory);
+	if (kernel_memory == NULL) {
+		fprintf(stderr, "Failed to allocate memory for kernel.\n");
+		fdisk_close(&disk);
+		return EXIT_FAILURE;
+	}
 
 	kernel_init(&kernel);
+
+	err = kernel_add_memory(&kernel, kernel_memory, opts.memory);
+	if (err != 0) {
+		fprintf(stderr, "Failed to allocate memory for kernel.\n");
+		free(kernel_memory);
+		fdisk_close(&disk);
+		return EXIT_FAILURE;
+	}
 
 	kernel.disk_array = &disk.base;
 	kernel.disk_count = 1;
 
-	kernel.memmap.unused_section_array = &primary_memmap_section;
-	kernel.memmap.unused_section_count = 1;
-
 	exitcode = kernel_main(&kernel);
 
-	free(primary_memmap_section.addr);
+	free(kernel_memory);
 
 	fdisk_close(&disk);
 
