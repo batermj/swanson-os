@@ -170,6 +170,10 @@ memmap_add(struct memmap *memmap,
            void *addr,
            unsigned long int size) {
 
+	struct memmap_section *unused_section_array;
+	unsigned long int unused_sections_size;
+	unsigned long int i;
+
 	if (memmap->unused_section_array == NULL) {
 
 		/* Bootstrap section arrays
@@ -212,7 +216,55 @@ memmap_add(struct memmap *memmap,
 		memmap->used_section_array[1].size = sizeof(struct memmap_section) * 2;
 
 		memmap->used_section_count = 2;
+
+		return MEMMAP_ERROR_NONE;
 	}
+
+	/* Resize the unused section size. */
+
+	unused_sections_size = 0;
+	unused_sections_size += memmap->unused_section_count + 1;
+	unused_sections_size *= sizeof(struct memmap_section);
+
+	unused_section_array = memmap_find(memmap, unused_sections_size);
+	if (unused_section_array == NULL) {
+		/* Check to see if the new memory block being added
+		 * can fit the unused memory section array. */
+		if (unused_sections_size > size)
+			/* It doesn't fit. */
+			return MEMMAP_ERROR_NEED_SPACE;
+		/* Assign the new unused section array */
+		unused_section_array = addr;
+	}
+
+	/* Copy data from the old array. */
+
+	for (i = 0; i < memmap->unused_section_count; i++) {
+		unused_section_array[i] = memmap->unused_section_array[i];
+	}
+
+	/* Add the new unused section. */
+
+	unused_section_array[i].addr = addr;
+	unused_section_array[i].size = size;
+
+	/* Free the old section array. */
+
+	memmap_free(memmap, memmap->unused_section_array);
+
+	/* Add the used section for the new
+	 * unused section array. We know there
+	 * is room for it because a slot just
+	 * got released from the last one. */
+
+	memmap->used_section_array[memmap->used_section_count - 1].addr = unused_section_array;
+	memmap->used_section_array[memmap->used_section_count - 1].size = unused_sections_size;
+	memmap->used_section_count++;
+
+	/* Assign the new unused section array. */
+
+	memmap->unused_section_array = unused_section_array;
+	memmap->unused_section_count++;
 
 	return MEMMAP_ERROR_NONE;
 }
@@ -279,6 +331,30 @@ memmap_realloc(struct memmap *memmap,
 void
 memmap_free(struct memmap *memmap,
             void *addr) {
-	(void) memmap;
-	(void) addr;
+
+	unsigned long int i;
+	struct memmap_section *used_section;
+
+	for (i = 0; i < memmap->used_section_count; i++) {
+		used_section = &memmap->used_section_array[i];
+		/* Is this the used section associated with
+		 * the address? */
+		if (used_section->addr != addr)
+			/* No it isn't. */
+			continue;
+	}
+
+	/* Check to see if section was found. */
+	if (i >= memmap->used_section_count)
+		/* No it wasn't. */
+		return;
+
+	/* Move the remaining used sections over */
+	while ((i + 1) < memmap->used_section_count) {
+		memmap->used_section_array[i] = memmap->used_section_array[i + 1];
+		i++;
+	}
+
+	/* Decrement the used section count. */
+	memmap->used_section_count--;
 }
