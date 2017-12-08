@@ -71,6 +71,19 @@ struct kernel {
 void
 kernel_init(struct kernel *kernel);
 
+/** Add a block of memory for the kernel
+ * to use when needed.
+ * @param kernel An initialized kernel structure.
+ * @param addr The address of the memory block.
+ * @param size The size of the memory block, in bytes.
+ * @returns Zero on success, non-zero otherwise.
+ * */
+
+int
+kernel_add_memory(struct kernel *kernel,
+                  void *addr,
+                  unsigned long int size);
+
 /** Entry point of the kernel.
  * @param kernel an initialized kernel structure.
  * @returns An exit code that indicates whether or

@@ -142,6 +142,21 @@ kernel_init(struct kernel *kernel) {
 	partition_init(&kernel->root_partition);
 }
 
+int
+kernel_add_memory(struct kernel *kernel,
+                  void *addr,
+                  unsigned long int size) {
+
+	enum memmap_error error;
+
+	error = memmap_add(&kernel->memmap, addr, size);
+	if (error != MEMMAP_ERROR_NONE)
+		/* TODO : error message. */
+		return -1;
+
+	return 0;
+}
+
 enum kernel_exitcode
 kernel_main(struct kernel *kernel) {
 
