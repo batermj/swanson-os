@@ -68,7 +68,8 @@ struct kernel {
  * @param kernel An uninitialized kernel structure.
  * */
 
-void kernel_init(struct kernel *kernel);
+void
+kernel_init(struct kernel *kernel);
 
 /** Entry point of the kernel.
  * @param kernel an initialized kernel structure.
@@ -76,7 +77,8 @@ void kernel_init(struct kernel *kernel);
  * not the kernel exited with a panic.
  * */
 
-enum kernel_exitcode kernel_main(struct kernel *kernel);
+enum kernel_exitcode
+kernel_main(struct kernel *kernel);
 
 #ifdef __cplusplus
 } /* extern "C" { */

@@ -26,7 +26,9 @@
 #define NULL ((void *) 0x00)
 #endif
 
-static int probe_gpt_header(void *kernel_ptr, const struct gpt_header *header) {
+static int
+probe_gpt_header(void *kernel_ptr,
+                 const struct gpt_header *header) {
 	/* Nothing to do here. This function is a placeholder
 	 * just in case the GPT header has to be examined for
 	 * some reason. It may be removed in the future. */
@@ -35,7 +37,9 @@ static int probe_gpt_header(void *kernel_ptr, const struct gpt_header *header) {
 	return 0;
 }
 
-static int probe_gpt_partition(void *kernel_ptr, const struct gpt_partition *partition) {
+static int
+probe_gpt_partition(void *kernel_ptr,
+                    const struct gpt_partition *partition) {
 
 	struct kernel *kernel;
 
@@ -69,13 +73,18 @@ static int probe_gpt_partition(void *kernel_ptr, const struct gpt_partition *par
 	return 0;
 }
 
-static void gpt_error(void *kernel_ptr, enum gpt_error error) {
+static void
+gpt_error(void *kernel_ptr,
+          enum gpt_error error) {
+
 	(void) kernel_ptr;
+
 	debug("Failed accessing GPT formatted drive: %s.\n", gpt_strerror(error));
 }
 
-static enum kernel_exitcode probe_disk(struct kernel *kernel,
-                                       struct disk *disk) {
+static enum kernel_exitcode
+probe_disk(struct kernel *kernel,
+           struct disk *disk) {
 
 	int err;
 	struct gpt_accessor partition_finder;
@@ -104,7 +113,8 @@ static enum kernel_exitcode probe_disk(struct kernel *kernel,
 	return KERNEL_FAILURE;
 }
 
-static enum kernel_exitcode find_fs(struct kernel *kernel) {
+static enum kernel_exitcode
+find_fs(struct kernel *kernel) {
 
 	uint64_t i;
 	enum kernel_exitcode exitcode;
@@ -123,7 +133,8 @@ static enum kernel_exitcode find_fs(struct kernel *kernel) {
 	return KERNEL_FAILURE;
 }
 
-void kernel_init(struct kernel *kernel) {
+void
+kernel_init(struct kernel *kernel) {
 	any_fs_init(&kernel->root_fs);
 	memmap_init(&kernel->memmap);
 	kernel->disk_array = NULL;
@@ -131,7 +142,8 @@ void kernel_init(struct kernel *kernel) {
 	partition_init(&kernel->root_partition);
 }
 
-enum kernel_exitcode kernel_main(struct kernel *kernel) {
+enum kernel_exitcode
+kernel_main(struct kernel *kernel) {
 
 	int err;
 	struct vfs *vfs;
