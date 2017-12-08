@@ -18,9 +18,7 @@
 
 #include "memmap.h"
 
-#ifndef NULL
-#define NULL ((void *) 0x00)
-#endif
+#include "null.h"
 
 /** Checks to see if an unused section can fit a memory
  * block of a specified size. */
@@ -58,33 +56,36 @@ find_addr_in_section(const struct memmap *memmap,
 			 * the revelant unused section. */
 			continue;
 		}
-		/* TODO */
+
+		/* A quick sanity check, to protect from
+		 * integer overflow. */
+		if (used_section->size > section->size)
+			/* Section is messed up, and could possible
+			 * corrupt the memory table. */
+			continue;
+
+		/* Check to see if the used section overlaps
+		 * the current range of the candidate address. */
+		if ((addr + size) > used_addr) {
+			/* Section overlaps. Move the candidate
+			 * address passed the end of the used
+			 * section. */
+			addr = &used_addr[used_section->size];
+			/* But, if the size in the section that
+			 * is leftover is too small, fail. */
+			if ((section->size - used_section->size) < size)
+				return NULL;
+		} else {
+			/* Section does not overlap, found a
+			 * suitable address. */
+			return addr;
+		}
 	}
+
+	/* No memory sections found in this section,
+	 * or the ones that were found have been passed. */
 
 	return addr;
-}
-
-/** Finds an address that can fit a certain
- * number of bytes. This function does not reserve
- * the address that was found. */
-static void *
-find_addr(const struct memmap *memmap,
-          unsigned long int size) {
-
-	void *addr;
-	unsigned long int i;
-	struct memmap_section *unused_section;
-
-	for (i = 0; i < memmap->unused_section_count; i++) {
-
-		unused_section = &memmap->unused_section_array[i];
-
-		addr = find_addr_in_section(memmap, unused_section, size);
-		if (addr != NULL)
-			return addr;
-	}
-
-	return NULL;
 }
 
 /** Creates the used section array by allocating memory in the first
@@ -140,6 +141,20 @@ alloc_used_section(struct memmap *memmap) {
 		return NULL;
 
 	return section;
+}
+
+void
+memmap_section_init(struct memmap_section *section) {
+	section->addr = NULL;
+	section->size = 0;
+}
+
+void
+memmap_section_set(struct memmap_section *section,
+                   void *addr,
+                   unsigned long int size) {
+	section->addr = addr;
+	section->size = size;
 }
 
 void
@@ -203,13 +218,33 @@ memmap_add(struct memmap *memmap,
 }
 
 void *
+memmap_find(const struct memmap *memmap,
+            unsigned long int size) {
+
+	void *addr;
+	unsigned long int i;
+	struct memmap_section *unused_section;
+
+	for (i = 0; i < memmap->unused_section_count; i++) {
+
+		unused_section = &memmap->unused_section_array[i];
+
+		addr = find_addr_in_section(memmap, unused_section, size);
+		if (addr != NULL)
+			return addr;
+	}
+
+	return NULL;
+}
+
+void *
 memmap_alloc(struct memmap *memmap,
              unsigned long int size) {
 
 	struct memmap_section *section;
 	void *addr;
 
-	addr = find_addr(memmap, size);
+	addr = memmap_find(memmap, size);
 	if (addr == NULL)
 		return NULL;
 

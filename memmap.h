@@ -51,6 +51,26 @@ struct memmap_section {
 	unsigned long int size;
 };
 
+/** Initializes a memory section.
+ * @param section An uninitialized section.
+ * */
+
+void
+memmap_section_init(struct memmap_section *section);
+
+/** Sets the block of memory associated
+ * with the section.
+ * @param section An initialized memory section.
+ * @param addr The new address for the section.
+ * @param size The size, in bytes, of the block
+ * of memory.
+ * */
+
+void
+memmap_section_set(struct memmap_section *section,
+                   void *addr,
+                   unsigned long int size);
+
 /** The minimum size of a memory map.
  * Defined as a memory map that has enough
  * to allocate zero bytes.
@@ -97,6 +117,17 @@ int
 memmap_add(struct memmap *memmap,
            void *addr,
            unsigned long int size);
+
+/** Find an address able to fit a
+ * certain amount of memory. This
+ * function is used internally and
+ * doesn't serve much purpose outside
+ * of the library.
+ * */
+
+void *
+memmap_find(const struct memmap *memmap,
+            unsigned long int size);
 
 /** Allocates memory from the memory map.
  * @param memmap An initialized memory map.
