@@ -16,23 +16,22 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "test.h"
-
 #include "crc32-test.h"
-#include "gpt-test.h"
-#include "memmap-test.h"
 
-#include <stdlib.h>
+#include "assert.h"
+#include "crc32.h"
 
-int
-main(void) {
-	run_tests();
-	return EXIT_SUCCESS;
+void
+crc32_test(void) {
+	crc32_test_main();
 }
 
 void
-run_tests(void) {
-	crc32_test();
-	gpt_test();
-	memmap_test();
+crc32_test_main(void) {
+
+	uint32_t checksum;
+	const char sentence[] = "The quick brown fox jumps over the lazy dog.\n";
+
+	checksum = crc32(sentence, sizeof(sentence) - 1);
+	assert(checksum == 0xeb50cc6a);
 }

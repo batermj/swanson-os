@@ -11,6 +11,9 @@ SOURCES += "assert.c"
 HEADERS += "crc32.h"
 SOURCES += "crc32.c"
 
+HEADERS += "crc32-test.h"
+SOURCES += "crc32-test.c"
+
 HEADERS += "debug.h"
 SOURCES += "debug.c"
 

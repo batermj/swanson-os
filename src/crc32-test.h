@@ -16,23 +16,21 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "test.h"
+#ifndef SWANSON_CRC32_TEST_H
+#define SWANSON_CRC32_TEST_H
 
-#include "crc32-test.h"
-#include "gpt-test.h"
-#include "memmap-test.h"
-
-#include <stdlib.h>
-
-int
-main(void) {
-	run_tests();
-	return EXIT_SUCCESS;
-}
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void
-run_tests(void) {
-	crc32_test();
-	gpt_test();
-	memmap_test();
-}
+crc32_test(void);
+
+void
+crc32_test_main(void);
+
+#ifdef __cplusplus
+} /* extern "C" { */
+#endif
+
+#endif /* SWANSON_CRC32_TEST_H */
