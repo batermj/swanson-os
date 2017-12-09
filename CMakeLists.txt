@@ -14,3 +14,5 @@ endif (SWANSON_BUILD_SRC)
 if (SWANSON_BUILD_DOCS)
 	add_subdirectory("docs")
 endif (SWANSON_BUILD_DOCS)
+
+enable_testing()
