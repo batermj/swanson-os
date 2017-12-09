@@ -63,6 +63,7 @@ Here's a list of dependencies for building the project.
 | cmake    | Used for building the project.     | Yes      |
 | doxygen  | Used for generating documentation. | No       |
 | graphviz | Used for generating documentation. | No       |
+| qmake    | Used for development.              | No       |
 
 It's assumed you will have either GCC, Clang or Microsoft Visual Studio already installed.
 
