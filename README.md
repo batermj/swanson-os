@@ -1,6 +1,9 @@
 Swanson OS
 ==========
 
+[![Build Status](https://travis-ci.org/tay10r/swanson_os.svg?branch=master)](https://travis-ci.org/tay10r/swanson_os)
+[![Build status](https://ci.appveyor.com/api/projects/status/9ydfcp7s3t6pp4u8/branch/master?svg=true)](https://ci.appveyor.com/project/tholberton/swanson-os/branch/master)
+
 Swanson is an operating system built for virtualization.
 
 It is intended to be a POSIX-complaint operating system that can run entirely in user space.
