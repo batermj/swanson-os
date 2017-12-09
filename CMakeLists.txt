@@ -4,6 +4,8 @@ project("Swanson OS" C)
 
 option(SWANSON_DOCUMENTATION "Build the documentation with Doxygen." ON)
 
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
 	set (SWANSON_WITH_CLANG ON)
 endif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
@@ -18,7 +20,6 @@ endif (MSVC)
 
 if (CMAKE_COMPILER_IS_GNUCC OR SWANSON_WITH_CLANG)
 	list (APPEND SWANSON_CFLAGS -Wall -Wextra -Werror -Wfatal-errors)
-	list (APPEND SWANSON_CFLAGS -iquote "${CMAKE_CURRENT_SOURCE_DIR}")
 endif (CMAKE_COMPILER_IS_GNUCC OR SWANSON_WITH_CLANG)
 
 # Use these functions for adding targets
