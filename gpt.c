@@ -639,7 +639,7 @@ gpt_source_allocate(struct gpt_source *source,
 	struct gpt_header header;
 	struct gpt_partition partition;
 	uint64_t size_available;
-	uint64_t i;
+	uint32_t i;
 	uint64_t starting_lba;
 	uint64_t lba_count;
 

@@ -85,7 +85,7 @@ stream_decode_uint16le(struct stream *stream,
 
 	uint8_t buf[2];
 	uint64_t read_count;
-	uint32_t n;
+	uint16_t n;
 
 	read_count = stream_read(stream, buf, sizeof(buf));
 	if (read_count != sizeof(buf))
