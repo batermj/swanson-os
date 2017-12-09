@@ -23,19 +23,88 @@
 
 #include <stdlib.h>
 
-#ifndef NULL
-#define NULL ((void *) 0x00)
-#endif
+#define ADDR(addr) ((void *) addr)
 
 void
 memmap_test(void) {
+	memmap_test_free();
 	memmap_test_find();
 	memmap_test_add();
+	memmap_test_alloc();
+}
 
-	/* Skipping this for now.
-	 *
-	 * memmap_test_alloc();
-	 */
+void
+memmap_test_free(void) {
+
+	unsigned char *buf;
+	struct memmap memmap;
+	unsigned char *addr1;
+	unsigned char *addr2;
+	unsigned char *addr3;
+	unsigned char *addr4;
+
+	buf = malloc(1024);
+	assert(buf != NULL);
+
+	memmap_init(&memmap);
+
+	memmap.unused_section_array = (struct memmap_section *) buf;
+	memmap.unused_section_array[0].addr = buf;
+	memmap.unused_section_array[0].size = 1024;
+	memmap.unused_section_count = 1;
+
+	memmap.used_section_array = (struct memmap_section *) &buf[sizeof(struct memmap_section)];
+	memmap.used_section_array[0].addr = memmap.unused_section_array;
+	memmap.used_section_array[0].size = sizeof(struct memmap_section);
+	memmap.used_section_array[1].addr = memmap.used_section_array;
+	memmap.used_section_array[1].size = sizeof(struct memmap_section) * 6;
+	memmap.used_section_array[2].addr = &buf[sizeof(struct memmap_section) * 7];
+	memmap.used_section_array[2].size = 1;
+	memmap.used_section_array[3].addr = &buf[sizeof(struct memmap_section) * 7];
+	memmap.used_section_array[3].size = 1;
+	memmap.used_section_array[4].addr = &buf[sizeof(struct memmap_section) * 7];
+	memmap.used_section_array[4].size = 1;
+	memmap.used_section_array[5].addr = &buf[sizeof(struct memmap_section) * 7];
+	memmap.used_section_array[5].size = 1;
+	memmap.used_section_count = 6;
+
+	addr1 = memmap.used_section_array[2].addr;
+	addr2 = memmap.used_section_array[3].addr;
+	addr3 = memmap.used_section_array[4].addr;
+	addr4 = memmap.used_section_array[5].addr;
+
+	memmap_free(&memmap, addr2);
+
+	assert(memmap.used_section_count == 5);
+	assert(memmap.used_section_array[2].addr == addr1);
+	assert(memmap.used_section_array[4].addr == addr3);
+	assert(memmap.used_section_array[5].addr == addr4);
+
+	memmap_free(&memmap, addr4);
+
+	assert(memmap.used_section_count == 4);
+	assert(memmap.used_section_array[2].addr == addr1);
+	assert(memmap.used_section_array[4].addr == addr3);
+
+	memmap_free(&memmap, addr1);
+
+	assert(memmap.used_section_count == 3);
+	assert(memmap.used_section_array[4].addr == addr3);
+
+	memmap_free(&memmap, addr3);
+
+	assert(memmap.used_section_count == 2);
+
+	/* Just a check to make sure freeing
+	 * an address that does not exist does
+	 * not create some strange error. This
+	 * may show up on valgrind if it does. */
+
+	memmap_free(&memmap, ADDR(0x49));
+
+	assert(memmap.used_section_count == 2);
+
+	free(buf);
 }
 
 void
@@ -215,38 +284,73 @@ memmap_test_add(void) {
 void
 memmap_test_alloc(void) {
 
-	char section_one[64];
-	char section_two[64];
-	struct memmap_section unused_section_array[2];
-	unsigned long int unused_section_count;
+	unsigned char *buf;
+	unsigned char *buf_end;
+	unsigned long int buf_size;
+	enum memmap_error error;
 	struct memmap memmap;
-	void *addr;
+	unsigned char *addr;
+	unsigned char *addr2;
 
-	unused_section_array[0].addr = section_one;
-	unused_section_array[0].size = sizeof(section_one);
+	/* Used this much memory for the
+	 * memory map. */
 
-	unused_section_array[1].addr = section_two;
-	unused_section_array[1].size = sizeof(section_two);
+	buf_size = 1024;
 
-	unused_section_count = 2;
+	/* Allocate the memory for the
+	 * memory map. */
+
+	buf = malloc(buf_size);
+	assert(buf != NULL);
+
+	/* The last byte in the memory
+	 * used by the memory map. */
+
+	buf_end = &buf[buf_size - 1];
+
+	/* Initialize the memory map. */
 
 	memmap_init(&memmap);
 
-	memmap.unused_section_array = unused_section_array;
-	memmap.unused_section_count = unused_section_count;
+	/* Add the memory block to be used
+	 * by the memory map. */
 
-	// addr = memmap_alloc(&memmap, 1);
-	addr = NULL;
-	/* one section for the address that was allocated,
-	 * and one section for the used section array itself */
-	assert(memmap.used_section_count == 2);
-	/* memmap uses the first address in the first
-	 * unused section to account for used sections. */
-	assert(memmap.used_section_array == ((void *) section_one));
-	assert(memmap.used_section_array[0].addr == section_one);
-	assert(memmap.used_section_array[0].size == (sizeof(struct memmap_section) * 2));
-	assert(memmap.used_section_array[1].addr == &section_one[sizeof(struct memmap_section) * 2]);
-	assert(memmap.used_section_array[1].size == 1);
-	assert(addr == memmap.used_section_array[1].addr);
+	error = memmap_add(&memmap, buf, buf_size);
+	assert(error == MEMMAP_ERROR_NONE);
+
+	/* Allocate memory */
+
+	addr = memmap_alloc(&memmap, 64);
+	/* Make sure the address isn't NULL. */
+	assert(addr != NULL);
+	/* Make sure the address is in
+	 * the expected range. */
+	assert(addr >= buf);
+	assert(addr <= buf_end);
+
+	/* Used sections:
+	 *   Unused section array
+	 *   Used section array
+	 *   New address */
+	assert(memmap.used_section_count == 3);
+	assert(memmap.used_section_array[0].addr == memmap.unused_section_array);
+	assert(memmap.used_section_array[1].addr == memmap.used_section_array);
+	assert(memmap.used_section_array[2].addr == addr);
+
+	/* Allocate some more memory. */
+
+	addr2 = memmap_alloc(&memmap, 64);
+	assert(addr2 != NULL);
+	assert(addr2 >= buf);
+	assert(addr2 <= buf_end);
+	assert(memmap.used_section_count == 4);
+	assert(memmap.used_section_array[0].addr == memmap.unused_section_array);
+	assert(memmap.used_section_array[1].addr == addr);
+	assert(memmap.used_section_array[2].addr == memmap.used_section_array);
+	assert(memmap.used_section_array[3].addr == addr2);
+	/* Make sure that the two memory blocks
+	 * don't overlap. */
+	assert(((addr2 + 64) <= addr) || (addr2 >= (addr + 64)));
+
+	free(buf);
 }
-

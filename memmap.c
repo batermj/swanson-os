@@ -88,59 +88,53 @@ find_addr_in_section(const struct memmap *memmap,
 	return addr;
 }
 
-/** Creates the used section array by allocating memory in the first
- * suitable unused memory section. */
-static int
-bootstap_used_section_array(struct memmap *memmap) {
-
-	struct memmap_section *unused_section;
-	unsigned long int i;
-
-	unused_section = NULL;
-
-	/* Find an unused section that can support the size
-	 * required by the used section array. */
-	for (i = 0; i < memmap->unused_section_count; i++) {
-		/* Can the unused section fit the used section array? */
-		if (memmap->unused_section_array[i].size >= sizeof(struct memmap_section)) {
-			unused_section = &memmap->unused_section_array[i];
-			break;
-		}
-	}
-
-	/* Check that an unused section was found.  */
-	if (unused_section == NULL)
-		return -1;
-
-	memmap->used_section_array = unused_section->addr;
-	memmap->used_section_array[0].addr = unused_section->addr;
-	memmap->used_section_array[0].size = sizeof(struct memmap_section);
-
-	return 0;
-}
-
 /** Allocates a used section for the used section array. */
 static struct memmap_section *
 alloc_used_section(struct memmap *memmap) {
 
-	struct memmap_section *section;
 	struct memmap_section *used_section_array;
+	struct memmap_section *old_section_array;
 	unsigned long int used_section_array_size;
+	unsigned long int i;
 
-	section = NULL;
+	/* Calculate the required size for the new
+	 * used section array. */
 
-	if (memmap->used_section_array == NULL) {
-		if (bootstap_used_section_array(memmap) != 0)
-			return NULL;
-	}
+	used_section_array_size = memmap->used_section_count + 1;
+	used_section_array_size *= sizeof(struct memmap_section);
 
-	used_section_array_size = (memmap->used_section_count + 1) * sizeof(struct memmap_section);
-	used_section_array = memmap->used_section_array;
-	used_section_array = memmap_realloc(memmap, used_section_array, used_section_array_size);
+	/* Find an address for the used section array. */
+
+	used_section_array = memmap_find(memmap, used_section_array_size);
 	if (used_section_array == NULL)
 		return NULL;
 
-	return section;
+	/* Free the old used section array. */
+
+	old_section_array = memmap->used_section_array;
+
+	memmap_free(memmap, old_section_array);
+
+	/* Copy the contents over to the new used section array. */
+
+	for (i = 0; i < memmap->used_section_count; i++) {
+		used_section_array[i] = old_section_array[i];
+	}
+
+	/* Reassign the entry for the used section array. */
+
+	memmap->used_section_array = used_section_array;
+	memmap->used_section_array[memmap->used_section_count].addr = memmap->used_section_array;
+	memmap->used_section_array[memmap->used_section_count].size = used_section_array_size;
+	memmap->used_section_count++;
+
+	/* Zero the new section. */
+
+	memmap->used_section_array[memmap->used_section_count].addr = NULL;
+	memmap->used_section_array[memmap->used_section_count].size = 0;
+	memmap->used_section_count++;
+
+	return &memmap->used_section_array[memmap->used_section_count - 1];
 }
 
 void
@@ -294,15 +288,21 @@ memmap_alloc(struct memmap *memmap,
              unsigned long int size) {
 
 	struct memmap_section *section;
-	void *addr;
 
-	addr = memmap_find(memmap, size);
-	if (addr == NULL)
-		return NULL;
+	void *addr;
 
 	section = alloc_used_section(memmap);
 	if (section == NULL)
 		return NULL;
+
+	addr = memmap_find(memmap, size);
+	if (addr == NULL) {
+		/* Remove the last used section
+		 * in the section array, since it
+		 * could not be properly initialized. */
+		memmap->used_section_count--;
+		return NULL;
+	}
 
 	section->addr = addr;
 	section->size = size;
@@ -339,9 +339,9 @@ memmap_free(struct memmap *memmap,
 		used_section = &memmap->used_section_array[i];
 		/* Is this the used section associated with
 		 * the address? */
-		if (used_section->addr != addr)
-			/* No it isn't. */
-			continue;
+		if (used_section->addr == addr)
+			/* Yes it is, break the loop. */
+			break;
 	}
 
 	/* Check to see if section was found. */

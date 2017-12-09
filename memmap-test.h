@@ -29,6 +29,13 @@ extern "C" {
 void
 memmap_test(void);
 
+/** Test the address release
+ * functionality.
+ * */
+
+void
+memmap_test_free(void);
+
 /** Test the address finding mechanism.
  * */
 
