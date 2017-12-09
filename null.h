@@ -16,6 +16,8 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** @file */
+
 #ifndef SWANSON_NULL_H
 #define SWANSON_NULL_H
 

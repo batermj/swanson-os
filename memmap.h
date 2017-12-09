@@ -122,7 +122,14 @@ memmap_add(struct memmap *memmap,
  * certain amount of memory. This
  * function is used internally and
  * doesn't serve much purpose outside
- * of the library.
+ * of the library. This function does
+ * not reserve memory for the address
+ * that is returned.
+ * @param memmap An initialized memory map.
+ * @param size The size, in bytes, that the
+ * address should be able to accomodate.
+ * @returns The address, on success. @ref NULL
+ * on failure.
  * */
 
 void *

@@ -471,6 +471,11 @@ gpt_add_partition(struct stream *stream,
                   uint32_t *partition_index,
                   uint64_t partition_size);
 
+/** Represents a medium from which
+ * GPT data can be read from and
+ * written to.
+ * */
+
 struct gpt_source {
 	/** Implementation data. */
 	void *data;
@@ -493,6 +498,7 @@ struct gpt_source {
 };
 
 /** Initializes a GPT source structure.
+ * @param source An uninitialized GPT source.
  * */
 
 void
@@ -563,6 +569,7 @@ gpt_source_read_partition(struct gpt_source *source,
  * @param partition_index The index of the partition header.
  * @param partition The structure containing information
  * about the partition.
+ * @returns See @ref gpt_error.
  * */
 
 enum gpt_error
@@ -576,6 +583,7 @@ gpt_source_write_partition(struct gpt_source *source,
  * @param partition_index The index of the partition header.
  * @param partition The structure containing information
  * about the partition.
+ * @returns See @ref gpt_error.
  * */
 
 enum gpt_error
