@@ -34,10 +34,24 @@ CMake is the primary build system.
 
 Build the project by doing this:
 
-```
+```shell-script
 mkdir build && cd build
 cmake ..
 cmake --build .
+```
+
+If you're developing the project in the terminal, QMake may be useful as well.
+It generates Makefiles recursively, and creates a target for the test program.
+This makes it easy to work inside the source directory, and run the test program as changes are made.
+
+Use it like so:
+
+```shell-script
+qmake
+cd src
+# Edit stuff
+make
+make check
 ```
 
 ### Dependencies
