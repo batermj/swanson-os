@@ -1,1 +1,7 @@
 /build/*
+/.qmake.stash
+/Makefile
+/src/Makefile
+*.o
+/src/swanson-test
+/src/target_wrapper.sh
