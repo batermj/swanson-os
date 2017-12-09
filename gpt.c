@@ -19,11 +19,8 @@
 #include "gpt.h"
 
 #include "crc32.h"
+#include "null.h"
 #include "sstream.h"
-
-#ifndef NULL
-#define NULL ((void *) 0x00)
-#endif
 
 const struct guid gpt_guid_swanson = {
 	{
@@ -693,7 +690,8 @@ gpt_source_add_partition(struct gpt_source *source,
 	struct gpt_header header;
 	struct gpt_partition partition;
 	uint32_t partition_index;
-	uint32_t lba_count;
+	uint64_t starting_lba;
+	uint64_t lba_count;
 
 	if (partition_size == 0)
 		lba_count = 1;
@@ -710,25 +708,27 @@ gpt_source_add_partition(struct gpt_source *source,
 
 	header.partition_count++;
 
-	/* TODO : find space for the partition */
+	partition_index = header.partition_count - 1;
 
-	error = gpt_source_update_header(source, &header);
+	error = gpt_source_allocate(source, partition_size, &starting_lba);
 	if (error != GPT_ERROR_NONE)
 		return error;
 
-	partition_index = header.partition_count - 1;
-
 	gpt_partition_init(&partition);
 
-	partition.first_lba = 0;
+	partition.first_lba = starting_lba;
 	partition.last_lba = partition.first_lba + (lba_count - 1);
 
 	error = gpt_source_update_partition(source, partition_index, &partition);
 	if (error != GPT_ERROR_NONE)
 		return error;
 
+	error = gpt_source_update_header(source, &header);
+	if (error != GPT_ERROR_NONE)
+		return error;
+
 	if (partition_index_ptr != NULL)
-		return partition_index;
+		*partition_index_ptr = partition_index;
 
 	return GPT_ERROR_NONE;
 }

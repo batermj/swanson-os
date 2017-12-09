@@ -90,6 +90,38 @@ read_partition_backup(void *fake_source_ptr,
 }
 
 static int
+write_partition(void *fake_source_ptr,
+                uint32_t partition_index,
+                const struct gpt_partition *partition) {
+
+	struct gpt_fake_source *fake_source;
+
+	fake_source = (struct gpt_fake_source *) fake_source_ptr;
+
+	assert(partition_index <= 1);
+
+	fake_source->partitions[partition_index] = *partition;
+
+	return 0;
+}
+
+static int
+write_partition_backup(void *fake_source_ptr,
+                       uint32_t partition_index,
+                       const struct gpt_partition *partition) {
+
+	struct gpt_fake_source *fake_source;
+
+	fake_source = (struct gpt_fake_source *) fake_source_ptr;
+
+	assert(partition_index <= 1);
+
+	fake_source->partition_backups[partition_index] = *partition;
+
+	return 0;
+}
+
+static int
 write_header(void *fake_source_ptr,
              const struct gpt_header *header) {
 
@@ -140,6 +172,9 @@ gpt_fake_source_init(struct gpt_fake_source *fake_source) {
 
 	fake_source->source.read_partition = read_partition;
 	fake_source->source.read_partition_backup = read_partition_backup;
+
+	fake_source->source.write_partition = write_partition;
+	fake_source->source.write_partition_backup = write_partition_backup;
 }
 
 static struct gpt_source *
@@ -222,13 +257,25 @@ gpt_test_add_partition(void) {
 	enum gpt_error error;
 	struct gpt_fake_source fake_source;
 	struct gpt_source *source;
+	uint32_t partition_index;
 
 	gpt_fake_source_init(&fake_source);
+	fake_source.header.first_usable_lba = 44;
+	fake_source.header.last_usable_lba = 46;
 
 	source = gpt_fake_source_to_source(&fake_source);
 	assert(source != NULL);
 
-	error = gpt_source_format(source);
+	error = gpt_source_add_partition(source, 2048, &partition_index);
+	assert(error == GPT_ERROR_NEED_SPACE);
+
+	error = gpt_source_add_partition(source, 512, &partition_index);
+	assert(error == GPT_ERROR_NONE);
+
+	error = gpt_source_add_partition(source, 2048 - 512, &partition_index);
+	assert(error == GPT_ERROR_NEED_SPACE);
+
+	error = gpt_source_add_partition(source, 1024, &partition_index);
 	assert(error == GPT_ERROR_NONE);
 }
 
