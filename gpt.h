@@ -647,6 +647,17 @@ gpt_source_allocate(struct gpt_source *source,
                     uint64_t size,
                     uint64_t *starting_lba);
 
+/** Calculates the checksum for the header
+ * and the partition entry array. This should
+ * be called when the gpt source is no longer
+ * going to be modified.
+ * @param source An initialized GPT source.
+ * @returns See @ref gpt_error.
+ * */
+
+enum gpt_error
+gpt_source_do_checksums(struct gpt_source *source);
+
 #ifdef __cplusplus
 } /* extern "C" { */
 #endif

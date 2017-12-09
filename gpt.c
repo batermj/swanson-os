@@ -733,3 +733,8 @@ gpt_source_add_partition(struct gpt_source *source,
 	return GPT_ERROR_NONE;
 }
 
+enum gpt_error
+gpt_source_do_checksums(struct gpt_source *source) {
+	(void) source;
+	return GPT_ERROR_NOT_IMPLEMENTED;
+}

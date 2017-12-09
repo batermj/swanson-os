@@ -285,8 +285,24 @@ gpt_test_format(void) {
 }
 
 void
+gpt_test_do_checksums(void) {
+
+	enum gpt_error error;
+	struct gpt_source *source;
+	struct gpt_fake_source fake_source;
+
+	gpt_fake_source_init(&fake_source);
+
+	source = gpt_fake_source_to_source(&fake_source);
+
+	error = gpt_source_do_checksums(source);
+	assert(error == GPT_ERROR_NONE);
+}
+
+void
 gpt_test(void) {
 	gpt_test_allocate();
 	gpt_test_add_partition();
 	gpt_test_format();
+	gpt_test_do_checksums();
 }

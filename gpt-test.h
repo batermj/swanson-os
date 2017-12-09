@@ -29,6 +29,14 @@ extern "C" {
 void
 gpt_test(void);
 
+/** Verifies the calculation
+ * of checksums is implemented
+ * correctly.
+ * */
+
+void
+gpt_test_do_checksums(void);
+
 /** Run the 'add_partition' test.
  * */
 
