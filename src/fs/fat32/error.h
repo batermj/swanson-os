@@ -51,7 +51,10 @@ enum fat32_error {
 	 * TODO : what does this mean exactly?
 	 * What is considered a 'good' partition
 	 * type? */
-	FAT32_ERROR_INVALID_PARTITION_TYPE
+	FAT32_ERROR_INVALID_PARTITION_TYPE,
+	/** The path given does not exist
+	 * on the file system. */
+	FAT32_ERROR_INVALID_PATH
 };
 
 /** Returns a string representation
