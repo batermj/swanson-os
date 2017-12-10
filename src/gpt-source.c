@@ -242,6 +242,19 @@ gpt_source_add_partition(struct gpt_source *source,
 
 enum gpt_error
 gpt_source_do_checksums(struct gpt_source *source) {
-	(void) source;
-	return GPT_ERROR_NOT_IMPLEMENTED;
+
+	enum gpt_error error;
+	struct gpt_header header;
+
+	gpt_header_init(&header);
+
+	error = gpt_source_read_header(source, &header);
+	if (error != GPT_ERROR_NONE)
+		return error;
+
+	error = gpt_source_write_header(source, &header);
+	if (error != GPT_ERROR_NONE)
+		return error;
+
+	return GPT_ERROR_NONE;
 }
