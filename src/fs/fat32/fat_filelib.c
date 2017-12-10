@@ -402,7 +402,7 @@ static FL_FILE* _create_file(const char *filename)
     int tailNum = 0;
 
     // No write access?
-    if (!_fs.disk_io.write_media)
+    if (!_fs.disk.write)
         return NULL;
 
     // Allocate a new file handle
@@ -652,15 +652,15 @@ void fl_attach_locks(void (*lock)(void), void (*unlock)(void))
 //-----------------------------------------------------------------------------
 // fl_attach_media:
 //-----------------------------------------------------------------------------
-int fl_attach_media(fn_diskio_read rd, fn_diskio_write wr)
+int fl_attach_media(struct fat32_disk *disk)
 {
     int res;
 
     // If first call to library, initialise
     CHECK_FL_INIT();
 
-    _fs.disk_io.read_media = rd;
-    _fs.disk_io.write_media = wr;
+    /* TODO : use copy function, if available. */
+    _fs.disk = *disk;
 
     // Initialise FAT parameters
     if ((res = fatfs_init(&_fs)) != FAT_INIT_OK)
@@ -772,7 +772,7 @@ void* fl_fopen(const char *path, const char *mode)
 #endif
 
     // No write access - remove write/modify flags
-    if (!_fs.disk_io.write_media)
+    if (!_fs.disk.write)
         flags &= ~(FILE_CREATE | FILE_WRITE | FILE_APPEND);
 
     FL_LOCK(&_fs);

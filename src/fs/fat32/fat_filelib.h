@@ -78,7 +78,7 @@ typedef struct sFL_FILE
 // External
 void                fl_init(void);
 void                fl_attach_locks(void (*lock)(void), void (*unlock)(void));
-int                 fl_attach_media(fn_diskio_read rd, fn_diskio_write wr);
+int                 fl_attach_media(struct fat32_disk *disk);
 void                fl_shutdown(void);
 
 // Standard API

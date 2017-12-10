@@ -1,61 +1,77 @@
 #include <stdio.h>
+#include <stdlib.h>
+
 #include "fat_filelib.h"
 
-int media_init()
-{
-    // ...
+struct fat32_diskfile {
+	struct fat32_disk disk;
+	FILE *file;
+};
+
+static int
+diskfile_read(void *data,
+              uint32_t sector_index,
+              void *buf,
+              uint32_t sector_count) {
+
+    struct fat32_diskfile *diskfile;
+
+    diskfile = (struct fat32_diskfile *) data;
+
+    fseek(diskfile->file, sector_index * 512, SEEK_SET);
+
+    fread(buf, 1, sector_count * 512, diskfile->file);
+
     return 1;
 }
 
-int media_read(unsigned long sector, unsigned char *buffer, unsigned long sector_count)
+static int
+diskfile_write(void *data,
+               uint32_t sector_index,
+               const void *buf,
+               uint32_t sector_count) {
+
+    struct fat32_diskfile *diskfile;
+
+    diskfile = (struct fat32_diskfile *) data;
+
+    fseek(diskfile->file, sector_index * 512, SEEK_SET);
+
+    fwrite(buf, 1, sector_count * 512, diskfile->file);
+
+    return 1;
+}
+
+int main(int argc, const char **argv)
 {
-    unsigned long i;
+    const char *diskpath;
+    struct fat32_diskfile diskfile;
 
-    for (i=0;i<sector_count;i++)
-    {
-        // ...
-        // Add platform specific sector (512 bytes) read code here
-        //..
+    if (argc >= 2)
+        diskpath = argv[1];
+    else
+        diskpath = "fat32.img";
 
-        sector ++;
-        buffer += 512;
+    diskfile.file = fopen(diskpath, "r+");
+    if (diskfile.file == NULL) {
+        fprintf(stderr, "Failed to open '%s'.\n", diskpath);
+        return EXIT_FAILURE;
     }
 
-    return 1;
-}
+    diskfile.disk.data = &diskfile;
+    diskfile.disk.read = diskfile_read;
+    diskfile.disk.write = diskfile_write;
 
-int media_write(unsigned long sector, unsigned char *buffer, unsigned long sector_count)
-{
-    unsigned long i;
-
-    for (i=0;i<sector_count;i++)
-    {
-        // ...
-        // Add platform specific sector (512 bytes) write code here
-        //..
-
-        sector ++;
-        buffer += 512;
-    }
-
-    return 1;
-}
-
-void main()
-{
     FL_FILE *file;
-
-    // Initialise media
-    media_init();
 
     // Initialise File IO Library
     fl_init();
 
     // Attach media access functions to library
-    if (fl_attach_media(media_read, media_write) != FAT_INIT_OK)
+    if (fl_attach_media(&diskfile.disk) != FAT_INIT_OK)
     {
         printf("ERROR: Media attach failed\n");
-        return; 
+        return EXIT_FAILURE;
     }
 
     // List root directory
@@ -84,4 +100,6 @@ void main()
     fl_listdirectory("/");
 
     fl_shutdown();
+
+    fclose(diskfile.file);
 }

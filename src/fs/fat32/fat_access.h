@@ -1,6 +1,8 @@
 #ifndef __FAT_ACCESS_H__
 #define __FAT_ACCESS_H__
 
+#include <stdint.h>
+
 #include "fat_defs.h"
 #include "fat_opts.h"
 
@@ -19,19 +21,26 @@
 #define FAT_DIR_ENTRIES_PER_SECTOR          (FAT_SECTOR_SIZE / FAT_DIR_ENTRY_SIZE)
 
 //-----------------------------------------------------------------------------
-// Function Pointers
-//-----------------------------------------------------------------------------
-typedef int (*fn_diskio_read) (uint32 sector, uint8 *buffer, uint32 sector_count);
-typedef int (*fn_diskio_write)(uint32 sector, uint8 *buffer, uint32 sector_count);
-
-//-----------------------------------------------------------------------------
 // Structures
 //-----------------------------------------------------------------------------
-struct disk_if
-{
-    // User supplied function pointers for disk IO
-    fn_diskio_read          read_media;
-    fn_diskio_write         write_media;
+
+/** Used for reading serialized
+ * FAT32 data.
+ * */
+
+struct fat32_disk {
+	/** Implementation data. */
+	void *data;
+	/** Reads sectors from disk. */
+	int (*read)(void *data,
+	            uint32_t sector,
+	            void *buffer,
+	            uint32_t sector_count);
+	/** Writes sectors to disk. */
+	int (*write)(void *data,
+	             uint32_t sector_index,
+	             const void *buffer,
+	             uint32_t sector_count);
 };
 
 // Forward declaration
@@ -72,8 +81,8 @@ struct fatfs
     uint8                   num_of_fats;
     tFatType                fat_type;
 
-    // Disk/Media API
-    struct disk_if          disk_io;
+    /** Source of FAT32 data. */
+    struct fat32_disk disk;
 
     // [Optional] Thread Safety
     void                    (*fl_lock)(void);
