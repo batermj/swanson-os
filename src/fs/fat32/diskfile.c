@@ -22,10 +22,52 @@
 #define NULL ((void *) 0x00)
 #endif
 
+static int
+diskfile_read(void *data,
+              uint32_t sector_index,
+              void *buf,
+              uint32_t sector_count) {
+
+	struct fat32_diskfile *diskfile;
+
+	diskfile = (struct fat32_diskfile *) data;
+
+	if (diskfile->file == NULL)
+		return 0;
+
+	fseek(diskfile->file, sector_index * 512, SEEK_SET);
+
+	fread(buf, 1, sector_count * 512, diskfile->file);
+
+	return 1;
+}
+
+static int
+diskfile_write(void *data,
+               uint32_t sector_index,
+               const void *buf,
+               uint32_t sector_count) {
+
+	struct fat32_diskfile *diskfile;
+
+	diskfile = (struct fat32_diskfile *) data;
+
+	if (diskfile->file == NULL)
+		return 0;
+
+	fseek(diskfile->file, sector_index * 512, SEEK_SET);
+
+	fwrite(buf, 1, sector_count * 512, diskfile->file);
+
+	return 1;
+}
+
 void
 fat32_diskfile_init(struct fat32_diskfile *diskfile) {
 	fat32_disk_init(&diskfile->disk);
 	diskfile->disk.data = diskfile;
+	diskfile->disk.read = diskfile_read;
+	diskfile->disk.write = diskfile_write;
 	diskfile->file = NULL;
 }
 
