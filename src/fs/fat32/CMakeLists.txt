@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 
 add_library("swanson-fat32"
+	"source.h"
+	"source.c"
 	"fat_access.h"
 	"fat_access.c"
 	"fat_cache.h"
