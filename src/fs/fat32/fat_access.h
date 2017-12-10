@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+#include "disk.h"
 #include "fat_defs.h"
 #include "fat_opts.h"
 
@@ -23,25 +24,6 @@
 //-----------------------------------------------------------------------------
 // Structures
 //-----------------------------------------------------------------------------
-
-/** Used for reading serialized
- * FAT32 data.
- * */
-
-struct fat32_disk {
-	/** Implementation data. */
-	void *data;
-	/** Reads sectors from disk. */
-	int (*read)(void *data,
-	            uint32_t sector,
-	            void *buffer,
-	            uint32_t sector_count);
-	/** Writes sectors to disk. */
-	int (*write)(void *data,
-	             uint32_t sector_index,
-	             const void *buffer,
-	             uint32_t sector_count);
-};
 
 // Forward declaration
 struct fat_buffer;

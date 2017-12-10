@@ -22,6 +22,7 @@
 #define SWANSON_FS_FAT32_DISKFILE_H
 
 #include "disk.h"
+#include "error.h"
 
 #include <stdio.h>
 
@@ -63,7 +64,7 @@ fat32_diskfile_done(struct fat32_diskfile *diskfile);
  * @returns Zero on success, non-zero on failure.
  * */
 
-int
+enum fat32_error
 fat32_diskfile_open(struct fat32_diskfile *diskfile,
                     const char *path,
                     const char *mode);
