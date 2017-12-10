@@ -19,9 +19,9 @@
 #include "error.h"
 
 const char *
-fat32_strerror(enum fat32_error error) {
+fat_strerror(enum fat_error error) {
 
-	if (error == FAT32_ERROR_NONE)
+	if (error == FAT_ERROR_NONE)
 		return "No Error";
 
 	return "Unknown Error";

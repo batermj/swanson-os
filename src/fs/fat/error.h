@@ -18,43 +18,43 @@
 
 /** @file */
 
-#ifndef SWANSON_FS_FAT32_ERROR_H
-#define SWANSON_FS_FAT32_ERROR_H
+#ifndef SWANSON_FS_FAT_ERROR_H
+#define SWANSON_FS_FAT_ERROR_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /** A list of errors that may
- * occur in a FAT32 function.
+ * occur in a FAT function.
  * */
 
-enum fat32_error {
+enum fat_error {
 	/** No error occurred. */
-	FAT32_ERROR_NONE,
+	FAT_ERROR_NONE,
 	/** An unknown error occurred. */
-	FAT32_ERROR_UNKNOWN,
+	FAT_ERROR_UNKNOWN,
 	/** An error occurred in a disk function. */
-	FAT32_ERROR_DISK_ERROR,
+	FAT_ERROR_DISK_ERROR,
 	/** The disk sector size is invalid. */
-	FAT32_ERROR_INVALID_SECTOR_SIZE,
-	/** The disk does not contain a valid FAT32 signature. */
-	FAT32_ERROR_INVALID_SIGNATURE,
+	FAT_ERROR_INVALID_SECTOR_SIZE,
+	/** The disk does not contain a valid FAT signature. */
+	FAT_ERROR_INVALID_SIGNATURE,
 	/** An incorrect endian value encountered.
 	 * TODO : can this be taken out? */
-	FAT32_ERROR_ENDIAN,
+	FAT_ERROR_ENDIAN,
 	/** Bad file system type.
 	 * TODO : how is this different from
-	 * @ref FAT32_ERROR_INVALID_SIGNATURE */
-	FAT32_ERROR_INVALID_FILESYS_TYPE,
+	 * @ref FAT_ERROR_INVALID_SIGNATURE */
+	FAT_ERROR_INVALID_FILESYS_TYPE,
 	/** Bad partition type.
 	 * TODO : what does this mean exactly?
 	 * What is considered a 'good' partition
 	 * type? */
-	FAT32_ERROR_INVALID_PARTITION_TYPE,
+	FAT_ERROR_INVALID_PARTITION_TYPE,
 	/** The path given does not exist
 	 * on the file system. */
-	FAT32_ERROR_INVALID_PATH
+	FAT_ERROR_INVALID_PATH
 };
 
 /** Returns a string representation
@@ -64,15 +64,15 @@ enum fat32_error {
  * the string representation for.
  * @returns A string representation of
  * the error code. If the error code is
- * invalid, it is considered @ref FAT32_ERROR_UNKNOWN.
+ * invalid, it is considered @ref FAT_ERROR_UNKNOWN.
  * The value returned is never @ref NULL.
  * */
 
 const char *
-fat32_strerror(enum fat32_error error);
+fat_strerror(enum fat_error error);
 
 #ifdef __cplusplus
 } /* extern "C" { */
 #endif
 
-#endif /* SWANSON_FS_FAT32_ERROR_H */
+#endif /* SWANSON_FS_FAT_ERROR_H */

@@ -23,7 +23,7 @@
 #endif
 
 void
-fat32_disk_init(struct fat32_disk *disk) {
+fat_disk_init(struct fat_disk *disk) {
 	disk->data = NULL;
 	disk->read = NULL;
 	disk->write = NULL;

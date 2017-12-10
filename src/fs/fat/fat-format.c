@@ -39,9 +39,9 @@ create_zero_img(const char *imagepath,
 int main(int argc, const char **argv)
 {
 	const char *diskpath;
-	enum fat32_error error;
-	struct fat32_disk *disk;
-	struct fat32_diskfile diskfile;
+	enum fat_error error;
+	struct fat_disk *disk;
+	struct fat_diskfile diskfile;
 	size_t disksize;
 	size_t sector_size;
 	int zero_img;
@@ -49,7 +49,7 @@ int main(int argc, const char **argv)
 	if (argc >= 2)
 		diskpath = argv[1];
 	else
-		diskpath = "fat32.img";
+		diskpath = "fat.img";
 
 	sector_size = 512;
 
@@ -63,15 +63,15 @@ int main(int argc, const char **argv)
 		return EXIT_FAILURE;
 	}
 
-	fat32_diskfile_init(&diskfile);
+	fat_diskfile_init(&diskfile);
 
-	error = fat32_diskfile_open(&diskfile, diskpath, "r+");
-	if (error != FAT32_ERROR_NONE) {
-		fprintf(stderr, "Failed to open '%s': %s.\n", diskpath, fat32_strerror(error));
+	error = fat_diskfile_open(&diskfile, diskpath, "r+");
+	if (error != FAT_ERROR_NONE) {
+		fprintf(stderr, "Failed to open '%s': %s.\n", diskpath, fat_strerror(error));
 		return EXIT_FAILURE;
 	}
 
-	disk = fat32_diskfile_to_disk(&diskfile);
+	disk = fat_diskfile_to_disk(&diskfile);
 
 	FL_FILE *file;
 
@@ -84,9 +84,9 @@ int main(int argc, const char **argv)
 		return EXIT_FAILURE;
 	}
 
-	fl_format((disksize + sector_size) / sector_size, "Swanson FAT32");
+	fl_format((disksize + sector_size) / sector_size, "Swanson FAT");
 
 	fl_shutdown();
 
-	fat32_diskfile_done(&diskfile);
+	fat_diskfile_done(&diskfile);
 }

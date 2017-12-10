@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-add_library("swanson-fat32"
+add_library("swanson-fat"
 	"disk.h"
 	"disk.c"
 	"diskfile.h"
@@ -30,6 +30,6 @@ add_library("swanson-fat32"
 	"fat_opts.h"
 	"fat_types.h")
 
-add_executable("fat32-format" "fat32-format.c")
+add_executable("fat-format" "fat-format.c")
 
-target_link_libraries("fat32-format" "swanson-fat32")
+target_link_libraries("fat-format" "swanson-fat")

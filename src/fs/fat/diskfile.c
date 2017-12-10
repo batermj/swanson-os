@@ -28,9 +28,9 @@ diskfile_read(void *data,
               void *buf,
               uint32_t sector_count) {
 
-	struct fat32_diskfile *diskfile;
+	struct fat_diskfile *diskfile;
 
-	diskfile = (struct fat32_diskfile *) data;
+	diskfile = (struct fat_diskfile *) data;
 
 	if (diskfile->file == NULL)
 		return 0;
@@ -48,9 +48,9 @@ diskfile_write(void *data,
                const void *buf,
                uint32_t sector_count) {
 
-	struct fat32_diskfile *diskfile;
+	struct fat_diskfile *diskfile;
 
-	diskfile = (struct fat32_diskfile *) data;
+	diskfile = (struct fat_diskfile *) data;
 
 	if (diskfile->file == NULL)
 		return 0;
@@ -63,8 +63,8 @@ diskfile_write(void *data,
 }
 
 void
-fat32_diskfile_init(struct fat32_diskfile *diskfile) {
-	fat32_disk_init(&diskfile->disk);
+fat_diskfile_init(struct fat_diskfile *diskfile) {
+	fat_disk_init(&diskfile->disk);
 	diskfile->disk.data = diskfile;
 	diskfile->disk.read = diskfile_read;
 	diskfile->disk.write = diskfile_write;
@@ -72,27 +72,27 @@ fat32_diskfile_init(struct fat32_diskfile *diskfile) {
 }
 
 void
-fat32_diskfile_done(struct fat32_diskfile *diskfile) {
+fat_diskfile_done(struct fat_diskfile *diskfile) {
 	if (diskfile->file != NULL) {
 		fclose(diskfile->file);
 		diskfile->file = NULL;
 	}
 }
 
-enum fat32_error
-fat32_diskfile_open(struct fat32_diskfile *diskfile,
+enum fat_error
+fat_diskfile_open(struct fat_diskfile *diskfile,
                     const char *path,
                     const char *mode) {
 
 	diskfile->file = fopen(path, mode);
 	if (diskfile->file == NULL)
-		return FAT32_ERROR_INVALID_PATH;
+		return FAT_ERROR_INVALID_PATH;
 
-	return FAT32_ERROR_NONE;
+	return FAT_ERROR_NONE;
 }
 
-struct fat32_disk *
-fat32_diskfile_to_disk(struct fat32_diskfile *diskfile) {
+struct fat_disk *
+fat_diskfile_to_disk(struct fat_diskfile *diskfile) {
 	return &diskfile->disk;
 }
 

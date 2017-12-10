@@ -652,7 +652,7 @@ void fl_attach_locks(void (*lock)(void), void (*unlock)(void))
 //-----------------------------------------------------------------------------
 // fl_attach_media:
 //-----------------------------------------------------------------------------
-int fl_attach_media(struct fat32_disk *disk)
+int fl_attach_media(struct fat_disk *disk)
 {
     int res;
 

@@ -18,8 +18,8 @@
 
 /** @file */
 
-#ifndef SWANSON_FS_FAT32_DISK_H
-#define SWANSON_FS_FAT32_DISK_H
+#ifndef SWANSON_FS_FAT_DISK_H
+#define SWANSON_FS_FAT_DISK_H
 
 #include <stdint.h>
 
@@ -28,10 +28,10 @@ extern "C" {
 #endif
 
 /** Used for reading serialized
- * FAT32 data.
+ * FAT data.
  * */
 
-struct fat32_disk {
+struct fat_disk {
 	/** Implementation data. */
 	void *data;
 	/** Reads sectors from disk. */
@@ -51,10 +51,10 @@ struct fat32_disk {
  * */
 
 void
-fat32_disk_init(struct fat32_disk *disk);
+fat_disk_init(struct fat_disk *disk);
 
 #ifdef __cplusplus
 } /* extern "C" { */
 #endif
 
-#endif /* SWANSON_FS_FAT32_DISK_H */
+#endif /* SWANSON_FS_FAT_DISK_H */

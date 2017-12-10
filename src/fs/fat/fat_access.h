@@ -63,8 +63,8 @@ struct fatfs
     uint8                   num_of_fats;
     tFatType                fat_type;
 
-    /** Source of FAT32 data. */
-    struct fat32_disk disk;
+    /** Source of FAT data. */
+    struct fat_disk disk;
 
     // [Optional] Thread Safety
     void                    (*fl_lock)(void);
