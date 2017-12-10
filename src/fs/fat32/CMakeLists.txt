@@ -24,6 +24,6 @@ add_library("swanson-fat32"
 	"fat_opts.h"
 	"fat_types.h")
 
-add_executable("fat32-example" "example.c")
+add_executable("fat32-format" "fat32-format.c")
 
-target_link_libraries("fat32-example" "swanson-fat32")
+target_link_libraries("fat32-format" "swanson-fat32")
