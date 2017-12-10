@@ -1,105 +1,92 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+#include "diskfile.h"
 #include "fat_filelib.h"
 
-struct fat32_diskfile {
-	struct fat32_disk disk;
-	FILE *file;
-};
-
 static int
-diskfile_read(void *data,
-              uint32_t sector_index,
-              void *buf,
-              uint32_t sector_count) {
+create_zero_img(const char *imagepath,
+                size_t imagesize) {
 
-    struct fat32_diskfile *diskfile;
+	FILE *image;
+	unsigned char zerobuffer[512];
+	size_t sector_size = 512;
+	size_t sector_count;
+	size_t write_count;
+	size_t i;
 
-    diskfile = (struct fat32_diskfile *) data;
+	sector_count = (imagesize + sector_size) / sector_size;
 
-    fseek(diskfile->file, sector_index * 512, SEEK_SET);
+	memset(zerobuffer, 0, sizeof(zerobuffer));
 
-    fread(buf, 1, sector_count * 512, diskfile->file);
+	image = fopen(imagepath, "wb");
+	if (image == NULL) {
+		return EXIT_FAILURE;
+	}
 
-    return 1;
-}
+	write_count = 0;
 
-static int
-diskfile_write(void *data,
-               uint32_t sector_index,
-               const void *buf,
-               uint32_t sector_count) {
+	while (write_count < (sector_count * sector_size)) {
+		write_count += fwrite(zerobuffer, 1, sizeof(zerobuffer), image);
+	}
 
-    struct fat32_diskfile *diskfile;
+	fclose(image);
 
-    diskfile = (struct fat32_diskfile *) data;
-
-    fseek(diskfile->file, sector_index * 512, SEEK_SET);
-
-    fwrite(buf, 1, sector_count * 512, diskfile->file);
-
-    return 1;
+	return EXIT_SUCCESS;
 }
 
 int main(int argc, const char **argv)
 {
-    const char *diskpath;
-    struct fat32_diskfile diskfile;
+	const char *diskpath;
+	enum fat32_error error;
+	struct fat32_disk *disk;
+	struct fat32_diskfile diskfile;
+	size_t disksize;
+	size_t sector_size;
+	int zero_img;
 
-    if (argc >= 2)
-        diskpath = argv[1];
-    else
-        diskpath = "fat32.img";
+	if (argc >= 2)
+		diskpath = argv[1];
+	else
+		diskpath = "fat32.img";
 
-    diskfile.file = fopen(diskpath, "r+");
-    if (diskfile.file == NULL) {
-        fprintf(stderr, "Failed to open '%s'.\n", diskpath);
-        return EXIT_FAILURE;
-    }
+	sector_size = 512;
 
-    diskfile.disk.data = &diskfile;
-    diskfile.disk.read = diskfile_read;
-    diskfile.disk.write = diskfile_write;
+	/* 256MiB */
+	disksize = 256 * 1024 * 1024;
 
-    FL_FILE *file;
+	zero_img = 0;
 
-    // Initialise File IO Library
-    fl_init();
+	if (zero_img && (create_zero_img(diskpath, disksize) != EXIT_SUCCESS)) {
+		fprintf(stderr, "Failed to zero '%s'.\n", diskpath);
+		return EXIT_FAILURE;
+	}
 
-    // Attach media access functions to library
-    if (fl_attach_media(&diskfile.disk) != FAT_INIT_OK)
-    {
-        printf("ERROR: Media attach failed\n");
-        return EXIT_FAILURE;
-    }
+	fat32_diskfile_init(&diskfile);
 
-    // List root directory
-    fl_listdirectory("/");
+	error = fat32_diskfile_open(&diskfile, diskpath, "r+");
+	if (error != FAT32_ERROR_NONE) {
+		fprintf(stderr, "Failed to open '%s': %s.\n", diskpath, fat32_strerror(error));
+		return EXIT_FAILURE;
+	}
 
-    // Create File
-    file = fl_fopen("/file.bin", "w");
-    if (file)
-    {
-        // Write some data
-        unsigned char data[] = { 1, 2, 3, 4 };
-        if (fl_fwrite(data, 1, sizeof(data), file) != sizeof(data))
-            printf("ERROR: Write file failed\n");
-    }
-    else
-        printf("ERROR: Create file failed\n");
+	disk = fat32_diskfile_to_disk(&diskfile);
 
-    // Close file
-    fl_fclose(file);
+	FL_FILE *file;
 
-    // Delete File
-    if (fl_remove("/file.bin") < 0)
-        printf("ERROR: Delete file failed\n");
+	// Initialise File IO Library
+	fl_init();
 
-    // List root directory
-    fl_listdirectory("/");
+	// Attach media access functions to library
+	if (fl_attach_media(disk) != FAT_INIT_OK) {
+		printf("Failed to assign disk file to library.\n");
+		return EXIT_FAILURE;
+	}
 
-    fl_shutdown();
+	fl_format((disksize + sector_size) / sector_size, "Swanson FAT32");
 
-    fclose(diskfile.file);
+	fl_shutdown();
+
+	fat32_diskfile_done(&diskfile);
 }
