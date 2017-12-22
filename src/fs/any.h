@@ -34,6 +34,8 @@ extern "C" {
 enum any_fs_type {
 	/** No active file system. */
 	ANY_FS_TYPE_NONE,
+	/** The file system is 'ramfs'. */
+	ANY_FS_TYPE_RAMFS,
 	/** The file system is 'ext4'. */
 	ANY_FS_TYPE_EXT4,
 	/** The file system is 'host'. */
@@ -66,7 +68,8 @@ struct any_fs {
  * @param fs The file system structure.
  * */
 
-void any_fs_init(struct any_fs *fs);
+void
+any_fs_init(struct any_fs *fs);
 
 /** Detect the file system contained
  * on a stream.
@@ -78,8 +81,9 @@ void any_fs_init(struct any_fs *fs);
  * non-zero if no supported file system was found.
  * */
 
-int any_fs_detect(struct any_fs *fs,
-                  struct stream *stream);
+int
+any_fs_detect(struct any_fs *fs,
+              struct stream *stream);
 
 #ifdef __cplusplus
 } /* extern "C" { */
