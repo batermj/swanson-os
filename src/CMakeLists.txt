@@ -64,15 +64,16 @@ add_swanson_library("swanson"
 	"stream.c"
 	"sstream.h"
 	"sstream.c"
-	"${CMAKE_CURRENT_BINARY_DIR}/initramfs.h"
-	"${CMAKE_CURRENT_BINARY_DIR}/initramfs.c")
+	"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.h"
+	"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.c")
 
 add_custom_command(OUTPUT
-		"${CMAKE_CURRENT_BINARY_DIR}/initramfs.h"
-		"${CMAKE_CURRENT_BINARY_DIR}/initramfs.c"
+		"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.h"
+		"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.c"
+	DEPENDS "rc" "init"
 	COMMAND
-		$<TARGET_FILE:rc> --header "${CMAKE_CURRENT_BINARY_DIR}/initramfs.h"
-		                  --source "${CMAKE_CURRENT_BINARY_DIR}/initramfs.c"
+		$<TARGET_FILE:rc> --header "${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.h"
+		                  --source "${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.c"
 		                  --input $<TARGET_FILE:init>
 		                  --name "initramfs_data")
 
