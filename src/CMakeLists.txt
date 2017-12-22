@@ -63,7 +63,19 @@ add_swanson_library("swanson"
 	"stream.h"
 	"stream.c"
 	"sstream.h"
-	"sstream.c")
+	"sstream.c"
+	"${CMAKE_CURRENT_BINARY_DIR}/initramfs.h"
+	"${CMAKE_CURRENT_BINARY_DIR}/initramfs.c")
+
+add_custom_command(OUTPUT
+		"${CMAKE_CURRENT_BINARY_DIR}/initramfs.h"
+		"${CMAKE_CURRENT_BINARY_DIR}/initramfs.c"
+	COMMAND
+		$<TARGET_FILE:rc> --header "${CMAKE_CURRENT_BINARY_DIR}/initramfs.h"
+		                  --source "${CMAKE_CURRENT_BINARY_DIR}/initramfs.c"
+		                  --input $<TARGET_FILE:init>
+		                  --name "initramfs_data")
+
 
 add_swanson_executable("gpt-tool" "gpt-tool.c")
 
@@ -81,6 +93,9 @@ install(TARGETS "swanson" "swanson-pc"
 	RUNTIME DESTINATION "bin"
 	ARCHIVE DESTINATION "lib"
 	LIBRARY DESTINATION "lib")
+
+add_subdirectory("init")
+add_subdirectory("utilities")
 
 add_swanson_test("swanson-test"
 	"test.h"
