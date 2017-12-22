@@ -16,16 +16,39 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+const char *notice = "/* This is an automatically generated file.\n"
+                     " * Edits of this file will be lost at build time.\n"
+                     " */\n";
 
 struct plan {
 	FILE *in;
 	FILE *header;
 	FILE *source;
+	const char *header_path;
+	const char *source_path;
 	const char *name;
 };
+
+static void
+write_macro(FILE *header, const char *name) {
+
+	char c;
+	unsigned int i;
+
+	for (i = 0; name[i]; i++) {
+		c = name[i];
+		if (isalnum(c)) {
+			fprintf(header, "%c", toupper(c));
+		} else {
+			fprintf(header, "_");
+		}
+	}
+}
 
 static void
 write_header(struct plan *plan) {
@@ -34,17 +57,74 @@ write_header(struct plan *plan) {
 
 	header = plan->header;
 
+	fprintf(header, "%s", notice);
+
 	fprintf(header, "\n");
+	fprintf(header, "#ifndef SWANSON_RC_");
+	write_macro(header, plan->header_path);
+	fprintf(header, "\n");
+
+	fprintf(header, "#define SWANSON_RC_");
+	write_macro(header, plan->header_path);
+	fprintf(header, "\n");
+
+	fprintf(header, "\n");
+	fprintf(header, "#ifdef __cplusplus\n");
+	fprintf(header, "extern \"C\" {\n");
+	fprintf(header, "#endif\n");
+
+	fprintf(header, "\n");
+	fprintf(header, "extern const void *%s;\n", plan->name);
+
+	fprintf(header, "\n");
+	fprintf(header, "extern const unsigned long int %s_size;\n", plan->name);
+
+	fprintf(header, "\n");
+	fprintf(header, "#ifdef __cplusplus\n");
+	fprintf(header, "} /* extern \"C\" */\n");
+	fprintf(header, "#endif\n");
+
+	fprintf(header, "\n");
+	fprintf(header, "#endif /* SWANSON_RC_");
+	write_macro(header, plan->header_path);
+	fprintf(header, " */\n");
 }
 
 static void
 write_source(struct plan *plan) {
 
+	unsigned int i;
+	unsigned int read_count;
+	unsigned char buf[16];
 	FILE *source;
 
 	source = plan->source;
 
+	fprintf(source, "%s", notice);
+
 	fprintf(source, "\n");
+	fprintf(source, "#include \"%s\"\n", plan->header_path);
+
+	fprintf(source, "\n");
+	fprintf(source, "const unsigned char %s_bytes[] = {\n", plan->name);
+	while (!feof(plan->in)) {
+		fprintf(source, "\t");
+		read_count = fread(buf, 1, sizeof(buf), plan->in);
+		for (i = 0; i < read_count; i++) {
+			if ((i + 1) < read_count) {
+				fprintf(source, "0x%02x, ", buf[i]);
+			} else {
+				fprintf(source, "0x%02x,\n", buf[i]);
+			}
+		}
+	}
+	fprintf(source, "};\n");
+
+	fprintf(source, "\n");
+	fprintf(source, "const void *%s = 0;\n", plan->name);
+
+	fprintf(source, "\n");
+	fprintf(source, "const unsigned long int %s_size = sizeof(%s_bytes);\n", plan->name, plan->name);
 }
 
 static void
@@ -143,7 +223,9 @@ main(int argc, const char **argv) {
 
 	plan.in = input;
 	plan.source = source;
+	plan.source_path = source_path;
 	plan.header = header;
+	plan.header_path = header_path;
 	plan.name = field_name;
 
 	execute_plan(&plan);
