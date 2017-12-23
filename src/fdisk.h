@@ -48,7 +48,8 @@ struct fdisk {
  * @param fdisk An uninitialized disk structure.
  * */
 
-void fdisk_init(struct fdisk *fdisk);
+void
+fdisk_init(struct fdisk *fdisk);
 
 /** Closes the file associated with
  * the disk. This function is safe to
@@ -57,7 +58,8 @@ void fdisk_init(struct fdisk *fdisk);
  * @param fdisk An initialized disk structure.
  * */
 
-void fdisk_close(struct fdisk *fdisk);
+void
+fdisk_close(struct fdisk *fdisk);
 
 /** Opens a disk containing by a file
  * in the host operating system. @ref fdisk_init
@@ -72,9 +74,20 @@ void fdisk_close(struct fdisk *fdisk);
  * is returned. Non-zero is returned otherwise.
  * */
 
-int fdisk_open(struct fdisk *fdisk,
-               const char *path,
-               const char *mode);
+int
+fdisk_open(struct fdisk *fdisk,
+           const char *path,
+           const char *mode);
+
+/** Casts a disk file to a base
+ * disk structure.
+ * @param fdisk An initialized disk file.
+ * @returns A base disk structure.
+ * This is never NULL.
+ * */
+
+struct disk *
+fdisk_to_disk(struct fdisk *fdisk);
 
 #ifdef __cplusplus
 } /* extern "C" { */

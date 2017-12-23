@@ -174,3 +174,8 @@ fdisk_open(struct fdisk *fdisk,
 
 	return 0;
 }
+
+struct disk *
+fdisk_to_disk(struct fdisk *fdisk) {
+	return &fdisk->base;
+}
