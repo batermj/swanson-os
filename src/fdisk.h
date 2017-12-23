@@ -38,6 +38,9 @@ struct fdisk {
 	struct disk base;
 	/** The file associated with the disk. */
 	FILE *file;
+	/** The path of the file associated with
+	 * the disk. */
+	char *path;
 };
 
 /** Initializes structure members.

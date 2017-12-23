@@ -19,10 +19,8 @@
 #include "fdisk.h"
 
 #include <limits.h>
-
-#ifndef NULL
-#define NULL ((void *) 0x00)
-#endif
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef _MSC_VER
 /* 4242 and 4244 warn about 'loss of data'
@@ -35,7 +33,9 @@
 #pragma warning (disable : 4244)
 #endif
 
-static int fdisk_getpos(void *fdisk_ptr, uint64_t *pos) {
+static int
+fdisk_getpos(void *fdisk_ptr,
+             uint64_t *pos) {
 
 	struct fdisk *fdisk = (struct fdisk *) fdisk_ptr;
 
@@ -51,7 +51,9 @@ static int fdisk_getpos(void *fdisk_ptr, uint64_t *pos) {
 	return 0;
 }
 
-static int fdisk_setpos(void *fdisk_ptr, uint64_t pos) {
+static int
+fdisk_setpos(void *fdisk_ptr,
+             uint64_t pos) {
 
 	struct fdisk *fdisk = (struct fdisk *) fdisk_ptr;
 
@@ -68,26 +70,29 @@ static int fdisk_setpos(void *fdisk_ptr, uint64_t pos) {
 	return 0;
 }
 
-static uint64_t fdisk_read(void *fdisk_ptr,
-                           void *buf,
-                           uint64_t buf_size) {
+static uint64_t
+fdisk_read(void *fdisk_ptr,
+           void *buf,
+           uint64_t buf_size) {
 
 	struct fdisk *fdisk = (struct fdisk *) fdisk_ptr;
 
 	return fread(buf, 1, buf_size, fdisk->file);
 }
 
-static uint64_t fdisk_write(void *fdisk_ptr,
-                            const void *buf,
-                            uint64_t buf_size) {
+static uint64_t
+fdisk_write(void *fdisk_ptr,
+            const void *buf,
+            uint64_t buf_size) {
 
 	struct fdisk *fdisk = (struct fdisk *) fdisk_ptr;
 
 	return fwrite(buf, 1, buf_size, fdisk->file);
 }
 
-static int fdisk_getsize(void *fdisk_ptr,
-                         uint64_t *size) {
+static int
+fdisk_getsize(void *fdisk_ptr,
+              uint64_t *size) {
 
 	int err;
 	struct fdisk *fdisk;
@@ -118,7 +123,8 @@ static int fdisk_getsize(void *fdisk_ptr,
 	return 0;
 }
 
-void fdisk_init(struct fdisk *fdisk) {
+void
+fdisk_init(struct fdisk *fdisk) {
 	fdisk->base.stream.data = fdisk;
 	fdisk->base.stream.read = fdisk_read;
 	fdisk->base.stream.write = fdisk_write;
@@ -126,25 +132,45 @@ void fdisk_init(struct fdisk *fdisk) {
 	fdisk->base.stream.setpos = fdisk_setpos;
 	fdisk->base.stream.getsize = fdisk_getsize;
 	fdisk->file = NULL;
+	fdisk->path = NULL;
 }
 
-void fdisk_close(struct fdisk *fdisk) {
+void
+fdisk_close(struct fdisk *fdisk) {
+
 	if (fdisk->file != NULL) {
 		fclose(fdisk->file);
 		fdisk->file = NULL;
 	}
+
+	if (fdisk->path != NULL) {
+		free(fdisk->path);
+		fdisk->path = NULL;
+	}
 }
 
-int fdisk_open(struct fdisk *fdisk,
-               const char *path,
-               const char *mode) {
+int
+fdisk_open(struct fdisk *fdisk,
+           const char *path,
+           const char *mode) {
+
+	size_t path_size;
 
 	if (fdisk->file != NULL)
 		fclose(fdisk->file);
 
+	if (fdisk->path != NULL)
+		free(fdisk->path);
+
 	fdisk->file = fopen(path, mode);
 	if (fdisk->file == NULL)
 		return -1;
+
+	path_size = strlen(path);
+
+	fdisk->path = malloc(path_size);
+	if (fdisk->path != NULL)
+		memcpy(fdisk->path, path, path_size + 1);
 
 	return 0;
 }
