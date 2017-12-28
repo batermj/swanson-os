@@ -21,6 +21,7 @@
 #include "fdisk.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 void
 options_init(struct options *options) {
@@ -76,6 +77,11 @@ options_add_disk(struct options *options,
 	return 0;
 }
 
+unsigned long int
+options_get_memory(const struct options *options) {
+	return options->memory;
+}
+
 struct disk *
 options_get_disk(struct options *options,
                  unsigned long int index) {
@@ -89,6 +95,32 @@ options_get_disk(struct options *options,
 unsigned long int
 options_get_disk_count(const struct options *options) {
 	return options->disk_count;
+}
+
+int
+options_parse_args(struct options *options,
+                   int argc, const char **argv) {
+
+	int i;
+	int err;
+
+	for (i = 0; i < argc; i++) {
+		if (strcmp(argv[i], "--disk") == 0) {
+
+			if ((i + 1) >= argc) {
+				return -1;
+			}
+
+			err = options_add_disk(options, argv[i + 1]);
+			if (err != 0)
+				return err;
+
+		} else {
+			return -1;
+		}
+	}
+
+	return 0;
 }
 
 int

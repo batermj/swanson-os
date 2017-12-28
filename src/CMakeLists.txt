@@ -105,10 +105,12 @@ add_swanson_test("swanson-test"
 	"test.c"
 	"crc32-test.h"
 	"crc32-test.c"
+	"gpt-test.h"
+	"gpt-test.c"
 	"memmap-test.h"
 	"memmap-test.c"
-	"gpt-test.h"
-	"gpt-test.c")
+	"options-test.h"
+	"options-test.c")
 
 enable_testing()
 

@@ -63,6 +63,15 @@ int
 options_add_disk(struct options *options,
                  const char *disk_path);
 
+/** Get the amount of memory that will be used
+ * for the kernel.
+ * @param options An initialized options structure.
+ * @returns The amount of memory to use for kernel.
+ * */
+
+unsigned long int
+options_get_memory(const struct options *options);
+
 /** Gets a disk from the disk array in
  * the options structure.
  * @param options An initialized options
@@ -89,6 +98,18 @@ options_get_disk(struct options *options,
 
 unsigned long int
 options_get_disk_count(const struct options *options);
+
+/** Parses options from the command line.
+ * @param options An initialized options structure.
+ * @param argc The number of arguments in the
+ * argument array.
+ * @param argv The array of command line arguments.
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+options_parse_args(struct options *options,
+                   int argc, const char **argv);
 
 /** Parses an amount of memory in human-readable
  * format.
