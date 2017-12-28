@@ -21,125 +21,118 @@
 #include <string.h>
 
 #include "debug.h"
-#include "fdisk.h"
 #include "kernel.h"
+#include "options.h"
 
-/** Used for storing options from
- * the command line.
- * */
-
-struct opts {
-	/** The number of bytes to allocate for memory. */
-	unsigned long int memory;
-	/** The disk image for the kernel to read. */
-	const char *disk_path;
-};
-
-/** Initializes default values
- * for the command line options.
- * */
-
-static void opts_init(struct opts *opts) {
-	/* 256 MiB */
-	opts->memory = 256 * 1024 * 1024;
-	opts->disk_path = "swanson.img";
-}
-
-/** Parses options from the
- * command line.
- * */
-
-static int opts_parse(struct opts *opts,
-                      int argc,
-                      const char **argv) {
-
-	int i;
-	const char *memory = NULL;
-	const char *disk_path = NULL;
-
-	for (i = 1; i < argc; i++) {
-		if ((strcmp(argv[i], "--memory") == 0)
-		 || (strcmp(argv[i], "-m") == 0)) {
-			memory = argv[i + 1];
-			i++;
-		} else if ((strcmp(argv[i], "--disk-path") == 0)
-		        || (strcmp(argv[i], "-d") == 0)) {
-			disk_path = argv[i + 1];
-			i++;
-		} else {
-			fprintf(stderr, "Unknown option '%s'\n", argv[i]);
-			return EXIT_FAILURE;
-		}
-	}
-
-	if (memory != NULL) {
-		if (sscanf(memory, "%lu", &opts->memory) != 1) {
-			fprintf(stderr, "Malformed memory amount '%s'\n", memory);
-			return EXIT_FAILURE;
-		}
-		/* memory given in MiB, so it should
-		 * be multiplied to get the number of bytes. */
-		opts->memory *= 1024 * 1024;
-	}
-
-	if (disk_path != NULL)
-		opts->disk_path = disk_path;
-
-	return EXIT_SUCCESS;
-}
-
-int main(int argc, const char **argv) {
+static int
+add_memory_from_options(struct kernel *kernel,
+                        const struct options *options) {
 
 	int err;
-	struct opts opts;
+	void *memory;
+	unsigned long int memory_size;
+
+	memory_size = options_get_memory(options);
+
+	memory = malloc(memory_size);
+	if (memory == NULL)
+		return -1;
+
+	err = kernel_add_memory(kernel, memory, memory_size);
+	if (err != 0) {
+		free(memory);
+		return err;
+	}
+
+	return 0;
+}
+
+static int
+add_disks_from_options(struct kernel *kernel,
+                       struct options *options) {
+
+	int err;
+	struct disk *disk;
+	unsigned long int disk_count;
+	unsigned long int i;
+
+	disk_count = options_get_disk_count(options);
+
+	for (i = 0; i < disk_count; i++) {
+
+		disk = options_get_disk(options, i);
+		if (disk == NULL)
+			continue;
+
+		err = kernel_add_disk(kernel, disk);
+		if (err != 0)
+			continue;
+	}
+
+	return 0;
+}
+
+static int
+parse_args(struct kernel *kernel,
+           int argc, const char **argv) {
+
+	int err;
+	struct options options;
+
+	options_init(&options);
+
+	err = options_parse_args(&options, argc, argv);
+	if (err != 0) {
+		options_free(&options);
+		return err;
+	}
+
+	err = add_memory_from_options(kernel, &options);
+	if (err != 0) {
+		options_free(&options);
+		return err;
+	}
+
+	err = add_disks_from_options(kernel, &options);
+	if (err != 0) {
+		options_free(&options);
+		return err;
+	}
+
+	options_free(&options);
+
+	return 0;
+}
+
+static void
+free_kernel_memory(struct kernel *kernel) {
+	unsigned long int i;
+	for (i = 0; i < kernel->memmap.unused_section_count; i++) {
+		free(kernel->memmap.unused_section_array[0].addr);
+	}
+}
+
+int
+main(int argc, const char **argv) {
+
+	int err;
 	enum kernel_exitcode exitcode;
 	struct kernel kernel;
-	void *kernel_memory;
-	struct fdisk disk;
-
-	opts_init(&opts);
-
-	opts_parse(&opts, argc, argv);
-
-	fdisk_init(&disk);
-
-	err = fdisk_open(&disk, opts.disk_path, "r+");
-	if (err != 0) {
-		fprintf(stderr, "Failed to open disk image '%s'.\n", opts.disk_path);
-		fdisk_close(&disk);
-		return EXIT_FAILURE;
-	}
-
-	kernel_memory = malloc(opts.memory);
-	if (kernel_memory == NULL) {
-		fprintf(stderr, "Failed to allocate memory for kernel.\n");
-		fdisk_close(&disk);
-		return EXIT_FAILURE;
-	}
 
 	kernel_init(&kernel);
 
-	err = kernel_add_memory(&kernel, kernel_memory, opts.memory);
+	err = parse_args(&kernel, argc - 1, &argv[1]);
 	if (err != 0) {
-		fprintf(stderr, "Failed to allocate memory for kernel.\n");
-		free(kernel_memory);
-		fdisk_close(&disk);
+		free_kernel_memory(&kernel);
 		return EXIT_FAILURE;
 	}
 
-	kernel.disk_array = &disk.base;
-	kernel.disk_count = 1;
-
 	exitcode = kernel_main(&kernel);
 
-	free(kernel_memory);
-
-	fdisk_close(&disk);
+	free_kernel_memory(&kernel);
 
 	if (exitcode == KERNEL_SUCCESS)
 		return EXIT_SUCCESS;
-	else if (exitcode == KERNEL_FAILURE)
-		return EXIT_FAILURE;
 	else
 		return EXIT_FAILURE;
 }

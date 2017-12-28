@@ -71,6 +71,16 @@ struct kernel {
 void
 kernel_init(struct kernel *kernel);
 
+/** Add a disk to the disk array.
+ * @param kernel An initialized kernel structure.
+ * @param disk An initialized disk structure.
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+kernel_add_disk(struct kernel *kernel,
+                struct disk *disk);
+
 /** Add a block of memory for the kernel
  * to use when needed.
  * @param kernel An initialized kernel structure.

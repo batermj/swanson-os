@@ -143,6 +143,33 @@ kernel_init(struct kernel *kernel) {
 }
 
 int
+kernel_add_disk(struct kernel *kernel,
+                struct disk *disk) {
+
+	struct disk *disk_array;
+	unsigned long int disk_count;
+	unsigned long int disk_array_size;
+
+	disk_count = kernel->disk_count + 1;
+
+	disk_array_size = disk_count * sizeof(kernel->disk_array[0]);
+
+	disk_array = kernel->disk_array;
+
+	disk_array = memmap_realloc(&kernel->memmap, disk_array, disk_array_size);
+	if (disk_array == NULL) {
+		return -1;
+	}
+
+	kernel->disk_array = disk_array;
+	kernel->disk_count = disk_count;
+
+	disk_array[disk_count - 1] = *disk;
+
+	return 0;
+}
+
+int
 kernel_add_memory(struct kernel *kernel,
                   void *addr,
                   unsigned long int size) {
