@@ -49,7 +49,8 @@ struct partition {
  * structure.
  * */
 
-void partition_init(struct partition *partition);
+void
+partition_init(struct partition *partition);
 
 #ifdef __cplusplus
 } /* extern "C" { */

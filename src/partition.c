@@ -18,7 +18,8 @@
 
 #include "partition.h"
 
-void partition_init(struct partition *partition) {
+void
+partition_init(struct partition *partition) {
 	disk_init(&partition->disk);
 	partition->offset = 0;
 	partition->length = 0;
