@@ -32,6 +32,10 @@ add_library("swanson-fat"
 	"fat_opts.h"
 	"fat_types.h")
 
-add_executable("fat-format" "fat-format.c")
+function(ADD_FAT_UTILITY UTILITY_NAME)
+	add_executable("${UTILITY_NAME}" ${ARGN})
+	target_link_libraries("${UTILITY_NAME}" "swanson-fat")
+endfunction(ADD_FAT_UTILITY UTILITY_NAME)
 
-target_link_libraries("fat-format" "swanson-fat")
+add_fat_utility("fat-format" "fat-format.c")
+add_fat_utility("fat-cp" "fat-cp.c")
