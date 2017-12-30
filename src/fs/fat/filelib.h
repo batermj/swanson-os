@@ -86,11 +86,11 @@ fl_attach_media(struct fat_disk *disk);
 void
 fl_shutdown(void);
 
-void*
+struct fat_file *
 fl_fopen(const char *path, const char *modifiers);
 
 void
-fl_fclose(void *file);
+fl_fclose(struct fat_file *file);
 
 int
 fl_fflush(void *file);
@@ -108,22 +108,22 @@ int
 fl_fputs(const char *str, void *file);
 
 int
-fl_fwrite(const void *data, int size, int count, void *file);
+fl_fwrite(const void *data, int size, int count, struct fat_file *file);
 
 int
-fl_fread(void *data, int size, int count, void *file);
+fl_fread(void *data, int size, int count, struct fat_file *file);
 
 int
-fl_fseek(void *file , long offset , int origin);
+fl_fseek(struct fat_file *file , long offset , int origin);
 
 int
-fl_fgetpos(void *file , uint32_t *position);
+fl_fgetpos(struct fat_file *file , uint32_t *position);
 
 long
-fl_ftell(void *f);
+fl_ftell(struct fat_file *file);
 
 int
-fl_feof(void *f);
+fl_feof(struct fat_file *file);
 
 int
 fl_remove(const char *filename);

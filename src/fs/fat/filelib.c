@@ -31,7 +31,7 @@
 //-----------------------------------------------------------------------------
 // Locals
 //-----------------------------------------------------------------------------
-static struct fat_file            _files[FATFS_MAX_OPEN_FILES];
+static struct fat_file    _files[FATFS_MAX_OPEN_FILES];
 static int                _filelib_init = 0;
 static int                _filelib_valid = 0;
 static struct fatfs       _fs;
@@ -675,8 +675,9 @@ void fl_shutdown(void)
 //-----------------------------------------------------------------------------
 // fopen: Open or Create a file for reading or writing
 //-----------------------------------------------------------------------------
-void* fl_fopen(const char *path, const char *mode)
-{
+struct fat_file*
+fl_fopen(const char *path, const char *mode) {
+
     int i;
     struct fat_file* file;
     uint8 flags = 0;
@@ -907,8 +908,9 @@ int fl_fflush(void *f)
 //-----------------------------------------------------------------------------
 // fl_fclose: Close an open file
 //-----------------------------------------------------------------------------
-void fl_fclose(void *f)
-{
+void
+fl_fclose(struct fat_file *f) {
+
     struct fat_file *file = (struct fat_file *)f;
 
     // If first call to library, initialise
@@ -996,15 +998,14 @@ char *fl_fgets(char *s, int n, void *f)
 //-----------------------------------------------------------------------------
 // fl_fread: Read a block of data from the file
 //-----------------------------------------------------------------------------
-int fl_fread(void * buffer, int size, int length, void *f )
-{
+int
+fl_fread(void * buffer, int size, int length, struct fat_file *file) {
+
     uint32 sector;
     uint32 offset;
     int copyCount;
     int count = size * length;
     int bytesRead = 0;
-
-    struct fat_file *file = (struct fat_file *)f;
 
     // If first call to library, initialise
     CHECK_FL_INIT();
@@ -1098,9 +1099,9 @@ int fl_fread(void * buffer, int size, int length, void *f )
 //-----------------------------------------------------------------------------
 // fl_fseek: Seek to a specific place in the file
 //-----------------------------------------------------------------------------
-int fl_fseek( void *f, long offset, int origin )
-{
-    struct fat_file *file = (struct fat_file *)f;
+int
+fl_fseek(struct fat_file *file, long offset, int origin) {
+
     int res = -1;
 
     // If first call to library, initialise
@@ -1167,9 +1168,8 @@ int fl_fseek( void *f, long offset, int origin )
 //-----------------------------------------------------------------------------
 // fl_fgetpos: Get the current file position
 //-----------------------------------------------------------------------------
-int fl_fgetpos(void *f , uint32 * position)
-{
-    struct fat_file *file = (struct fat_file *)f;
+int
+fl_fgetpos(struct fat_file *file, uint32 * position) {
 
     if (!file)
         return -1;
@@ -1186,20 +1186,21 @@ int fl_fgetpos(void *f , uint32 * position)
 //-----------------------------------------------------------------------------
 // fl_ftell: Get the current file position
 //-----------------------------------------------------------------------------
-long fl_ftell(void *f)
-{
+long
+fl_ftell(struct fat_file *file) {
+
     uint32 pos = 0;
 
-    fl_fgetpos(f, &pos);
+    fl_fgetpos(file, &pos);
 
     return (long)pos;
 }
 //-----------------------------------------------------------------------------
 // fl_feof: Is the file pointer at the end of the stream?
 //-----------------------------------------------------------------------------
-int fl_feof(void *f)
-{
-    struct fat_file *file = (struct fat_file *)f;
+int
+fl_feof(struct fat_file *file) {
+
     int res;
 
     if (!file)
@@ -1236,9 +1237,9 @@ int fl_fputc(int c, void *f)
 // fl_fwrite: Write a block of data to the stream
 //-----------------------------------------------------------------------------
 #if FATFS_INC_WRITE_SUPPORT
-int fl_fwrite(const void * data, int size, int count, void *f )
-{
-    struct fat_file *file = (struct fat_file *)f;
+int
+fl_fwrite(const void * data, int size, int count, struct fat_file *file) {
+
     uint32 sector;
     uint32 offset;
     uint32 length = (size*count);
@@ -1383,7 +1384,8 @@ int fl_fwrite(const void * data, int size, int count, void *f )
 // fl_fputs: Write a character string to the stream
 //-----------------------------------------------------------------------------
 #if FATFS_INC_WRITE_SUPPORT
-int fl_fputs(const char * str, void *f)
+int
+fl_fputs(const char * str, void *f)
 {
     int len = (int)strlen(str);
     int res = fl_fwrite(str, 1, len, f);
