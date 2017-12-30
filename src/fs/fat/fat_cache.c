@@ -39,53 +39,60 @@
 //-----------------------------------------------------------------------------
 // fatfs_cache_init:
 //-----------------------------------------------------------------------------
-int fatfs_cache_init(struct fatfs *fs, FL_FILE *file)
-{
-#ifdef FAT_CLUSTER_CACHE_ENTRIES
-    int i;
+int
+fatfs_cache_init(struct fatfs *fs,
+                 struct fat_file *file) {
 
-    for (i=0;i<FAT_CLUSTER_CACHE_ENTRIES;i++)
-    {
-        file->cluster_cache_idx[i] = 0xFFFFFFFF; // Not used
-        file->cluster_cache_data[i] = 0;
-    }
+#ifdef FAT_CLUSTER_CACHE_ENTRIES
+	int i;
+
+	for (i = 0; i < FAT_CLUSTER_CACHE_ENTRIES; i++) {
+		file->cluster_cache_idx[i] = 0xFFFFFFFF; // Not used
+		file->cluster_cache_data[i] = 0;
+	}
 #endif
 
-    return 1;
+	return 1;
 }
 //-----------------------------------------------------------------------------
 // fatfs_cache_get_next_cluster:
 //-----------------------------------------------------------------------------
-int fatfs_cache_get_next_cluster(struct fatfs *fs, FL_FILE *file, uint32 clusterIdx, uint32 *pNextCluster)
-{
-#ifdef FAT_CLUSTER_CACHE_ENTRIES
-    uint32 slot = clusterIdx % FAT_CLUSTER_CACHE_ENTRIES;
+int
+fatfs_cache_get_next_cluster(struct fatfs *fs,
+                             struct fat_file *file,
+                             uint32_t clusterIdx,
+                             uint32_t *pNextCluster) {
 
-    if (file->cluster_cache_idx[slot] == clusterIdx)
-    {
-        *pNextCluster = file->cluster_cache_data[slot];
-        return 1;
-    }
+#ifdef FAT_CLUSTER_CACHE_ENTRIES
+	uint32_t slot = clusterIdx % FAT_CLUSTER_CACHE_ENTRIES;
+
+	if (file->cluster_cache_idx[slot] == clusterIdx) {
+		*pNextCluster = file->cluster_cache_data[slot];
+		return 1;
+	}
 #endif
 
-    return 0;
+	return 0;
 }
 //-----------------------------------------------------------------------------
 // fatfs_cache_set_next_cluster:
 //-----------------------------------------------------------------------------
-int fatfs_cache_set_next_cluster(struct fatfs *fs, FL_FILE *file, uint32 clusterIdx, uint32 nextCluster)
-{
-#ifdef FAT_CLUSTER_CACHE_ENTRIES
-    uint32 slot = clusterIdx % FAT_CLUSTER_CACHE_ENTRIES;
+int
+fatfs_cache_set_next_cluster(struct fatfs *fs,
+                             struct fat_file *file,
+                             uint32_t clusterIdx,
+                             uint32_t nextCluster) {
 
-    if (file->cluster_cache_idx[slot] == clusterIdx)
-        file->cluster_cache_data[slot] = nextCluster;
-    else
-    {
-        file->cluster_cache_idx[slot] = clusterIdx;
-        file->cluster_cache_data[slot] = nextCluster;
-    }
+#ifdef FAT_CLUSTER_CACHE_ENTRIES
+	uint32_t slot = clusterIdx % FAT_CLUSTER_CACHE_ENTRIES;
+
+	if (file->cluster_cache_idx[slot] == clusterIdx) {
+		file->cluster_cache_data[slot] = nextCluster;
+	} else {
+		file->cluster_cache_idx[slot] = clusterIdx;
+		file->cluster_cache_data[slot] = nextCluster;
+	}
 #endif
 
-    return 1;
+	return 1;
 }

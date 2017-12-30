@@ -1,34 +1,21 @@
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//                            FAT16/32 File IO Library
-//                                    V2.6
-//                              Ultra-Embedded.com
-//                            Copyright 2003 - 2012
-//
-//                         Email: admin@ultra-embedded.com
-//
-//                                License: GPL
-//   If you would like a version with a more permissive license for use in
-//   closed source commercial applications please contact me for details.
-//-----------------------------------------------------------------------------
-//
-// This file is part of FAT File IO Library.
-//
-// FAT File IO Library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
-//
-// FAT File IO Library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with FAT File IO Library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+/* Copyright (C) 2017 Taylor Holberton
+ *
+ * This file is part of Swanson.
+ *
+ * Swanson is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Swanson is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include "fat_defs.h"
@@ -37,13 +24,14 @@
 #include "fat_write.h"
 #include "fat_misc.h"
 #include "fat_string.h"
-#include "fat_filelib.h"
 #include "fat_cache.h"
+
+#include "filelib.h"
 
 //-----------------------------------------------------------------------------
 // Locals
 //-----------------------------------------------------------------------------
-static FL_FILE            _files[FATFS_MAX_OPEN_FILES];
+static struct fat_file            _files[FATFS_MAX_OPEN_FILES];
 static int                _filelib_init = 0;
 static int                _filelib_valid = 0;
 static struct fatfs       _fs;
@@ -68,7 +56,7 @@ static void                _fl_init();
 //-----------------------------------------------------------------------------
 // _allocate_file: Find a slot in the open files buffer for a new file
 //-----------------------------------------------------------------------------
-static FL_FILE* _allocate_file(void)
+static struct fat_file* _allocate_file(void)
 {
     // Allocate free file
     struct fat_node *node = fat_list_pop_head(&_free_file_list);
@@ -77,19 +65,19 @@ static FL_FILE* _allocate_file(void)
     if (node)
         fat_list_insert_last(&_open_file_list, node);
 
-    return fat_list_entry(node, FL_FILE, list_node);
+    return fat_list_entry(node, struct fat_file, list_node);
 }
 //-----------------------------------------------------------------------------
 // _check_file_open: Returns true if the file is already open
 //-----------------------------------------------------------------------------
-static int _check_file_open(FL_FILE* file)
+static int _check_file_open(struct fat_file* file)
 {
     struct fat_node *node;
 
     // Compare open files
     fat_list_for_each(&_open_file_list, node)
     {
-        FL_FILE* openFile = fat_list_entry(node, FL_FILE, list_node);
+        struct fat_file* openFile = fat_list_entry(node, struct fat_file, list_node);
 
         // If not the current file
         if (openFile != file)
@@ -105,7 +93,7 @@ static int _check_file_open(FL_FILE* file)
 //-----------------------------------------------------------------------------
 // _free_file: Free open file handle
 //-----------------------------------------------------------------------------
-static void _free_file(FL_FILE* file)
+static void _free_file(struct fat_file* file)
 {
     // Remove from open list
     fat_list_remove(&_open_file_list, &file->list_node);
@@ -164,7 +152,7 @@ static int _open_directory(char *path, uint32 *pathCluster)
 #if FATFS_INC_WRITE_SUPPORT
 static int _create_directory(char *path)
 {
-    FL_FILE* file;
+    struct fat_file* file;
     struct fat_dir_entry sfEntry;
     char shortFilename[FAT_SFN_SIZE_FULL];
     int tailNum = 0;
@@ -321,9 +309,9 @@ static int _create_directory(char *path)
 //-----------------------------------------------------------------------------
 // _open_file: Open a file for reading
 //-----------------------------------------------------------------------------
-static FL_FILE* _open_file(const char *path)
+static struct fat_file* _open_file(const char *path)
 {
-    FL_FILE* file;
+    struct fat_file* file;
     struct fat_dir_entry sfEntry;
 
     // Allocate a new file handle
@@ -394,9 +382,9 @@ static FL_FILE* _open_file(const char *path)
 // _create_file: Create a new file
 //-----------------------------------------------------------------------------
 #if FATFS_INC_WRITE_SUPPORT
-static FL_FILE* _create_file(const char *filename)
+static struct fat_file* _create_file(const char *filename)
 {
-    FL_FILE* file;
+    struct fat_file* file;
     struct fat_dir_entry sfEntry;
     char shortFilename[FAT_SFN_SIZE_FULL];
     int tailNum = 0;
@@ -545,7 +533,7 @@ static FL_FILE* _create_file(const char *filename)
 //-----------------------------------------------------------------------------
 // _read_sectors: Read sector(s) from disk to file
 //-----------------------------------------------------------------------------
-static uint32 _read_sectors(FL_FILE* file, uint32 offset, uint8 *buffer, uint32 count)
+static uint32 _read_sectors(struct fat_file* file, uint32 offset, uint8 *buffer, uint32 count)
 {
     uint32 Sector = 0;
     uint32 ClusterIdx = 0;
@@ -690,7 +678,7 @@ void fl_shutdown(void)
 void* fl_fopen(const char *path, const char *mode)
 {
     int i;
-    FL_FILE* file;
+    struct fat_file* file;
     uint8 flags = 0;
 
     // If first call to library, initialise
@@ -803,7 +791,7 @@ void* fl_fopen(const char *path, const char *mode)
 // _write_sectors: Write sector(s) to disk
 //-----------------------------------------------------------------------------
 #if FATFS_INC_WRITE_SUPPORT
-static uint32 _write_sectors(FL_FILE* file, uint32 offset, uint8 *buf, uint32 count)
+static uint32 _write_sectors(struct fat_file* file, uint32 offset, uint8 *buf, uint32 count)
 {
     uint32 SectorNumber = 0;
     uint32 ClusterIdx = 0;
@@ -894,7 +882,7 @@ static uint32 _write_sectors(FL_FILE* file, uint32 offset, uint8 *buf, uint32 co
 int fl_fflush(void *f)
 {
 #if FATFS_INC_WRITE_SUPPORT
-    FL_FILE *file = (FL_FILE *)f;
+    struct fat_file *file = (struct fat_file *)f;
 
     // If first call to library, initialise
     CHECK_FL_INIT();
@@ -921,7 +909,7 @@ int fl_fflush(void *f)
 //-----------------------------------------------------------------------------
 void fl_fclose(void *f)
 {
-    FL_FILE *file = (FL_FILE *)f;
+    struct fat_file *file = (struct fat_file *)f;
 
     // If first call to library, initialise
     CHECK_FL_INIT();
@@ -1016,7 +1004,7 @@ int fl_fread(void * buffer, int size, int length, void *f )
     int count = size * length;
     int bytesRead = 0;
 
-    FL_FILE *file = (FL_FILE *)f;
+    struct fat_file *file = (struct fat_file *)f;
 
     // If first call to library, initialise
     CHECK_FL_INIT();
@@ -1112,7 +1100,7 @@ int fl_fread(void * buffer, int size, int length, void *f )
 //-----------------------------------------------------------------------------
 int fl_fseek( void *f, long offset, int origin )
 {
-    FL_FILE *file = (FL_FILE *)f;
+    struct fat_file *file = (struct fat_file *)f;
     int res = -1;
 
     // If first call to library, initialise
@@ -1181,7 +1169,7 @@ int fl_fseek( void *f, long offset, int origin )
 //-----------------------------------------------------------------------------
 int fl_fgetpos(void *f , uint32 * position)
 {
-    FL_FILE *file = (FL_FILE *)f;
+    struct fat_file *file = (struct fat_file *)f;
 
     if (!file)
         return -1;
@@ -1211,7 +1199,7 @@ long fl_ftell(void *f)
 //-----------------------------------------------------------------------------
 int fl_feof(void *f)
 {
-    FL_FILE *file = (FL_FILE *)f;
+    struct fat_file *file = (struct fat_file *)f;
     int res;
 
     if (!file)
@@ -1250,7 +1238,7 @@ int fl_fputc(int c, void *f)
 #if FATFS_INC_WRITE_SUPPORT
 int fl_fwrite(const void * data, int size, int count, void *f )
 {
-    FL_FILE *file = (FL_FILE *)f;
+    struct fat_file *file = (struct fat_file *)f;
     uint32 sector;
     uint32 offset;
     uint32 length = (size*count);
@@ -1412,7 +1400,7 @@ int fl_fputs(const char * str, void *f)
 #if FATFS_INC_WRITE_SUPPORT
 int fl_remove( const char * filename )
 {
-    FL_FILE* file;
+    struct fat_file* file;
     int res = -1;
 
     FL_LOCK(&_fs);

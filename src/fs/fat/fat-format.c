@@ -3,7 +3,8 @@
 #include <string.h>
 
 #include "diskfile.h"
-#include "fat_filelib.h"
+
+#include "filelib.h"
 
 static int
 create_zero_img(const char *imagepath,
@@ -73,7 +74,7 @@ int main(int argc, const char **argv)
 
 	disk = fat_diskfile_to_disk(&diskfile);
 
-	FL_FILE *file;
+	struct fat_file *file;
 
 	// Initialise File IO Library
 	fl_init();
