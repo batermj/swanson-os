@@ -99,10 +99,7 @@ main(int argc, const char **argv) {
 	fl_init();
 
 	// Attach media access functions to library
-	if (fl_attach_media(disk) != FAT_INIT_OK) {
-		printf("Failed to assign disk file to library.\n");
-		return EXIT_FAILURE;
-	}
+	fl_attach_media(disk);
 
 	fl_format((disksize + sector_size) / sector_size, "Swanson FAT");
 
