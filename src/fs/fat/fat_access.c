@@ -34,8 +34,9 @@
 #include "fat_access.h"
 #include "fat_table.h"
 #include "fat_write.h"
-#include "fat_string.h"
 #include "fat_misc.h"
+
+#include "string.h"
 
 //-----------------------------------------------------------------------------
 // fatfs_init: Load FAT Parameters

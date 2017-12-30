@@ -1,37 +1,25 @@
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//                            FAT16/32 File IO Library
-//                                    V2.6
-//                              Ultra-Embedded.com
-//                            Copyright 2003 - 2012
-//
-//                         Email: admin@ultra-embedded.com
-//
-//                                License: GPL
-//   If you would like a version with a more permissive license for use in
-//   closed source commercial applications please contact me for details.
-//-----------------------------------------------------------------------------
-//
-// This file is part of FAT File IO Library.
-//
-// FAT File IO Library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation; either version 2 of the License, or
-// (at your option) any later version.
-//
-// FAT File IO Library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with FAT File IO Library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+/* Copyright (C) 2017 Taylor Holberton
+ *
+ * This file is part of Swanson.
+ *
+ * Swanson is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Swanson is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "string.h"
+
 #include <string.h>
 #include <assert.h>
-#include "fat_string.h"
 
 //-----------------------------------------------------------------------------
 // fatfs_total_path_levels: Take a filename and path and count the sub levels
@@ -41,8 +29,9 @@
 //        /dev/etc/samba.conf
 // Returns: -1 = Error, 0 or more = Ok
 //-----------------------------------------------------------------------------
-int fatfs_total_path_levels(char *path)
-{
+int
+fatfs_total_path_levels(char *path) {
+
     int levels = 0;
     char expectedchar;
 
@@ -89,8 +78,8 @@ int fatfs_total_path_levels(char *path)
 // E.g. C:\folder\file.zip : Level 0 = C:\folder, Level 1 = file.zip
 // Returns: -1 = Error, 0 = Ok
 //-----------------------------------------------------------------------------
-int fatfs_get_substring(char *path, int levelreq, char *output, int max_len)
-{
+int
+fatfs_get_substring(char *path, int levelreq, char *output, int max_len) {
     int i;
     int pathlen=0;
     int levels=0;
@@ -148,8 +137,9 @@ int fatfs_get_substring(char *path, int levelreq, char *output, int max_len)
 // E.g. C:\folder\file.zip -> path = C:\folder  filename = file.zip
 // E.g. C:\file.zip -> path = [blank]  filename = file.zip
 //-----------------------------------------------------------------------------
-int fatfs_split_path(char *full_path, char *path, int max_path, char *filename, int max_filename)
-{
+int
+fatfs_split_path(char *full_path, char *path, int max_path, char *filename, int max_filename) {
+
     int strindex;
 
     // Count the levels to the filepath

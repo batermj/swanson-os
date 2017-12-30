@@ -23,10 +23,10 @@
 #include "fat_table.h"
 #include "fat_write.h"
 #include "fat_misc.h"
-#include "fat_string.h"
 #include "fat_cache.h"
 
 #include "filelib.h"
+#include "string.h"
 
 //-----------------------------------------------------------------------------
 // Locals
