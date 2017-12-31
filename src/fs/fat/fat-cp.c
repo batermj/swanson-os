@@ -36,11 +36,13 @@ copyfile(const char *source_path,
 
 	source = fopen(source_path, "rb");
 	if (source == NULL) {
+		fprintf(stderr, "Failed to open source '%s'.\n", source_path);
 		return EXIT_FAILURE;
 	}
 
 	destination = fl_fopen(destination_path, "wb");
 	if (destination == NULL) {
+		fprintf(stderr, "Failed to open destination '%s'.\n", destination_path);
 		fclose(source);
 		return EXIT_FAILURE;
 	}
@@ -81,9 +83,42 @@ main(int argc, const char **argv) {
 	struct fat_disk *disk;
 	struct fat_diskfile diskfile;
 
-	if (argc >= 2)
-		diskpath = argv[1];
-	else
+	diskpath = NULL;
+	source = NULL;
+	destination = NULL;
+
+	for (i = 1; i < argc; i++) {
+		if (argv[i][0] != '-') {
+			if (source == NULL)
+				source = argv[i];
+			else if (destination == NULL)
+				destination = argv[i];
+			else {
+				fprintf(stderr, "Trailing file '%s'.\n", argv[i]);
+				return EXIT_FAILURE;
+			}
+		} else if (strcmp(argv[i], "--disk") == 0) {
+			if ((i + 1) >= argc) {
+				fprintf(stderr, "No disk specified.\n");
+				return EXIT_FAILURE;
+			}
+			diskpath = argv[i + 1];
+			i++;
+		} else {
+			fprintf(stderr, "Unknown option '%s'.\n", argv[i]);
+			return EXIT_FAILURE;
+		}
+	}
+
+	if (source == NULL) {
+		fprintf(stderr, "Source file not specified.\n");
+		return EXIT_FAILURE;
+	} else if (destination == NULL) {
+		fprintf(stderr, "Destination file not specified.\n");
+		return EXIT_FAILURE;
+	}
+
+	if (diskpath == NULL)
 		diskpath = "fat.img";
 
 	fat_diskfile_init(&diskfile);
@@ -103,33 +138,6 @@ main(int argc, const char **argv) {
 
 	// Attach media access functions to library
 	fl_attach_media(disk);
-
-	source = NULL;
-	destination = NULL;
-
-	for (i = 1; i < argc; i++) {
-		if (argv[i][0] != '-') {
-			if (source == NULL)
-				source = argv[i];
-			else if (destination == NULL)
-				destination = argv[i];
-			else {
-				fprintf(stderr, "Trailing file '%s'.\n", argv[i]);
-				return EXIT_FAILURE;
-			}
-		} else {
-			fprintf(stderr, "Unknown option '%s'.\n", argv[i]);
-			return EXIT_FAILURE;
-		}
-	}
-
-	if (source == NULL) {
-		fprintf(stderr, "Source file not specified.\n");
-		return EXIT_FAILURE;
-	} else if (destination == NULL) {
-		fprintf(stderr, "Destination file not specified.\n");
-		return EXIT_FAILURE;
-	}
 
 	exitcode = copyfile(source, destination);
 
