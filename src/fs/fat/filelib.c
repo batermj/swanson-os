@@ -28,15 +28,41 @@
 #include "filelib.h"
 #include "string.h"
 
+void
+fat_filelib_init(struct fat_filelib *filelib) {
+
+	int i;
+
+	fat_list_init(&filelib->free_file_list);
+	fat_list_init(&filelib->open_file_list);
+
+	// Add all file objects to free list
+	for (i = 0; i < FATFS_MAX_OPEN_FILES; i++) {
+		fat_list_insert_last(&filelib->free_file_list,
+		                     &filelib->files[i].list_node);
+	}
+
+	filelib->filelib_init = 1;
+	filelib->filelib_valid = 0;
+}
+
+void
+fat_filelib_free(struct fat_filelib *filelib) {
+
+}
+
 //-----------------------------------------------------------------------------
 // Locals
 //-----------------------------------------------------------------------------
-static struct fat_file    _files[FATFS_MAX_OPEN_FILES];
-static int                _filelib_init = 0;
-static int                _filelib_valid = 0;
-static struct fatfs       _fs;
-static struct fat_list    _open_file_list;
-static struct fat_list    _free_file_list;
+struct fat_filelib global_filelib;
+
+#define _fs global_filelib.fs
+
+#define _filelib_init global_filelib.filelib_init
+
+#define _free_file_list global_filelib.free_file_list
+
+#define _open_file_list global_filelib.open_file_list
 
 //-----------------------------------------------------------------------------
 // Macros
@@ -616,61 +642,53 @@ static uint32 _read_sectors(struct fat_file* file, uint32 offset, uint8 *buffer,
 //-----------------------------------------------------------------------------
 // fl_init: Initialise library
 //-----------------------------------------------------------------------------
-void fl_init(void)
-{
-    int i;
-
-    fat_list_init(&_free_file_list);
-    fat_list_init(&_open_file_list);
-
-    // Add all file objects to free list
-    for (i=0;i<FATFS_MAX_OPEN_FILES;i++)
-        fat_list_insert_last(&_free_file_list, &_files[i].list_node);
-
-    _filelib_init = 1;
+void
+fl_init(void) {
+	fat_filelib_init(&global_filelib);
 }
 //-----------------------------------------------------------------------------
 // fl_attach_locks:
 //-----------------------------------------------------------------------------
-void fl_attach_locks(void (*lock)(void), void (*unlock)(void))
-{
-    _fs.fl_lock = lock;
-    _fs.fl_unlock = unlock;
+void
+fl_attach_locks(void (*lock)(void), void (*unlock)(void)) {
+	global_filelib.fs.fl_lock = lock;
+	global_filelib.fs.fl_unlock = unlock;
 }
 //-----------------------------------------------------------------------------
 // fl_attach_media:
 //-----------------------------------------------------------------------------
-int fl_attach_media(struct fat_disk *disk)
-{
-    int res;
+int
+fl_attach_media(struct fat_disk *disk) {
 
-    // If first call to library, initialise
-    CHECK_FL_INIT();
+	int res;
 
-    /* TODO : use copy function, if available. */
-    _fs.disk = *disk;
+	// If first call to library, initialise
+	CHECK_FL_INIT();
 
-    // Initialise FAT parameters
-    if ((res = fatfs_init(&_fs)) != FAT_INIT_OK)
-    {
-        FAT_PRINTF(("FAT_FS: Error could not load FAT details (%d)!\r\n", res));
-        return res;
-    }
+	/* TODO : use copy function, if available. */
+	global_filelib.fs.disk = *disk;
 
-    _filelib_valid = 1;
-    return FAT_INIT_OK;
+	// Initialise FAT parameters
+	if ((res = fatfs_init(&global_filelib.fs)) != FAT_INIT_OK) {
+		FAT_PRINTF(("FAT_FS: Error could not load FAT details (%d)!\r\n", res));
+		return res;
+	}
+
+	global_filelib.filelib_valid = 1;
+
+	return FAT_INIT_OK;
 }
 //-----------------------------------------------------------------------------
 // fl_shutdown: Call before shutting down system
 //-----------------------------------------------------------------------------
-void fl_shutdown(void)
-{
-    // If first call to library, initialise
-    CHECK_FL_INIT();
+void
+fl_shutdown(void) {
+	// If first call to library, initialise
+	CHECK_FL_INIT();
 
-    FL_LOCK(&_fs);
-    fatfs_fat_purge(&_fs);
-    FL_UNLOCK(&_fs);
+	FL_LOCK(&_fs);
+	fatfs_fat_purge(&global_filelib.fs);
+	FL_UNLOCK(&_fs);
 }
 //-----------------------------------------------------------------------------
 // fopen: Open or Create a file for reading or writing
@@ -678,203 +696,212 @@ void fl_shutdown(void)
 struct fat_file*
 fl_fopen(const char *path, const char *mode) {
 
-    int i;
-    struct fat_file* file;
-    uint8 flags = 0;
+	int i;
+	struct fat_file* file;
+	uint8_t flags = 0;
 
-    // If first call to library, initialise
-    CHECK_FL_INIT();
+	// If first call to library, initialise
+	CHECK_FL_INIT();
 
-    if (!_filelib_valid)
-        return NULL;
+	if (!global_filelib.filelib_valid)
+		return NULL;
 
-    if (!path || !mode)
-        return NULL;
+	if (!path || !mode)
+		return NULL;
 
-    // Supported Modes:
-    // "r" Open a file for reading.
-    //        The file must exist.
-    // "w" Create an empty file for writing.
-    //        If a file with the same name already exists its content is erased and the file is treated as a new empty file.
-    // "a" Append to a file.
-    //        Writing operations append data at the end of the file.
-    //        The file is created if it does not exist.
-    // "r+" Open a file for update both reading and writing.
-    //        The file must exist.
-    // "w+" Create an empty file for both reading and writing.
-    //        If a file with the same name already exists its content is erased and the file is treated as a new empty file.
-    // "a+" Open a file for reading and appending.
-    //        All writing operations are performed at the end of the file, protecting the previous content to be overwritten.
-    //        You can reposition (fseek, rewind) the internal pointer to anywhere in the file for reading, but writing operations
-    //        will move it back to the end of file.
-    //        The file is created if it does not exist.
+	// Supported Modes:
+	// "r" Open a file for reading.
+	//     The file must exist.
+	// "w" Create an empty file for writing.
+	//     If a file with the same name already exists
+	//     its content is erased and the file is treated
+	//     as a new empty file.
+	// "a" Append to a file.
+	//     Writing operations append data at the end of
+	//     the file.  The file is created if it does not exist.
+	// "r+" Open a file for update both reading and writing.
+	//      The file must exist.
+	// "w+" Create an empty file for both reading and writing.
+	//      If a file with the same name already exists its
+	//      content is erased and the file is treated as a new
+	//      empty file.
+	// "a+" Open a file for reading and appending.
+	//      All writing operations are performed at
+	//      the end of the file, protecting the previous
+	//      content to be overwritten. You can reposition
+	//      (fseek, rewind) the internal pointer to
+	//      anywhere in the file for reading, but writing
+	//      operations will move it back to the end of file.
+	//      The file is created if it does not exist.
 
-    for (i=0;i<(int)strlen(mode);i++)
-    {
-        switch (mode[i])
-        {
-        case 'r':
-        case 'R':
-            flags |= FILE_READ;
-            break;
-        case 'w':
-        case 'W':
-            flags |= FILE_WRITE;
-            flags |= FILE_ERASE;
-            flags |= FILE_CREATE;
-            break;
-        case 'a':
-        case 'A':
-            flags |= FILE_WRITE;
-            flags |= FILE_APPEND;
-            flags |= FILE_CREATE;
-            break;
-        case '+':
-            if (flags & FILE_READ)
-                flags |= FILE_WRITE;
-            else if (flags & FILE_WRITE)
-            {
-                flags |= FILE_READ;
-                flags |= FILE_ERASE;
-                flags |= FILE_CREATE;
-            }
-            else if (flags & FILE_APPEND)
-            {
-                flags |= FILE_READ;
-                flags |= FILE_WRITE;
-                flags |= FILE_APPEND;
-                flags |= FILE_CREATE;
-            }
-            break;
-        case 'b':
-        case 'B':
-            flags |= FILE_BINARY;
-            break;
-        }
-    }
+	for (i = 0; i < (int) strlen(mode); i++) {
+		switch (mode[i]) {
+		case 'r':
+		case 'R':
+			flags |= FILE_READ;
+			break;
+		case 'w':
+		case 'W':
+			flags |= FILE_WRITE;
+			flags |= FILE_ERASE;
+			flags |= FILE_CREATE;
+			break;
+		case 'a':
+		case 'A':
+			flags |= FILE_WRITE;
+			flags |= FILE_APPEND;
+			flags |= FILE_CREATE;
+			break;
+		case '+':
+			if (flags & FILE_READ)
+				flags |= FILE_WRITE;
+			else if (flags & FILE_WRITE) {
+				flags |= FILE_READ;
+				flags |= FILE_ERASE;
+				flags |= FILE_CREATE;
+			} else if (flags & FILE_APPEND) {
+				flags |= FILE_READ;
+				flags |= FILE_WRITE;
+				flags |= FILE_APPEND;
+				flags |= FILE_CREATE;
+			}
+			break;
+		case 'b':
+		case 'B':
+			flags |= FILE_BINARY;
+			break;
+		}
+	}
 
-    file = NULL;
+	file = NULL;
 
 #if FATFS_INC_WRITE_SUPPORT == 0
-    // No write support!
-    flags &= ~(FILE_CREATE | FILE_WRITE | FILE_APPEND);
+	// No write support!
+	flags &= ~(FILE_CREATE | FILE_WRITE | FILE_APPEND);
 #endif
 
-    // No write access - remove write/modify flags
-    if (!_fs.disk.write)
-        flags &= ~(FILE_CREATE | FILE_WRITE | FILE_APPEND);
+	// No write access - remove write/modify flags
+	if (!_fs.disk.write)
+		flags &= ~(FILE_CREATE | FILE_WRITE | FILE_APPEND);
 
-    FL_LOCK(&_fs);
+	FL_LOCK(&_fs);
 
-    // Read
-    if (flags & FILE_READ)
-        file = _open_file(path);
+	// Read
+	if (flags & FILE_READ)
+		file = _open_file(path);
 
-    // Create New
+	// Create New
 #if FATFS_INC_WRITE_SUPPORT
-    if (!file && (flags & FILE_CREATE))
-        file = _create_file(path);
+	if (!file && (flags & FILE_CREATE))
+		file = _create_file(path);
 #endif
 
-    // Write Existing (and not open due to read or create)
-    if (!(flags & FILE_READ))
-        if ((flags & FILE_CREATE) && !file)
-            if (flags & (FILE_WRITE | FILE_APPEND))
-                file = _open_file(path);
+	// Write Existing (and not open due to read or create)
+	if (!(flags & FILE_READ)) {
+		if ((flags & FILE_CREATE) && !file) {
+			if (flags & (FILE_WRITE | FILE_APPEND))
+				file = _open_file(path);
+		}
+	}
 
-    if (file)
-        file->flags = flags;
+	if (file)
+		file->flags = flags;
 
-    FL_UNLOCK(&_fs);
-    return file;
+	FL_UNLOCK(&global_filelib.fs);
+
+	return file;
 }
 //-----------------------------------------------------------------------------
 // _write_sectors: Write sector(s) to disk
 //-----------------------------------------------------------------------------
 #if FATFS_INC_WRITE_SUPPORT
-static uint32 _write_sectors(struct fat_file* file, uint32 offset, uint8 *buf, uint32 count)
-{
-    uint32 SectorNumber = 0;
-    uint32 ClusterIdx = 0;
-    uint32 Cluster = 0;
-    uint32 LastCluster = FAT32_LAST_CLUSTER;
-    uint32 i;
-    uint32 lba;
-    uint32 TotalWriteCount = count;
+static uint32_t
+_write_sectors(struct fat_file* file,
+               uint32_t offset,
+               uint8_t *buf,
+               uint32_t count) {
 
-    // Find values for Cluster index & sector within cluster
-    ClusterIdx = offset / _fs.sectors_per_cluster;
-    SectorNumber = offset - (ClusterIdx * _fs.sectors_per_cluster);
+	uint32_t SectorNumber = 0;
+	uint32_t ClusterIdx = 0;
+	uint32_t Cluster = 0;
+	uint32_t LastCluster = FAT32_LAST_CLUSTER;
+	uint32_t i;
+	uint32_t lba;
+	uint32_t TotalWriteCount = count;
 
-    // Limit number of sectors written to the number remaining in this cluster
-    if ((SectorNumber + count) > _fs.sectors_per_cluster)
-        count = _fs.sectors_per_cluster - SectorNumber;
+	// Find values for Cluster index & sector within cluster
+	ClusterIdx = offset / _fs.sectors_per_cluster;
+	SectorNumber = offset - (ClusterIdx * _fs.sectors_per_cluster);
 
-    // Quick lookup for next link in the chain
-    if (ClusterIdx == file->last_fat_lookup.ClusterIdx)
-        Cluster = file->last_fat_lookup.CurrentCluster;
-    // Else walk the chain
-    else
-    {
-        // Starting from last recorded cluster?
-        if (ClusterIdx && ClusterIdx == file->last_fat_lookup.ClusterIdx + 1)
-        {
-            i = file->last_fat_lookup.ClusterIdx;
-            Cluster = file->last_fat_lookup.CurrentCluster;
-        }
-        // Start searching from the beginning..
-        else
-        {
-            // Set start of cluster chain to initial value
-            i = 0;
-            Cluster = file->startcluster;
-        }
+	// Limit number of sectors written to the number remaining in this cluster
+	if ((SectorNumber + count) > _fs.sectors_per_cluster)
+		count = _fs.sectors_per_cluster - SectorNumber;
 
-        // Follow chain to find cluster to read
-        for ( ;i<ClusterIdx; i++)
-        {
-            uint32 nextCluster;
+	// Quick lookup for next link in the chain
+	if (ClusterIdx == file->last_fat_lookup.ClusterIdx)
+		Cluster = file->last_fat_lookup.CurrentCluster;
+	// Else walk the chain
+	else
+	{
+		// Starting from last recorded cluster?
+		if (ClusterIdx && ClusterIdx == file->last_fat_lookup.ClusterIdx + 1)
+		{
+			i = file->last_fat_lookup.ClusterIdx;
+			Cluster = file->last_fat_lookup.CurrentCluster;
+		}
+		// Start searching from the beginning..
+		else
+		{
+			// Set start of cluster chain to initial value
+			i = 0;
+			Cluster = file->startcluster;
+		}
 
-            // Does the entry exist in the cache?
-            if (!fatfs_cache_get_next_cluster(&_fs, file, i, &nextCluster))
-            {
-                // Scan file linked list to find next entry
-                nextCluster = fatfs_find_next_cluster(&_fs, Cluster);
+		// Follow chain to find cluster to read
+		for ( ;i<ClusterIdx; i++)
+		{
+			uint32 nextCluster;
 
-                // Push entry into cache
-                fatfs_cache_set_next_cluster(&_fs, file, i, nextCluster);
-            }
+			// Does the entry exist in the cache?
+			if (!fatfs_cache_get_next_cluster(&_fs, file, i, &nextCluster))
+			{
+				// Scan file linked list to find next entry
+				nextCluster = fatfs_find_next_cluster(&_fs, Cluster);
 
-            LastCluster = Cluster;
-            Cluster = nextCluster;
+				// Push entry into cache
+				fatfs_cache_set_next_cluster(&_fs, file, i, nextCluster);
+			}
 
-            // Dont keep following a dead end
-            if (Cluster == FAT32_LAST_CLUSTER)
-                break;
-        }
+			LastCluster = Cluster;
+			Cluster = nextCluster;
 
-        // If we have reached the end of the chain, allocate more!
-        if (Cluster == FAT32_LAST_CLUSTER)
-        {
-            // Add some more cluster(s) to the last good cluster chain
-            if (!fatfs_add_free_space(&_fs, &LastCluster,  (TotalWriteCount + _fs.sectors_per_cluster -1) / _fs.sectors_per_cluster))
-                return 0;
+			// Dont keep following a dead end
+			if (Cluster == FAT32_LAST_CLUSTER)
+				break;
+		}
 
-            Cluster = LastCluster;
-        }
+		// If we have reached the end of the chain, allocate more!
+		if (Cluster == FAT32_LAST_CLUSTER)
+		{
+			// Add some more cluster(s) to the last good cluster chain
+			if (!fatfs_add_free_space(&_fs, &LastCluster,  (TotalWriteCount + _fs.sectors_per_cluster -1) / _fs.sectors_per_cluster))
+				return 0;
 
-        // Record current cluster lookup details
-        file->last_fat_lookup.CurrentCluster = Cluster;
-        file->last_fat_lookup.ClusterIdx = ClusterIdx;
-    }
+			Cluster = LastCluster;
+		}
 
-    // Calculate write address
-    lba = fatfs_lba_of_cluster(&_fs, Cluster) + SectorNumber;
+		// Record current cluster lookup details
+		file->last_fat_lookup.CurrentCluster = Cluster;
+		file->last_fat_lookup.ClusterIdx = ClusterIdx;
+	}
 
-    if (fatfs_sector_write(&_fs, lba, buf, count))
-        return count;
-    else
-        return 0;
+	// Calculate write address
+	lba = fatfs_lba_of_cluster(&_fs, Cluster) + SectorNumber;
+
+	if (fatfs_sector_write(&_fs, lba, buf, count))
+		return count;
+	else
+		return 0;
 }
 #endif
 //-----------------------------------------------------------------------------

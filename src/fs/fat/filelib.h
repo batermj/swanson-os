@@ -23,6 +23,10 @@
 #include "fat_access.h"
 #include "fat_list.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef SEEK_CUR
     #define SEEK_CUR    1
 #endif
@@ -73,6 +77,21 @@ typedef struct fat_file {
 #define FILE_CREATE      (1 << 5)
 	struct fat_node list_node;
 };
+
+struct fat_filelib {
+	struct fat_file files[FATFS_MAX_OPEN_FILES];
+	int filelib_init;
+	int filelib_valid;
+	struct fatfs fs;
+	struct fat_list open_file_list;
+	struct fat_list free_file_list;
+};
+
+void
+fat_filelib_init(struct fat_filelib *filelib);
+
+void
+fat_filelib_free(struct fat_filelib *filelib);
 
 void
 fl_init(void);
@@ -156,6 +175,10 @@ fl_format(uint32_t volume_sectors, const char *name);
 #ifdef FATFS_INC_TEST_HOOKS
 struct fatfs*
 fl_get_fs(void);
+#endif
+
+#ifdef __cplusplus
+} /* extern "C" { */
 #endif
 
 #endif /* SWANSON_FS_FAT_FILELIB_H */
