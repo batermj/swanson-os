@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 
 add_library("swanson-fat"
+	"bpb.h"
+	"bpb.c"
 	"disk.h"
 	"disk.c"
 	"diskfile.h"
