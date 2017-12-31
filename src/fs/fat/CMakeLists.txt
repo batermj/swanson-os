@@ -41,3 +41,4 @@ endfunction(ADD_FAT_UTILITY UTILITY_NAME)
 
 add_fat_utility("fat-format" "fat-format.c")
 add_fat_utility("fat-cp" "fat-cp.c")
+add_fat_utility("fat-ls" "fat-ls.c")
