@@ -20,8 +20,9 @@
 #define SWANSON_FS_FAT_FILELIB_H
 
 #include "fat_opts.h"
-#include "fat_access.h"
 #include "fat_list.h"
+
+#include "fs.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -18,8 +18,6 @@
 
 #include "bpb.h"
 
-#include "../stream.h"
-
 void
 fat_bpb_init(struct fat_bpb *bpb) {
 	bpb->bytes_per_sector = 512;

@@ -31,12 +31,12 @@
 //-----------------------------------------------------------------------------
 #include <string.h>
 #include "fat_defs.h"
-#include "fat_access.h"
 #include "fat_table.h"
 #include "fat_write.h"
 #include "fat_misc.h"
 #include "fat_format.h"
 
+#include "fs.h"
 #include "string.h"
 
 #if FATFS_INC_FORMAT_SUPPORT
