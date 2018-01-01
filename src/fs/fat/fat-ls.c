@@ -42,10 +42,24 @@ main(int argc, const char **argv) {
 	struct fat_disk *disk;
 	struct fat_diskfile diskfile;
 
-	if (argc >= 2)
-		diskpath = argv[1];
-	else
-		diskpath = "fat.img";
+	diskpath = "fat.img";
+
+	for (i = 1; i < argc; i++) {
+		if (strcmp(argv[i], "--disk") == 0) {
+			diskpath = argv[i + 1];
+			i++;
+		} else if (argv[i][0] != '-') {
+			break;
+		} else {
+			fprintf(stderr, "Unknown option '%s'.\n", argv[i]);
+			return EXIT_FAILURE;
+		}
+	}
+
+	if (diskpath == NULL) {
+		fprintf(stderr, "No disk file specified.\n");
+		return EXIT_FAILURE;
+	}
 
 	fat_diskfile_init(&diskfile);
 
@@ -67,7 +81,7 @@ main(int argc, const char **argv) {
 
 	path = NULL;
 
-	for (i = 1; i < argc; i++) {
+	while (i < argc) {
 		if (argv[i][0] != '-') {
 			if (path != NULL)
 				fprintf(stderr, "Only one path is allowed.\n");
@@ -77,6 +91,7 @@ main(int argc, const char **argv) {
 			fprintf(stderr, "Unknown option '%s'.\n", argv[i]);
 			return EXIT_FAILURE;
 		}
+		i++;
 	}
 
 	if (path == NULL)
