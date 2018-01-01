@@ -22,8 +22,8 @@
 #include "fat_table.h"
 #include "fat_write.h"
 #include "fat_misc.h"
-#include "fat_cache.h"
 
+#include "cache.h"
 #include "filelib.h"
 #include "fs.h"
 #include "string.h"
