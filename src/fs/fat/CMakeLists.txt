@@ -39,6 +39,7 @@ function(ADD_FAT_UTILITY UTILITY_NAME)
 	target_link_libraries("${UTILITY_NAME}" "swanson-fat")
 endfunction(ADD_FAT_UTILITY UTILITY_NAME)
 
+add_fat_utility("fat-mkdir" "fat-mkdir.c")
 add_fat_utility("fat-mkfs" "fat-mkfs.c")
 add_fat_utility("fat-cp" "fat-cp.c")
 add_fat_utility("fat-ls" "fat-ls.c")
