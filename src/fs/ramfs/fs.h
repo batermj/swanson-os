@@ -19,9 +19,9 @@
 #ifndef SWANSON_FS_RAMFS_H
 #define SWANSON_FS_RAMFS_H
 
-#include "ramfs/dir.h"
+#include "../vfs.h"
 
-#include "vfs.h"
+#include "dir.h"
 
 #ifdef __cplusplus
 extern "C" {

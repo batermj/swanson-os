@@ -16,7 +16,7 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ramfs.h"
+#include "fs.h"
 
 #ifndef NULL
 #define NULL ((void *) 0x00)

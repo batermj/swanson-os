@@ -4,4 +4,6 @@ add_library("ramfs"
 	"dir.h"
 	"dir.c"
 	"file.h"
-	"file.c")
+	"file.c"
+	"fs.h"
+	"fs.c")
