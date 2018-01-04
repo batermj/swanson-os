@@ -19,6 +19,7 @@
 #include "gpt-test.h"
 
 #include "gpt.h"
+#include "gpt-source.h"
 #include "null.h"
 
 #include "assert.h"

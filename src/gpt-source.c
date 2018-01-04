@@ -16,9 +16,10 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gpt.h"
+#include "gpt-source.h"
 
 #include "crc32.h"
+#include "gpt.h"
 #include "null.h"
 #include "sstream.h"
 
