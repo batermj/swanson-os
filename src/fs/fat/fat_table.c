@@ -90,8 +90,8 @@ static int fatfs_fat_writeback(struct fatfs *fs, struct fat_buffer *pcur)
         {
             if (fs->disk.write)
             {
-                uint32 sectors = FAT_BUFFER_SECTORS;
-                uint32 offset = pcur->address - fs->fat_begin_lba;
+                uint32_t sectors = FAT_BUFFER_SECTORS;
+                uint32_t offset = pcur->address - fs->fat_begin_lba;
 
                 // Limit to sectors used for the FAT
                 if ((offset + FAT_BUFFER_SECTORS) <= fs->fat_sectors)
@@ -114,7 +114,7 @@ static int fatfs_fat_writeback(struct fatfs *fs, struct fat_buffer *pcur)
 //-----------------------------------------------------------------------------
 // fatfs_fat_read_sector: Read a FAT sector
 //-----------------------------------------------------------------------------
-static struct fat_buffer *fatfs_fat_read_sector(struct fatfs *fs, uint32 sector)
+static struct fat_buffer *fatfs_fat_read_sector(struct fatfs *fs, uint32_t sector)
 {
     struct fat_buffer *last = NULL;
     struct fat_buffer *pcur = fs->fat_buffer_head;
@@ -144,7 +144,7 @@ static struct fat_buffer *fatfs_fat_read_sector(struct fatfs *fs, uint32 sector)
     // We found the sector already in FAT buffer chain
     if (pcur)
     {
-        pcur->ptr = (uint8 *)(pcur->sector + ((sector - pcur->address) * FAT_SECTOR_SIZE));
+        pcur->ptr = (uint8_t *)(pcur->sector + ((sector - pcur->address) * FAT_SECTOR_SIZE));
         return pcur;
     }
 
@@ -203,10 +203,10 @@ int fatfs_fat_purge(struct fatfs *fs)
 // fatfs_find_next_cluster: Return cluster number of next cluster in chain by
 // reading FAT table and traversing it. Return 0xffffffff for end of chain.
 //-----------------------------------------------------------------------------
-uint32 fatfs_find_next_cluster(struct fatfs *fs, uint32 current_cluster)
+uint32_t fatfs_find_next_cluster(struct fatfs *fs, uint32_t current_cluster)
 {
-    uint32 fat_sector_offset, position;
-    uint32 nextcluster;
+    uint32_t fat_sector_offset, position;
+    uint32_t nextcluster;
     struct fat_buffer *pbuf;
 
     // Why is '..' labelled with cluster 0 when it should be 2 ??
@@ -230,7 +230,7 @@ uint32 fatfs_find_next_cluster(struct fatfs *fs, uint32 current_cluster)
         position = (current_cluster - (fat_sector_offset * 256)) * 2;
 
         // Read Next Clusters value from Sector Buffer
-        nextcluster = FAT16_GET_16BIT_WORD(pbuf, (uint16)position);
+        nextcluster = FAT16_GET_16BIT_WORD(pbuf, (uint16_t)position);
 
         // If end of chain found
         if (nextcluster >= 0xFFF8 && nextcluster <= 0xFFFF)
@@ -242,7 +242,7 @@ uint32 fatfs_find_next_cluster(struct fatfs *fs, uint32 current_cluster)
         position = (current_cluster - (fat_sector_offset * 128)) * 4;
 
         // Read Next Clusters value from Sector Buffer
-        nextcluster = FAT32_GET_32BIT_WORD(pbuf, (uint16)position);
+        nextcluster = FAT32_GET_32BIT_WORD(pbuf, (uint16_t)position);
 
         // Mask out MS 4 bits (its 28bit addressing)
         nextcluster = nextcluster & 0x0FFFFFFF;
@@ -258,7 +258,7 @@ uint32 fatfs_find_next_cluster(struct fatfs *fs, uint32 current_cluster)
 //-----------------------------------------------------------------------------
 // fatfs_set_fs_info_next_free_cluster: Write the next free cluster to the FSINFO table
 //-----------------------------------------------------------------------------
-void fatfs_set_fs_info_next_free_cluster(struct fatfs *fs, uint32 newValue)
+void fatfs_set_fs_info_next_free_cluster(struct fatfs *fs, uint32_t newValue)
 {
     if (fs->fat_type == FAT_TYPE_16)
         ;
@@ -286,11 +286,11 @@ void fatfs_set_fs_info_next_free_cluster(struct fatfs *fs, uint32 newValue)
 // fatfs_find_blank_cluster: Find a free cluster entry by reading the FAT
 //-----------------------------------------------------------------------------
 #if FATFS_INC_WRITE_SUPPORT
-int fatfs_find_blank_cluster(struct fatfs *fs, uint32 start_cluster, uint32 *free_cluster)
+int fatfs_find_blank_cluster(struct fatfs *fs, uint32_t start_cluster, uint32_t *free_cluster)
 {
-    uint32 fat_sector_offset, position;
-    uint32 nextcluster;
-    uint32 current_cluster = start_cluster;
+    uint32_t fat_sector_offset, position;
+    uint32_t nextcluster;
+    uint32_t current_cluster = start_cluster;
     struct fat_buffer *pbuf;
 
     do
@@ -314,7 +314,7 @@ int fatfs_find_blank_cluster(struct fatfs *fs, uint32 start_cluster, uint32 *fre
                 position = (current_cluster - (fat_sector_offset * 256)) * 2;
 
                 // Read Next Clusters value from Sector Buffer
-                nextcluster = FAT16_GET_16BIT_WORD(pbuf, (uint16)position);
+                nextcluster = FAT16_GET_16BIT_WORD(pbuf, (uint16_t)position);
             }
             else
             {
@@ -322,7 +322,7 @@ int fatfs_find_blank_cluster(struct fatfs *fs, uint32 start_cluster, uint32 *fre
                 position = (current_cluster - (fat_sector_offset * 128)) * 4;
 
                 // Read Next Clusters value from Sector Buffer
-                nextcluster = FAT32_GET_32BIT_WORD(pbuf, (uint16)position);
+                nextcluster = FAT32_GET_32BIT_WORD(pbuf, (uint16_t)position);
 
                 // Mask out MS 4 bits (its 28bit addressing)
                 nextcluster = nextcluster & 0x0FFFFFFF;
@@ -347,10 +347,10 @@ int fatfs_find_blank_cluster(struct fatfs *fs, uint32 start_cluster, uint32 *fre
 // write (slow).
 //-----------------------------------------------------------------------------
 #if FATFS_INC_WRITE_SUPPORT
-int fatfs_fat_set_cluster(struct fatfs *fs, uint32 cluster, uint32 next_cluster)
+int fatfs_fat_set_cluster(struct fatfs *fs, uint32_t cluster, uint32_t next_cluster)
 {
     struct fat_buffer *pbuf;
-    uint32 fat_sector_offset, position;
+    uint32_t fat_sector_offset, position;
 
     // Find which sector of FAT table to read
     if (fs->fat_type == FAT_TYPE_16)
@@ -369,7 +369,7 @@ int fatfs_fat_set_cluster(struct fatfs *fs, uint32 cluster, uint32 next_cluster)
         position = (cluster - (fat_sector_offset * 256)) * 2;
 
         // Write Next Clusters value to Sector Buffer
-        FAT16_SET_16BIT_WORD(pbuf, (uint16)position, ((uint16)next_cluster));
+        FAT16_SET_16BIT_WORD(pbuf, (uint16_t)position, ((uint16_t)next_cluster));
     }
     else
     {
@@ -377,7 +377,7 @@ int fatfs_fat_set_cluster(struct fatfs *fs, uint32 cluster, uint32 next_cluster)
         position = (cluster - (fat_sector_offset * 128)) * 4;
 
         // Write Next Clusters value to Sector Buffer
-        FAT32_SET_32BIT_WORD(pbuf, (uint16)position, next_cluster);
+        FAT32_SET_32BIT_WORD(pbuf, (uint16_t)position, next_cluster);
     }
 
     return 1;
@@ -387,10 +387,10 @@ int fatfs_fat_set_cluster(struct fatfs *fs, uint32 cluster, uint32 next_cluster)
 // fatfs_free_cluster_chain: Follow a chain marking each element as free
 //-----------------------------------------------------------------------------
 #if FATFS_INC_WRITE_SUPPORT
-int fatfs_free_cluster_chain(struct fatfs *fs, uint32 start_cluster)
+int fatfs_free_cluster_chain(struct fatfs *fs, uint32_t start_cluster)
 {
-    uint32 last_cluster;
-    uint32 next_cluster = start_cluster;
+    uint32_t last_cluster;
+    uint32_t next_cluster = start_cluster;
 
     // Loop until end of chain
     while ( (next_cluster != FAT32_LAST_CLUSTER) && (next_cluster != 0x00000000) )
@@ -412,10 +412,10 @@ int fatfs_free_cluster_chain(struct fatfs *fs, uint32 start_cluster)
 // to the current tail.
 //-----------------------------------------------------------------------------
 #if FATFS_INC_WRITE_SUPPORT
-int fatfs_fat_add_cluster_to_chain(struct fatfs *fs, uint32 start_cluster, uint32 newEntry)
+int fatfs_fat_add_cluster_to_chain(struct fatfs *fs, uint32_t start_cluster, uint32_t newEntry)
 {
-    uint32 last_cluster = FAT32_LAST_CLUSTER;
-    uint32 next_cluster = start_cluster;
+    uint32_t last_cluster = FAT32_LAST_CLUSTER;
+    uint32_t next_cluster = start_cluster;
 
     if (start_cluster == FAT32_LAST_CLUSTER)
         return 0;
@@ -443,10 +443,10 @@ int fatfs_fat_add_cluster_to_chain(struct fatfs *fs, uint32 start_cluster, uint3
 //-----------------------------------------------------------------------------
 // fatfs_count_free_clusters:
 //-----------------------------------------------------------------------------
-uint32 fatfs_count_free_clusters(struct fatfs *fs)
+uint32_t fatfs_count_free_clusters(struct fatfs *fs)
 {
-    uint32 i,j;
-    uint32 count = 0;
+    uint32_t i,j;
+    uint32_t count = 0;
     struct fat_buffer *pbuf;
 
     for (i = 0; i < fs->fat_sectors; i++)
@@ -460,14 +460,14 @@ uint32 fatfs_count_free_clusters(struct fatfs *fs)
         {
             if (fs->fat_type == FAT_TYPE_16)
             {
-                if (FAT16_GET_16BIT_WORD(pbuf, (uint16)j) == 0)
+                if (FAT16_GET_16BIT_WORD(pbuf, (uint16_t)j) == 0)
                     count++;
 
                 j += 2;
             }
             else
             {
-                if (FAT32_GET_32BIT_WORD(pbuf, (uint16)j) == 0)
+                if (FAT32_GET_32BIT_WORD(pbuf, (uint16_t)j) == 0)
                     count++;
 
                 j += 4;

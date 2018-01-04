@@ -55,9 +55,9 @@ void fatfs_lfn_cache_init(struct lfn_cache *lfn, int wipeTable)
 // at a specific offset
 //-----------------------------------------------------------------------------
 #if FATFS_INC_LFN_SUPPORT
-void fatfs_lfn_cache_entry(struct lfn_cache *lfn, uint8 *entryBuffer)
+void fatfs_lfn_cache_entry(struct lfn_cache *lfn, uint8_t *entryBuffer)
 {
-    uint8 LFNIndex, i;
+    uint8_t LFNIndex, i;
     LFNIndex = entryBuffer[0] & 0x1F;
 
     // Limit file name to cache size!
@@ -204,13 +204,13 @@ int fatfs_lfn_entries_required(char *filename)
 // fatfs_filename_to_lfn:
 //-----------------------------------------------------------------------------
 #if FATFS_INC_LFN_SUPPORT
-void fatfs_filename_to_lfn(char *filename, uint8 *buffer, int entry, uint8 sfnChk)
+void fatfs_filename_to_lfn(char *filename, uint8_t *buffer, int entry, uint8_t sfnChk)
 {
     int i;
     int nameIndexes[MAX_LFN_ENTRY_LENGTH] = {1,3,5,7,9,0x0E,0x10,0x12,0x14,0x16,0x18,0x1C,0x1E};
 
     // 13 characters entries
-    int length = (int)strlen(filename);
+    int length = (int) strlen(filename);
     int entriesRequired = fatfs_lfn_entries_required(filename);
 
     // Filename offset
@@ -220,7 +220,7 @@ void fatfs_filename_to_lfn(char *filename, uint8 *buffer, int entry, uint8 sfnCh
     memset(buffer, 0x00, FAT_DIR_ENTRY_SIZE);
 
     // LFN entry number
-    buffer[0] = (uint8)(((entriesRequired-1)==entry)?(0x40|(entry+1)):(entry+1));
+    buffer[0] = (uint8_t)(((entriesRequired - 1) == entry) ? (0x40 | (entry + 1)) : (entry + 1));
 
     // LFN flag
     buffer[11] = 0x0F;
@@ -247,7 +247,7 @@ void fatfs_filename_to_lfn(char *filename, uint8 *buffer, int entry, uint8 sfnCh
 // fatfs_sfn_create_entry: Create the short filename directory entry
 //-----------------------------------------------------------------------------
 #if FATFS_INC_WRITE_SUPPORT
-void fatfs_sfn_create_entry(char *shortfilename, uint32 size, uint32 startCluster, struct fat_dir_entry *entry, int dir)
+void fatfs_sfn_create_entry(char *shortfilename, uint32_t size, uint32_t startCluster, struct fat_dir_entry *entry, int dir)
 {
     int i;
 
@@ -273,8 +273,8 @@ void fatfs_sfn_create_entry(char *shortfilename, uint32 size, uint32 startCluste
 
     entry->NTRes = 0x00;
 
-    entry->FstClusHI = FAT_HTONS((uint16)((startCluster>>16) & 0xFFFF));
-    entry->FstClusLO = FAT_HTONS((uint16)((startCluster>>0) & 0xFFFF));
+    entry->FstClusHI = FAT_HTONS((uint16_t)((startCluster>>16) & 0xFFFF));
+    entry->FstClusLO = FAT_HTONS((uint16_t)((startCluster>>0) & 0xFFFF));
     entry->FileSize = FAT_HTONL(size);
 }
 #endif
@@ -347,7 +347,7 @@ int fatfs_lfn_create_sfn(char *sfn_output, char *filename)
 //-----------------------------------------------------------------------------
 // fatfs_itoa:
 //-----------------------------------------------------------------------------
-static void fatfs_itoa(uint32 num, char *s)
+static void fatfs_itoa(uint32_t num, char *s)
 {
     char* cp;
     char outbuf[12];
@@ -377,7 +377,7 @@ static void fatfs_itoa(uint32 num, char *s)
 //-----------------------------------------------------------------------------
 #if FATFS_INC_LFN_SUPPORT
 #if FATFS_INC_WRITE_SUPPORT
-int fatfs_lfn_generate_tail(char *sfn_output, char *sfn_input, uint32 tailNum)
+int fatfs_lfn_generate_tail(char *sfn_output, char *sfn_input, uint32_t tailNum)
 {
     int tail_chars;
     char tail_str[12];
@@ -405,7 +405,7 @@ int fatfs_lfn_generate_tail(char *sfn_output, char *sfn_input, uint32 tailNum)
 // fatfs_convert_from_fat_time: Convert FAT time to h/m/s
 //-----------------------------------------------------------------------------
 #if FATFS_INC_TIME_DATE_SUPPORT
-void fatfs_convert_from_fat_time(uint16 fat_time, int *hours, int *minutes, int *seconds)
+void fatfs_convert_from_fat_time(uint16_t fat_time, int *hours, int *minutes, int *seconds)
 {
     *hours = (fat_time >> FAT_TIME_HOURS_SHIFT) & FAT_TIME_HOURS_MASK;
     *minutes = (fat_time >> FAT_TIME_MINUTES_SHIFT) & FAT_TIME_MINUTES_MASK;
@@ -415,7 +415,7 @@ void fatfs_convert_from_fat_time(uint16 fat_time, int *hours, int *minutes, int 
 //-----------------------------------------------------------------------------
 // fatfs_convert_from_fat_date: Convert FAT date to d/m/y
 //-----------------------------------------------------------------------------
-void fatfs_convert_from_fat_date(uint16 fat_date, int *day, int *month, int *year)
+void fatfs_convert_from_fat_date(uint16_t fat_date, int *day, int *month, int *year)
 {
     *day = (fat_date >> FAT_DATE_DAY_SHIFT) & FAT_DATE_DAY_MASK;
     *month = (fat_date >> FAT_DATE_MONTH_SHIFT) & FAT_DATE_MONTH_MASK;
@@ -425,9 +425,9 @@ void fatfs_convert_from_fat_date(uint16 fat_date, int *day, int *month, int *yea
 //-----------------------------------------------------------------------------
 // fatfs_convert_to_fat_time: Convert h/m/s to FAT time
 //-----------------------------------------------------------------------------
-uint16 fatfs_convert_to_fat_time(int hours, int minutes, int seconds)
+uint16_t fatfs_convert_to_fat_time(int hours, int minutes, int seconds)
 {
-    uint16 fat_time = 0;
+    uint16_t fat_time = 0;
 
     // Most FAT times are to a resolution of 2 seconds
     seconds /= FAT_TIME_SECONDS_SCALE;
@@ -441,9 +441,9 @@ uint16 fatfs_convert_to_fat_time(int hours, int minutes, int seconds)
 //-----------------------------------------------------------------------------
 // fatfs_convert_to_fat_date: Convert d/m/y to FAT date
 //-----------------------------------------------------------------------------
-uint16 fatfs_convert_to_fat_date(int day, int month, int year)
+uint16_t fatfs_convert_to_fat_date(int day, int month, int year)
 {
-    uint16 fat_date = 0;
+    uint16_t fat_date = 0;
 
     // FAT dates are relative to 1980
     if (year >= FAT_DATE_YEAR_OFFSET)
@@ -460,7 +460,7 @@ uint16 fatfs_convert_to_fat_date(int day, int month, int year)
 // fatfs_print_sector:
 //-----------------------------------------------------------------------------
 #ifdef FATFS_DEBUG
-void fatfs_print_sector(uint32 sector, uint8 *data)
+void fatfs_print_sector(uint32_t sector, uint8_t *data)
 {
     int i;
     int j;

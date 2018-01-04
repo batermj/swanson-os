@@ -1,13 +1,27 @@
-#ifndef __FAT_DEFS_H__
-#define __FAT_DEFS_H__
+/* Copyright (C) 2017 Taylor Holberton
+ *
+ * This file is part of Swanson.
+ *
+ * Swanson is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Swanson is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef SWANSON_FS_FAT_DEFS_H
+#define SWANSON_FS_FAT_DEFS_H
 
 #include "fat_opts.h"
-#include "fat_types.h"
 
-//-----------------------------------------------------------------------------
-//            FAT32 Offsets
-//        Name                Offset
-//-----------------------------------------------------------------------------
+#include "types.h"
 
 // Boot Sector
 #define BS_JMPBOOT              0    // Length = 3
@@ -19,7 +33,7 @@
 #define BPB_ROOTENTCNT          17    // Length = 2
 #define BPB_TOTSEC16            19    // Length = 2
 #define BPB_MEDIA               21    // Length = 1
-#define    BPB_FATSZ16          22    // Length = 2
+#define BPB_FATSZ16             22    // Length = 2
 #define BPB_SECPERTRK           24    // Length = 2
 #define BPB_NUMHEADS            26    // Length = 2
 #define BPB_HIDDSEC             28    // Length = 4
@@ -107,22 +121,30 @@
 #define FAT32_LAST_CLUSTER              0xFFFFFFFF
 #define FAT32_INVALID_CLUSTER           0xFFFFFFFF
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 STRUCT_PACK_BEGIN
 struct fat_dir_entry STRUCT_PACK
 {
-    uint8 Name[11];
-    uint8 Attr;
-    uint8 NTRes;
-    uint8 CrtTimeTenth;
-    uint8 CrtTime[2];
-    uint8 CrtDate[2];
-    uint8 LstAccDate[2];
-    uint16 FstClusHI;
-    uint8 WrtTime[2];
-    uint8 WrtDate[2];
-    uint16 FstClusLO;
-    uint32 FileSize;
+    uint8_t Name[11];
+    uint8_t Attr;
+    uint8_t NTRes;
+    uint8_t CrtTimeTenth;
+    uint8_t CrtTime[2];
+    uint8_t CrtDate[2];
+    uint8_t LstAccDate[2];
+    uint16_t FstClusHI;
+    uint8_t WrtTime[2];
+    uint8_t WrtDate[2];
+    uint16_t FstClusLO;
+    uint32_t FileSize;
 } STRUCT_PACKED;
 STRUCT_PACK_END
 
+#ifdef __cplusplus
+} /* extern "C" { */
 #endif
+
+#endif /* SWANSON_FS_FAT_DEFS_H */

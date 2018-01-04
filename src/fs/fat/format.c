@@ -250,10 +250,10 @@ fatfs_create_boot_sector(struct fatfs *fs,
 		fs->currentsector.sector[31] = 0x00;
 
 		// Total sectors for this volume
-		fs->currentsector.sector[32] = (uint8)((vol_sectors>>0)&0xFF);
-		fs->currentsector.sector[33] = (uint8)((vol_sectors>>8)&0xFF);
-		fs->currentsector.sector[34] = (uint8)((vol_sectors>>16)&0xFF);
-		fs->currentsector.sector[35] = (uint8)((vol_sectors>>24)&0xFF);
+		fs->currentsector.sector[32] = (uint8_t)((vol_sectors>>0)&0xFF);
+		fs->currentsector.sector[33] = (uint8_t)((vol_sectors>>8)&0xFF);
+		fs->currentsector.sector[34] = (uint8_t)((vol_sectors>>16)&0xFF);
+		fs->currentsector.sector[35] = (uint8_t)((vol_sectors>>24)&0xFF);
 
 		total_clusters = (vol_sectors / fs->sectors_per_cluster) + 1;
 
@@ -330,7 +330,7 @@ fatfs_create_boot_sector(struct fatfs *fs,
 //-----------------------------------------------------------------------------
 // fatfs_create_fsinfo_sector: Create the FSInfo sector (FAT32)
 //-----------------------------------------------------------------------------
-static int fatfs_create_fsinfo_sector(struct fatfs *fs, uint32 sector_lba)
+static int fatfs_create_fsinfo_sector(struct fatfs *fs, uint32_t sector_lba)
 {
     // Zero sector initially
     memset(fs->currentsector.sector, 0, FAT_SECTOR_SIZE);
@@ -373,7 +373,7 @@ static int fatfs_create_fsinfo_sector(struct fatfs *fs, uint32 sector_lba)
 //-----------------------------------------------------------------------------
 static int fatfs_erase_fat(struct fatfs *fs, int is_fat32)
 {
-    uint32 i;
+    uint32_t i;
 
     // Zero sector initially
     memset(fs->currentsector.sector, 0, FAT_SECTOR_SIZE);
@@ -405,7 +405,7 @@ static int fatfs_erase_fat(struct fatfs *fs, int is_fat32)
 //-----------------------------------------------------------------------------
 // fatfs_format_fat16: Format a FAT16 partition
 //-----------------------------------------------------------------------------
-int fatfs_format_fat16(struct fatfs *fs, uint32 volume_sectors, const char *name)
+int fatfs_format_fat16(struct fatfs *fs, uint32_t volume_sectors, const char *name)
 {
     fs->currentsector.address = FAT32_INVALID_CLUSTER;
     fs->currentsector.dirty = 0;
@@ -454,7 +454,7 @@ int fatfs_format_fat16(struct fatfs *fs, uint32 volume_sectors, const char *name
 //-----------------------------------------------------------------------------
 // fatfs_format_fat32: Format a FAT32 partition
 //-----------------------------------------------------------------------------
-int fatfs_format_fat32(struct fatfs *fs, uint32 volume_sectors, const char *name)
+int fatfs_format_fat32(struct fatfs *fs, uint32_t volume_sectors, const char *name)
 {
     fs->currentsector.address = FAT32_INVALID_CLUSTER;
     fs->currentsector.dirty = 0;
@@ -503,7 +503,7 @@ int fatfs_format_fat32(struct fatfs *fs, uint32 volume_sectors, const char *name
 //-----------------------------------------------------------------------------
 // fatfs_format: Format a partition with either FAT16 or FAT32 based on size
 //-----------------------------------------------------------------------------
-int fatfs_format(struct fatfs *fs, uint32 volume_sectors, const char *name)
+int fatfs_format(struct fatfs *fs, uint32_t volume_sectors, const char *name)
 {
     // 2GB - 32K limit for safe behaviour for FAT16
     if (volume_sectors <= 4194304)

@@ -136,13 +136,13 @@ static void _free_file(struct fat_file* file)
 // _open_directory: Cycle through path string to find the start cluster
 // address of the highest subdir.
 //-----------------------------------------------------------------------------
-static int _open_directory(char *path, uint32 *pathCluster)
+static int _open_directory(char *path, uint32_t *pathCluster)
 {
     int levels;
     int sublevel;
     char currentfolder[FATFS_MAX_LONG_FILENAME];
     struct fat_dir_entry sfEntry;
-    uint32 startcluster;
+    uint32_t startcluster;
 
     // Set starting cluster to root cluster
     startcluster = fatfs_get_root_cluster(&_fs);
@@ -161,7 +161,7 @@ static int _open_directory(char *path, uint32 *pathCluster)
         {
             // Check entry is folder
             if (fatfs_entry_is_dir(&sfEntry))
-                startcluster = ((FAT_HTONS((uint32)sfEntry.FstClusHI))<<16) + FAT_HTONS(sfEntry.FstClusLO);
+                startcluster = ((FAT_HTONS((uint32_t)sfEntry.FstClusHI))<<16) + FAT_HTONS(sfEntry.FstClusLO);
             else
                 return 0;
         }
@@ -385,7 +385,7 @@ static struct fat_file* _open_file(const char *path)
             memcpy(file->shortfilename, sfEntry.Name, FAT_SFN_SIZE_FULL);
             file->filelength = FAT_HTONL(sfEntry.FileSize);
             file->bytenum = 0;
-            file->startcluster = ((FAT_HTONS((uint32)sfEntry.FstClusHI))<<16) + FAT_HTONS(sfEntry.FstClusLO);
+            file->startcluster = ((FAT_HTONS((uint32_t)sfEntry.FstClusHI))<<16) + FAT_HTONS(sfEntry.FstClusLO);
             file->file_data_address = 0xFFFFFFFF;
             file->file_data_dirty = 0;
             file->filelength_changed = 0;
@@ -559,13 +559,13 @@ static struct fat_file* _create_file(const char *filename)
 //-----------------------------------------------------------------------------
 // _read_sectors: Read sector(s) from disk to file
 //-----------------------------------------------------------------------------
-static uint32 _read_sectors(struct fat_file* file, uint32 offset, uint8 *buffer, uint32 count)
+static uint32_t _read_sectors(struct fat_file* file, uint32_t offset, uint8_t *buffer, uint32_t count)
 {
-    uint32 Sector = 0;
-    uint32 ClusterIdx = 0;
-    uint32 Cluster = 0;
-    uint32 i;
-    uint32 lba;
+    uint32_t Sector = 0;
+    uint32_t ClusterIdx = 0;
+    uint32_t Cluster = 0;
+    uint32_t i;
+    uint32_t lba;
 
     // Find cluster index within file & sector with cluster
     ClusterIdx = offset / _fs.sectors_per_cluster;
@@ -598,7 +598,7 @@ static uint32 _read_sectors(struct fat_file* file, uint32 offset, uint8 *buffer,
         // Follow chain to find cluster to read
         for ( ;i<ClusterIdx; i++)
         {
-            uint32 nextCluster;
+            uint32_t nextCluster;
 
             // Does the entry exist in the cache?
             if (!fatfs_cache_get_next_cluster(&_fs, file, i, &nextCluster))
@@ -860,7 +860,7 @@ _write_sectors(struct fat_file* file,
 		// Follow chain to find cluster to read
 		for ( ;i<ClusterIdx; i++)
 		{
-			uint32 nextCluster;
+			uint32_t nextCluster;
 
 			// Does the entry exist in the cache?
 			if (!fatfs_cache_get_next_cluster(&_fs, file, i, &nextCluster))
@@ -981,7 +981,7 @@ fl_fclose(struct fat_file *f) {
 int fl_fgetc(void *f)
 {
     int res;
-    uint8 data = 0;
+    uint8_t data = 0;
 
     res = fl_fread(&data, 1, 1, f);
     if (res == 1)
@@ -1028,8 +1028,8 @@ char *fl_fgets(char *s, int n, void *f)
 int
 fl_fread(void * buffer, int size, int length, struct fat_file *file) {
 
-    uint32 sector;
-    uint32 offset;
+    uint32_t sector;
+    uint32_t offset;
     int copyCount;
     int count = size * length;
     int bytesRead = 0;
@@ -1068,7 +1068,7 @@ fl_fread(void * buffer, int size, int length, struct fat_file *file) {
         if ((offset == 0) && ((count - bytesRead) >= FAT_SECTOR_SIZE))
         {
             // Read as many sectors as possible into target buffer
-            uint32 sectorsRead = _read_sectors(file, sector, (uint8*)((uint8*)buffer + bytesRead), (count - bytesRead) / FAT_SECTOR_SIZE);
+            uint32_t sectorsRead = _read_sectors(file, sector, (uint8_t *)((uint8_t *)buffer + bytesRead), (count - bytesRead) / FAT_SECTOR_SIZE);
             if (sectorsRead)
             {
                 // We have upto one sector to copy
@@ -1107,7 +1107,7 @@ fl_fread(void * buffer, int size, int length, struct fat_file *file) {
                 copyCount = (count - bytesRead);
 
             // Copy to application buffer
-            memcpy( (uint8*)((uint8*)buffer + bytesRead), (uint8*)(file->file_data_sector + offset), copyCount);
+            memcpy( (uint8_t *)((uint8_t *)buffer + bytesRead), (uint8_t *)(file->file_data_sector + offset), copyCount);
 
             // Move onto next sector and reset copy offset
             sector++;
@@ -1148,7 +1148,7 @@ fl_fseek(struct fat_file *file, long offset, int origin) {
 
     if (origin == SEEK_SET)
     {
-        file->bytenum = (uint32)offset;
+        file->bytenum = (uint32_t)offset;
 
         if (file->bytenum > file->filelength)
             file->bytenum = file->filelength;
@@ -1172,7 +1172,7 @@ fl_fseek(struct fat_file *file, long offset, int origin) {
             offset = -offset;
 
             // Limit to negative shift to start of file
-            if ((uint32)offset > file->bytenum)
+            if ((uint32_t)offset > file->bytenum)
                 file->bytenum = 0;
             else
                 file->bytenum-= offset;
@@ -1196,7 +1196,7 @@ fl_fseek(struct fat_file *file, long offset, int origin) {
 // fl_fgetpos: Get the current file position
 //-----------------------------------------------------------------------------
 int
-fl_fgetpos(struct fat_file *file, uint32 * position) {
+fl_fgetpos(struct fat_file *file, uint32_t * position) {
 
     if (!file)
         return -1;
@@ -1216,7 +1216,7 @@ fl_fgetpos(struct fat_file *file, uint32 * position) {
 long
 fl_ftell(struct fat_file *file) {
 
-    uint32 pos = 0;
+    uint32_t pos = 0;
 
     fl_fgetpos(file, &pos);
 
@@ -1250,7 +1250,7 @@ fl_feof(struct fat_file *file) {
 #if FATFS_INC_WRITE_SUPPORT
 int fl_fputc(int c, void *f)
 {
-    uint8 data = (uint8)c;
+    uint8_t data = (uint8_t) c;
     int res;
 
     res = fl_fwrite(&data, 1, 1, f);
@@ -1267,12 +1267,12 @@ int fl_fputc(int c, void *f)
 int
 fl_fwrite(const void * data, int size, int count, struct fat_file *file) {
 
-    uint32 sector;
-    uint32 offset;
-    uint32 length = (size*count);
-    uint8 *buffer = (uint8 *)data;
-    uint32 bytesWritten = 0;
-    uint32 copyCount;
+    uint32_t sector;
+    uint32_t offset;
+    uint32_t length = (size*count);
+    uint8_t *buffer = (uint8_t *)data;
+    uint32_t bytesWritten = 0;
+    uint32_t copyCount;
 
     // If first call to library, initialise
     CHECK_FL_INIT();
@@ -1305,7 +1305,7 @@ fl_fwrite(const void * data, int size, int count, struct fat_file *file) {
         // Whole sector or more to be written?
         if ((offset == 0) && ((length - bytesWritten) >= FAT_SECTOR_SIZE))
         {
-            uint32 sectorsWrote;
+            uint32_t sectorsWrote;
 
             // Buffered sector, flush back to disk
             if (file->file_data_address != 0xFFFFFFFF)
@@ -1319,7 +1319,7 @@ fl_fwrite(const void * data, int size, int count, struct fat_file *file) {
             }
 
             // Write as many sectors as possible
-            sectorsWrote = _write_sectors(file, sector, (uint8*)(buffer + bytesWritten), (length - bytesWritten) / FAT_SECTOR_SIZE);
+            sectorsWrote = _write_sectors(file, sector, (uint8_t *)(buffer + bytesWritten), (length - bytesWritten) / FAT_SECTOR_SIZE);
             copyCount = FAT_SECTOR_SIZE * sectorsWrote;
 
             // Increase total read count
@@ -1368,7 +1368,7 @@ fl_fwrite(const void * data, int size, int count, struct fat_file *file) {
             }
 
             // Copy from application buffer into sector buffer
-            memcpy((uint8*)(file->file_data_sector + offset), (uint8*)(buffer + bytesWritten), copyCount);
+            memcpy((uint8_t *)(file->file_data_sector + offset), (uint8_t *)(buffer + bytesWritten), copyCount);
 
             // Mark buffer as dirty
             file->file_data_dirty = 1;
@@ -1528,7 +1528,7 @@ FL_DIR* fl_opendir(const char* path, FL_DIR *dir)
 {
     int levels;
     int res = 1;
-    uint32 cluster = FAT32_INVALID_CLUSTER;
+    uint32_t cluster = FAT32_INVALID_CLUSTER;
 
     // If first call to library, initialise
     CHECK_FL_INIT();
@@ -1604,7 +1604,7 @@ int fl_is_dir(const char *path)
 // fl_format: Format a partition with either FAT16 or FAT32 based on size
 //-----------------------------------------------------------------------------
 #if FATFS_INC_FORMAT_SUPPORT
-int fl_format(uint32 volume_sectors, const char *name)
+int fl_format(uint32_t volume_sectors, const char *name)
 {
     return fatfs_format(&_fs, volume_sectors, name);
 }

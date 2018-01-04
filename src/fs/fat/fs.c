@@ -43,14 +43,14 @@
 //-----------------------------------------------------------------------------
 int fatfs_init(struct fatfs *fs)
 {
-    uint8 num_of_fats;
-    uint16 reserved_sectors;
-    uint32 FATSz;
-    uint32 root_dir_sectors;
-    uint32 total_sectors;
-    uint32 data_sectors;
-    uint32 count_of_clusters;
-    uint8 valid_partition = 0;
+    uint8_t num_of_fats;
+    uint16_t reserved_sectors;
+    uint32_t FATSz;
+    uint32_t root_dir_sectors;
+    uint32_t total_sectors;
+    uint32_t data_sectors;
+    uint32_t count_of_clusters;
+    uint8_t valid_partition = 0;
 
     fs->currentsector.address = FAT32_INVALID_CLUSTER;
     fs->currentsector.dirty = 0;
@@ -193,7 +193,7 @@ int fatfs_init(struct fatfs *fs)
 // fatfs_lba_of_cluster: This function converts a cluster number into a sector /
 // LBA number.
 //-----------------------------------------------------------------------------
-uint32 fatfs_lba_of_cluster(struct fatfs *fs, uint32 Cluster_Number)
+uint32_t fatfs_lba_of_cluster(struct fatfs *fs, uint32_t Cluster_Number)
 {
     if (fs->fat_type == FAT_TYPE_16)
         return (fs->cluster_begin_lba + (fs->root_entry_count * 32 / FAT_SECTOR_SIZE) + ((Cluster_Number-2) * fs->sectors_per_cluster));
@@ -203,14 +203,14 @@ uint32 fatfs_lba_of_cluster(struct fatfs *fs, uint32 Cluster_Number)
 //-----------------------------------------------------------------------------
 // fatfs_sector_read:
 //-----------------------------------------------------------------------------
-int fatfs_sector_read(struct fatfs *fs, uint32 lba, uint8 *target, uint32 count)
+int fatfs_sector_read(struct fatfs *fs, uint32_t lba, uint8_t *target, uint32_t count)
 {
     return fs->disk.read(fs->disk.data, lba, target, count);
 }
 //-----------------------------------------------------------------------------
 // fatfs_sector_write:
 //-----------------------------------------------------------------------------
-int fatfs_sector_write(struct fatfs *fs, uint32 lba, uint8 *target, uint32 count)
+int fatfs_sector_write(struct fatfs *fs, uint32_t lba, uint8_t *target, uint32_t count)
 {
     return fs->disk.write(fs->disk.data, lba, target, count);
 }
@@ -218,13 +218,13 @@ int fatfs_sector_write(struct fatfs *fs, uint32 lba, uint8 *target, uint32 count
 // fatfs_sector_reader: From the provided startcluster and sector offset
 // Returns True if success, returns False if not (including if read out of range)
 //-----------------------------------------------------------------------------
-int fatfs_sector_reader(struct fatfs *fs, uint32 start_cluster, uint32 offset, uint8 *target)
+int fatfs_sector_reader(struct fatfs *fs, uint32_t start_cluster, uint32_t offset, uint8_t *target)
 {
-    uint32 sector_to_read = 0;
-    uint32 cluster_to_read = 0;
-    uint32 cluster_chain = 0;
-    uint32 i;
-    uint32 lba;
+    uint32_t sector_to_read = 0;
+    uint32_t cluster_to_read = 0;
+    uint32_t cluster_chain = 0;
+    uint32_t i;
+    uint32_t lba;
 
     // FAT16 Root directory
     if (fs->fat_type == FAT_TYPE_16 && start_cluster == 0)
@@ -272,12 +272,12 @@ int fatfs_sector_reader(struct fatfs *fs, uint32 start_cluster, uint32 offset, u
 // fatfs_read_sector: Read from the provided cluster and sector offset
 // Returns True if success, returns False if not
 //-----------------------------------------------------------------------------
-int fatfs_read_sector(struct fatfs *fs, uint32 cluster, uint32 sector, uint8 *target)
+int fatfs_read_sector(struct fatfs *fs, uint32_t cluster, uint32_t sector, uint8_t *target)
 {
     // FAT16 Root directory
     if (fs->fat_type == FAT_TYPE_16 && cluster == 0)
     {
-        uint32 lba;
+        uint32_t lba;
 
         // In FAT16, there are a limited amount of sectors in root dir!
         if (sector < fs->rootdir_sectors)
@@ -307,7 +307,7 @@ int fatfs_read_sector(struct fatfs *fs, uint32 cluster, uint32 sector, uint8 *ta
         if (target)
         {
             // Calculate read address
-            uint32 lba = fatfs_lba_of_cluster(fs, cluster) + sector;
+            uint32_t lba = fatfs_lba_of_cluster(fs, cluster) + sector;
 
             // Read from disk
             return fs->disk.read(fs->disk.data, lba, target, 1);
@@ -327,7 +327,7 @@ int fatfs_read_sector(struct fatfs *fs, uint32 cluster, uint32 sector, uint8 *ta
 // Returns True if success, returns False if not
 //-----------------------------------------------------------------------------
 #if FATFS_INC_WRITE_SUPPORT
-int fatfs_write_sector(struct fatfs *fs, uint32 cluster, uint32 sector, uint8 *target)
+int fatfs_write_sector(struct fatfs *fs, uint32_t cluster, uint32_t sector, uint8_t *target)
 {
     // No write access?
     if (!fs->disk.write)
@@ -336,7 +336,7 @@ int fatfs_write_sector(struct fatfs *fs, uint32 cluster, uint32 sector, uint8 *t
     // FAT16 Root directory
     if (fs->fat_type == FAT_TYPE_16 && cluster == 0)
     {
-        uint32 lba;
+        uint32_t lba;
 
         // In FAT16 we cannot extend the root dir!
         if (sector < fs->rootdir_sectors)
@@ -366,7 +366,7 @@ int fatfs_write_sector(struct fatfs *fs, uint32 cluster, uint32 sector, uint8 *t
         if (target)
         {
             // Calculate write address
-            uint32 lba = fatfs_lba_of_cluster(fs, cluster) + sector;
+            uint32_t lba = fatfs_lba_of_cluster(fs, cluster) + sector;
 
             // Write to disk
             return fs->disk.write(fs->disk.data, lba, target, 1);
@@ -397,7 +397,7 @@ void fatfs_show_details(struct fatfs *fs)
 //-----------------------------------------------------------------------------
 // fatfs_get_root_cluster: Get the root dir cluster
 //-----------------------------------------------------------------------------
-uint32 fatfs_get_root_cluster(struct fatfs *fs)
+uint32_t fatfs_get_root_cluster(struct fatfs *fs)
 {
     // NOTE: On FAT16 this will be 0 which has a special meaning...
     return fs->rootdir_first_cluster;
@@ -405,11 +405,11 @@ uint32 fatfs_get_root_cluster(struct fatfs *fs)
 //-------------------------------------------------------------
 // fatfs_get_file_entry: Find the file entry for a filename
 //-------------------------------------------------------------
-uint32 fatfs_get_file_entry(struct fatfs *fs, uint32 Cluster, char *name_to_find, struct fat_dir_entry *sfEntry)
+uint32_t fatfs_get_file_entry(struct fatfs *fs, uint32_t Cluster, char *name_to_find, struct fat_dir_entry *sfEntry)
 {
-    uint8 item=0;
-    uint16 recordoffset = 0;
-    uint8 i=0;
+    uint8_t item=0;
+    uint16_t recordoffset = 0;
+    uint8_t i=0;
     int x=0;
     char *long_filename = NULL;
     char short_filename[13];
@@ -511,10 +511,10 @@ uint32 fatfs_get_file_entry(struct fatfs *fs, uint32 Cluster, char *name_to_find
 // NOTE: shortname is XXXXXXXXYYY not XXXXXXXX.YYY
 //-------------------------------------------------------------
 #if FATFS_INC_WRITE_SUPPORT
-int fatfs_sfn_exists(struct fatfs *fs, uint32 Cluster, char *shortname)
+int fatfs_sfn_exists(struct fatfs *fs, uint32_t Cluster, char *shortname)
 {
-    uint8 item=0;
-    uint16 recordoffset = 0;
+    uint8_t item=0;
+    uint16_t recordoffset = 0;
     int x=0;
     struct fat_dir_entry *directoryEntry;
 
@@ -566,8 +566,8 @@ int fatfs_update_timestamps(struct fat_dir_entry *directoryEntry, int create, in
 {
     time_t time_now;
     struct tm * time_info;
-    uint16 fat_time;
-    uint16 fat_date;
+    uint16_t fat_time;
+    uint16_t fat_date;
 
     // Get system time
     time(&time_now);
@@ -614,10 +614,10 @@ int fatfs_update_timestamps(struct fat_dir_entry *directoryEntry, int create, in
 // NOTE: shortname is XXXXXXXXYYY not XXXXXXXX.YYY
 //-------------------------------------------------------------
 #if FATFS_INC_WRITE_SUPPORT
-int fatfs_update_file_length(struct fatfs *fs, uint32 Cluster, char *shortname, uint32 fileLength)
+int fatfs_update_file_length(struct fatfs *fs, uint32_t Cluster, char *shortname, uint32_t fileLength)
 {
-    uint8 item=0;
-    uint16 recordoffset = 0;
+    uint8_t item=0;
+    uint16_t recordoffset = 0;
     int x=0;
     struct fat_dir_entry *directoryEntry;
 
@@ -664,7 +664,7 @@ int fatfs_update_file_length(struct fatfs *fs, uint32 Cluster, char *shortname, 
 #endif
 
                         // Update sfn entry
-                        memcpy((uint8*)(fs->currentsector.sector+recordoffset), (uint8*)directoryEntry, sizeof(struct fat_dir_entry));
+                        memcpy((uint8_t *)(fs->currentsector.sector+recordoffset), (uint8_t *)directoryEntry, sizeof(struct fat_dir_entry));
 
                         // Write sector back
                         return fs->disk.write(fs->disk.data, fs->currentsector.address, fs->currentsector.sector, 1);
@@ -684,10 +684,10 @@ int fatfs_update_file_length(struct fatfs *fs, uint32 Cluster, char *shortname, 
 // NOTE: shortname is XXXXXXXXYYY not XXXXXXXX.YYY
 //-------------------------------------------------------------
 #if FATFS_INC_WRITE_SUPPORT
-int fatfs_mark_file_deleted(struct fatfs *fs, uint32 Cluster, char *shortname)
+int fatfs_mark_file_deleted(struct fatfs *fs, uint32_t Cluster, char *shortname)
 {
-    uint8 item=0;
-    uint16 recordoffset = 0;
+    uint8_t item=0;
+    uint16_t recordoffset = 0;
     int x=0;
     struct fat_dir_entry *directoryEntry;
 
@@ -735,7 +735,7 @@ int fatfs_mark_file_deleted(struct fatfs *fs, uint32 Cluster, char *shortname)
 #endif
 
                         // Update sfn entry
-                        memcpy((uint8*)(fs->currentsector.sector+recordoffset), (uint8*)directoryEntry, sizeof(struct fat_dir_entry));
+                        memcpy((uint8_t *)(fs->currentsector.sector+recordoffset), (uint8_t *)directoryEntry, sizeof(struct fat_dir_entry));
 
                         // Write sector back
                         return fs->disk.write(fs->disk.data, fs->currentsector.address, fs->currentsector.sector, 1);
@@ -754,7 +754,7 @@ int fatfs_mark_file_deleted(struct fatfs *fs, uint32 Cluster, char *shortname)
 // fatfs_list_directory_start: Initialise a directory listing procedure
 //-----------------------------------------------------------------------------
 #if FATFS_DIR_LIST_SUPPORT
-void fatfs_list_directory_start(struct fatfs *fs, struct fs_dir_list_status *dirls, uint32 StartCluster)
+void fatfs_list_directory_start(struct fatfs *fs, struct fs_dir_list_status *dirls, uint32_t StartCluster)
 {
     dirls->cluster = StartCluster;
     dirls->sector = 0;
@@ -768,8 +768,8 @@ void fatfs_list_directory_start(struct fatfs *fs, struct fs_dir_list_status *dir
 #if FATFS_DIR_LIST_SUPPORT
 int fatfs_list_directory_next(struct fatfs *fs, struct fs_dir_list_status *dirls, struct fs_dir_ent *entry)
 {
-    uint8 i,item;
-    uint16 recordoffset;
+    uint8_t i,item;
+    uint16_t recordoffset;
     struct fat_dir_entry *directoryEntry;
     char *long_filename = NULL;
     char short_filename[13];

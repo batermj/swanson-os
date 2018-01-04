@@ -43,11 +43,11 @@
 // fatfs_add_free_space: Allocate another cluster of free space to the end
 // of a files cluster chain.
 //-----------------------------------------------------------------------------
-int fatfs_add_free_space(struct fatfs *fs, uint32 *startCluster, uint32 clusters)
+int fatfs_add_free_space(struct fatfs *fs, uint32_t *startCluster, uint32_t clusters)
 {
-    uint32 i;
-    uint32 nextcluster;
-    uint32 start = *startCluster;
+    uint32_t i;
+    uint32_t nextcluster;
+    uint32_t start = *startCluster;
 
     // Set the next free cluster hint to unknown
     if (fs->next_free_cluster != FAT32_LAST_CLUSTER)
@@ -80,11 +80,11 @@ int fatfs_add_free_space(struct fatfs *fs, uint32 *startCluster, uint32 clusters
 // 'startCluster' if newFile = false, or allocating a new start to the chain if
 // newFile = true.
 //-----------------------------------------------------------------------------
-int fatfs_allocate_free_space(struct fatfs *fs, int newFile, uint32 *startCluster, uint32 size)
+int fatfs_allocate_free_space(struct fatfs *fs, int newFile, uint32_t *startCluster, uint32_t size)
 {
-    uint32 clusterSize;
-    uint32 clusterCount;
-    uint32 nextcluster;
+    uint32_t clusterSize;
+    uint32_t clusterCount;
+    uint32_t nextcluster;
 
     if (size==0)
         return 0;
@@ -128,12 +128,12 @@ int fatfs_allocate_free_space(struct fatfs *fs, int newFile, uint32 *startCluste
 // fatfs_find_free_dir_offset: Find a free space in the directory for a new entry
 // which takes up 'entryCount' blocks (or allocate some more)
 //-----------------------------------------------------------------------------
-static int fatfs_find_free_dir_offset(struct fatfs *fs, uint32 dirCluster, int entryCount, uint32 *pSector, uint8 *pOffset)
+static int fatfs_find_free_dir_offset(struct fatfs *fs, uint32_t dirCluster, int entryCount, uint32_t *pSector, uint8_t *pOffset)
 {
     struct fat_dir_entry *directoryEntry;
-    uint8 item=0;
-    uint16 recordoffset = 0;
-    uint8 i=0;
+    uint8_t item=0;
+    uint16_t recordoffset = 0;
+    uint8_t i=0;
     int x=0;
     int possible_spaces = 0;
     int start_recorded = 0;
@@ -228,7 +228,7 @@ static int fatfs_find_free_dir_offset(struct fatfs *fs, uint32 dirCluster, int e
         // Run out of free space in the directory, allocate some more
         else
         {
-            uint32 newCluster;
+            uint32_t newCluster;
 
             // Get a new cluster for directory
             if (!fatfs_find_blank_cluster(fs, fs->rootdir_first_cluster, &newCluster))
@@ -264,22 +264,22 @@ static int fatfs_find_free_dir_offset(struct fatfs *fs, uint32 dirCluster, int e
 //-----------------------------------------------------------------------------
 // fatfs_add_file_entry: Add a directory entry to a location found by FindFreeOffset
 //-----------------------------------------------------------------------------
-int fatfs_add_file_entry(struct fatfs *fs, uint32 dirCluster, char *filename, char *shortfilename, uint32 startCluster, uint32 size, int dir)
+int fatfs_add_file_entry(struct fatfs *fs, uint32_t dirCluster, char *filename, char *shortfilename, uint32_t startCluster, uint32_t size, int dir)
 {
-    uint8 item=0;
-    uint16 recordoffset = 0;
-    uint8 i=0;
-    uint32 x=0;
+    uint8_t item=0;
+    uint16_t recordoffset = 0;
+    uint8_t i=0;
+    uint32_t x=0;
     int entryCount;
     struct fat_dir_entry shortEntry;
     int dirtySector = 0;
 
-    uint32 dirSector = 0;
-    uint8 dirOffset = 0;
+    uint32_t dirSector = 0;
+    uint8_t dirOffset = 0;
     int foundEnd = 0;
 
-    uint8 checksum;
-    uint8 *pSname;
+    uint8_t checksum;
+    uint8_t *pSname;
 
     // No write access?
     if (!fs->disk.write)
@@ -301,7 +301,7 @@ int fatfs_add_file_entry(struct fatfs *fs, uint32 dirCluster, char *filename, ch
         return 0;
 
     // Generate checksum of short filename
-    pSname = (uint8*)shortfilename;
+    pSname = (uint8_t *)shortfilename;
     checksum = 0;
     for (i=11; i!=0; i--) checksum = ((checksum & 1) ? 0x80 : 0) + (checksum >> 1) + *pSname++;
 
