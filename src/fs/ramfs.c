@@ -18,8 +18,20 @@
 
 #include "ramfs.h"
 
+#ifndef NULL
+#define NULL ((void *) 0x00)
+#endif
+
 void
 ramfs_init(struct ramfs *ramfs) {
 	vfs_init(&ramfs->vfs);
 	ramfs_dir_init(&ramfs->root_dir);
+}
+
+unsigned long int
+ramfs_import(struct ramfs *ramfs,
+             const void *data,
+             unsigned long int data_size) {
+
+	return ramfs_dir_import(&ramfs->root_dir, data, data_size);
 }

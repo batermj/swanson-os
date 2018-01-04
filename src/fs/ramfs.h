@@ -47,6 +47,19 @@ struct ramfs {
 void
 ramfs_init(struct ramfs *ramfs);
 
+/** Imports a ramfs from a block of memory.
+ * @param ramfs An initialized ramfs structure.
+ * @param data A pointer to the memory block
+ * containing the ramfs.
+ * @param data_size The number of bytes associated
+ * with the block of memory.
+ * */
+
+unsigned long int
+ramfs_import(struct ramfs *ramfs,
+             const void *data,
+             unsigned long int data_size);
+
 #ifdef __cplusplus
 } /* extern "C" { */
 #endif

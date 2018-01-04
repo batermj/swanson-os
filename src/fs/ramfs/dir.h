@@ -24,15 +24,43 @@ extern "C" {
 #endif
 
 struct ramfs_dir {
-	const char *name;
-	struct ramfs_dir *subdir_array;
-	unsigned long int subdir_count;
-	struct ramfs_file *file_array;
+	/** The number of bytes occupied
+	 * by the directory name. */
+	unsigned long int name_size;
+	/** The number of files in the
+	 * directory. */
 	unsigned long int file_count;
+	/** The number of sub directories
+	 * in the directory. */
+	unsigned long int subdir_count;
+	/** The name of the directory. */
+	char *name;
+	/** The file array. */
+	struct ramfs_file *file_array;
+	/** The subdirectory array. */
+	struct ramfs_dir *subdir_array;
 };
+
+/** Initializes the directory.
+ * @param dir An uninitialized directory
+ * structure.
+ * */
 
 void
 ramfs_dir_init(struct ramfs_dir *dir);
+
+/** Deserializes a directory structure.
+ * @param dir An initialized directory structure.
+ * @param data The data to read the directory from.
+ * @param data_size The size of the data containing
+ * the directory.
+ * @returns The number of bytes read from the directory.
+ * */
+
+unsigned long int
+ramfs_dir_import(struct ramfs_dir *dir,
+                 const void *data,
+                 unsigned long int data_size);
 
 struct ramfs_file *
 ramfs_dir_get_file(struct ramfs_file *file,
