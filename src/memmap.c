@@ -20,6 +20,8 @@
 
 #include "null.h"
 
+#include <string.h>
+
 /** Checks to see if an unused section can fit a memory
  * block of a specified size. */
 static void *
@@ -316,12 +318,19 @@ memmap_realloc(struct memmap *memmap,
                unsigned long int size) {
 
 	void *addr;
+	unsigned long int i;
 
 	addr = memmap_alloc(memmap, size);
 	if (addr == NULL)
 		return NULL;
 
-	/* TODO : copy old memory to new memory */
+	/* Copy data over to new address */
+	for (i = 0; i < memmap->used_section_count; i++) {
+		if (memmap->used_section_array[i].addr == old_addr) {
+			memcpy(addr, old_addr, memmap->used_section_array[i].size);
+			break;
+		}
+	}
 
 	memmap_free(memmap, old_addr);
 
