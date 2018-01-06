@@ -168,9 +168,11 @@ fdisk_open(struct fdisk *fdisk,
 
 	path_size = strlen(path);
 
-	fdisk->path = malloc(path_size);
-	if (fdisk->path != NULL)
-		memcpy(fdisk->path, path, path_size + 1);
+	fdisk->path = malloc(path_size + 1);
+	if (fdisk->path != NULL) {
+		memcpy(fdisk->path, path, path_size);
+		fdisk->path[path_size] = 0;
+	}
 
 	return 0;
 }
