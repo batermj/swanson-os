@@ -17,6 +17,7 @@
  */
 
 #include "fs.h"
+#include "file.h"
 
 #include "fdisk.h"
 
@@ -57,13 +58,26 @@ ramfs_cp(struct ramfs *fs,
 
 #endif
 
-#if 0
-
 static int
 ramfs_ls(struct ramfs *fs,
-         const char *path);
+         const char *path) {
 
-#endif
+	unsigned int i;
+	struct ramfs_dir *dir;
+
+	dir = ramfs_open_dir(fs, path);
+	if (dir == NULL) {
+		return EXIT_FAILURE;
+	}
+
+	for (i = 0; i < dir->file_count; i++)
+		printf("file      : %s\n", dir->file_array[i].name);
+
+	for (i = 0; i < dir->subdir_count; i++)
+		printf("directory : %s\n", dir->subdir_array[i].name);
+
+	return EXIT_SUCCESS;
+}
 
 static int
 ramfs_load(struct ramfs *fs,
@@ -171,12 +185,14 @@ main(int argc, const char **argv) {
 	}
 
 	if (strcmp(argv[i], "cat") == 0) {
+		i++;
 		while (i < argc) {
-			err = ramfs_cat(&ramfs, argv[i++]);
+			err = ramfs_cat(&ramfs, argv[i]);
 			if (err != 0) {
 				ramfs_free(&ramfs);
 				return EXIT_FAILURE;
 			}
+			i++;
 		}
 	} else if (strcmp(argv[i], "cp") == 0) {
 
@@ -192,7 +208,15 @@ main(int argc, const char **argv) {
 			i++;
 		}
 	} else if (strcmp(argv[i], "ls") == 0) {
-
+		i++;
+		while (i < argc) {
+			err = ramfs_ls(&ramfs, argv[i]);
+			if (err != EXIT_SUCCESS) {
+				ramfs_free(&ramfs);
+				return EXIT_FAILURE;
+			}
+			i++;
+		}
 	} else if (strcmp(argv[i], "format") == 0) {
 		/* not currently anything to do here */
 	} else {

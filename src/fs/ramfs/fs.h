@@ -86,6 +86,18 @@ int
 ramfs_mkdir(struct ramfs *ramfs,
             const char *path_str);
 
+/** Opens a directory from the file system.
+ * @param ramfs An initialized ramfs structure.
+ * @param path The path of the directory to open.
+ * @returns The directory, if it is found.
+ * A null pointer is returned if the directory isn't
+ * found or if it is a file instead.
+ * */
+
+struct ramfs_dir *
+ramfs_open_dir(struct ramfs *ramfs,
+               const char *path);
+
 #ifdef __cplusplus
 } /* extern "C" { */
 #endif

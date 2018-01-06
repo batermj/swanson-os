@@ -121,3 +121,50 @@ ramfs_mkdir(struct ramfs *ramfs,
 
 	return 0;
 }
+
+struct ramfs_dir *
+ramfs_open_dir(struct ramfs *ramfs,
+               const char *path_string) {
+
+	int err;
+	unsigned int i;
+	unsigned int j;
+	const char *name;
+	unsigned int name_count;
+	struct path path;
+	struct ramfs_dir *parent_dir;
+
+	path_init(&path);
+
+	err = path_parse(&path, path_string);
+	if (err != 0) {
+		path_free(&path);
+		return NULL;
+	}
+
+	parent_dir = &ramfs->root_dir;
+
+	name_count = path_get_name_count(&path);
+
+	for (i = 0; i < name_count; i++) {
+		name = path_get_name(&path, i);
+		if (name == NULL) {
+			path_free(&path);
+			return NULL;
+		}
+
+		for (j = 0; j < parent_dir->subdir_count; j++) {
+			if (strcmp(parent_dir->subdir_array[j].name, name) == 0) {
+				parent_dir = &parent_dir->subdir_array[j];
+				break;
+			}
+		}
+
+		if (j >= parent_dir->subdir_count) {
+			path_free(&path);
+			return NULL;
+		}
+	}
+
+	return parent_dir;
+}
