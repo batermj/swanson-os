@@ -83,16 +83,13 @@ ramfs_dir_name_exists(const struct ramfs_dir *dir,
 
 /** Deserializes a directory structure.
  * @param dir An initialized directory structure.
- * @param data The data to read the directory from.
- * @param data_size The size of the data containing
- * the directory.
+ * @param stream The stream to read the directory from.
  * @returns The number of bytes read from the directory.
  * */
 
 unsigned long int
-ramfs_dir_import(struct ramfs_dir *dir,
-                 const void *data,
-                 unsigned long int data_size);
+ramfs_dir_decode(struct ramfs_dir *dir,
+                 struct stream *stream);
 
 /** Exports a ramfs directory to a stream.
  * @param dir An initialized directory structure.
@@ -101,7 +98,7 @@ ramfs_dir_import(struct ramfs_dir *dir,
  * */
 
 unsigned long int
-ramfs_dir_export(const struct ramfs_dir *dir,
+ramfs_dir_encode(const struct ramfs_dir *dir,
                  struct stream *stream);
 
 /** Sets the name of the directory.

@@ -31,62 +31,56 @@ ramfs_file_init(struct ramfs_file *file) {
 	file->data = NULL;
 }
 
+void
+ramfs_file_free(struct ramfs_file *file) {
+	free(file->name);
+	free(file->data);
+}
+
 unsigned long int
-ramfs_file_import(struct ramfs_file *file,
-                  const void *data,
-                  unsigned long int data_size) {
+ramfs_file_decode(struct ramfs_file *file,
+                  struct stream *stream) {
 
-	const unsigned char *data8;
+	unsigned long int read_count;
+	uint32_t name_size;
+	uint32_t data_size;
 
-	data8 = (const unsigned char *) data;
+	ramfs_file_free(file);
+	ramfs_file_init(file);
 
-	if (data_size < 8) {
-		/* the name size and the data
-		 * size fields take up eight bytes */
-		return 0;
-	}
+	read_count = 0;
 
-	file->name_size = 0;
-	file->name_size |= data8[0];
-	file->name_size |= data8[1] << 0x08;
-	file->name_size |= data8[2] << 0x10;
-	file->name_size |= data8[3] << 0x18;
+	read_count += stream_decode_uint32le(stream, &name_size);
+	read_count += stream_decode_uint32le(stream, &data_size);
 
-	file->data_size = 0;
-	file->name_size |= data8[4];
-	file->name_size |= data8[5] << 0x08;
-	file->name_size |= data8[6] << 0x10;
-	file->name_size |= data8[7] << 0x18;
+	file->name_size = name_size;
+	file->data_size = data_size;
 
-	data8 = &data8[8];
-
-	data_size -= 8;
-
-	/* Make sure there's data that fits the
-	 * name and file data. */
-	if (data_size < (file->name_size + file->data_size)) {
-		return 0;
-	}
-
-	file->name = malloc(file->name_size);
+	file->name = malloc(file->name_size + 1);
 
 	file->data = malloc(file->data_size);
 
 	if ((file->name == NULL) || (file->data == NULL)) {
 		free(file->name);
 		free(file->data);
-		return 0;
+		file->name = NULL;
+		file->data = NULL;
+		file->name_size = 0;
+		file->data_size = 0;
+		return read_count;
 	}
 
-	memcpy(file->name, data8, file->name_size);
+	read_count += stream_read(stream, file->name, file->name_size);
 
-	memcpy(file->data, &data8[file->name_size], file->data_size);
+	file->name[file->name_size] = 0;
 
-	return 8 + file->name_size + file->data_size;
+	read_count += stream_read(stream, file->data, file->data_size);
+
+	return read_count;
 }
 
 unsigned long int
-ramfs_file_export(const struct ramfs_file *file,
+ramfs_file_encode(const struct ramfs_file *file,
                   struct stream *stream) {
 
 	unsigned long int write_count;

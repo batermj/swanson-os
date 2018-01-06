@@ -38,18 +38,17 @@ ramfs_free(struct ramfs *ramfs) {
 }
 
 unsigned long int
-ramfs_import(struct ramfs *ramfs,
-             const void *data,
-             unsigned long int data_size) {
+ramfs_decode(struct ramfs *ramfs,
+             struct stream *stream) {
 
-	return ramfs_dir_import(&ramfs->root_dir, data, data_size);
+	return ramfs_dir_decode(&ramfs->root_dir, stream);
 }
 
 unsigned long int
-ramfs_export(const struct ramfs *ramfs,
+ramfs_encode(const struct ramfs *ramfs,
              struct stream *stream) {
 
-	return ramfs_dir_export(&ramfs->root_dir, stream);
+	return ramfs_dir_encode(&ramfs->root_dir, stream);
 }
 
 int
@@ -91,7 +90,7 @@ ramfs_mkdir(struct ramfs *ramfs,
 		}
 
 		for (j = 0; j < parent_dir->subdir_count; i++) {
-			subdir = &parent_dir->subdir_array[i];
+			subdir = &parent_dir->subdir_array[j];
 			if (subdir == NULL) {
 				continue;
 			} else if (strcmp(subdir->name, name) == 0) {

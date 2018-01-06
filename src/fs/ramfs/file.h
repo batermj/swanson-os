@@ -53,28 +53,24 @@ ramfs_file_init(struct ramfs_file *file);
 void
 ramfs_file_free(struct ramfs_file *file);
 
-/** Imports a file from a serialized
- * buffer.
+/** Decodes a file from a serialized stream.
  * @param file An initialized file structure.
- * @param data The memory containing the serialized file.
- * @param data_size The size of the memory block containing
- * the serialized file.
+ * @param stream The stream to read the file from.
  * @returns The number of bytes read from the memory block.
  * */
 
 unsigned long int
-ramfs_file_import(struct ramfs_file *file,
-                  const void *data,
-                  unsigned long int data_size);
+ramfs_file_decode(struct ramfs_file *file,
+                  struct stream *stream);
 
-/** Exports a ramfs file to a stream.
+/** Encodes a ramfs file to a stream.
  * @param file An initialized ramfs file.
- * @param stream The stream to export the file to.
+ * @param stream The stream to encode the file to.
  * @returns The number of bytes written to the stream.
  * */
 
 unsigned long int
-ramfs_file_export(const struct ramfs_file *file,
+ramfs_file_encode(const struct ramfs_file *file,
                   struct stream *stream);
 
 /** Returns the name of the file.

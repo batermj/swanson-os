@@ -36,6 +36,15 @@ ramfs_dir_init(struct ramfs_dir *dir) {
 
 void
 ramfs_dir_free(struct ramfs_dir *dir) {
+
+	unsigned long int i;
+
+	for (i = 0; i < dir->subdir_count; i++)
+		ramfs_dir_free(&dir->subdir_array[i]);
+
+	for (i = 0; i < dir->file_count; i++)
+		ramfs_file_free(&dir->file_array[i]);
+
 	free(dir->subdir_array);
 	free(dir->file_array);
 	free(dir->name);
@@ -49,9 +58,8 @@ ramfs_dir_add_subdir(struct ramfs_dir *dir,
 	struct ramfs_dir *subdir_array;
 	unsigned long int subdir_array_size;
 
-	if (ramfs_dir_name_exists(dir, name)) {
+	if (ramfs_dir_name_exists(dir, name))
 		return -1;
-	}
 
 	subdir_array_size = dir->subdir_count + 1;
 	subdir_array_size *= sizeof(dir->subdir_array[0]);
@@ -68,8 +76,11 @@ ramfs_dir_add_subdir(struct ramfs_dir *dir,
 	err = ramfs_dir_set_name(&subdir_array[dir->subdir_count], name);
 	if (err != 0) {
 		ramfs_dir_free(&subdir_array[dir->subdir_count]);
-		return err;
+		return -1;
 	}
+
+	dir->subdir_array = subdir_array;
+	dir->subdir_count++;
 
 	return 0;
 }
@@ -94,105 +105,55 @@ ramfs_dir_name_exists(const struct ramfs_dir *dir,
 }
 
 unsigned long int
-ramfs_dir_import(struct ramfs_dir *dir,
-                 const void *data,
-                 unsigned long int data_size) {
+ramfs_dir_decode(struct ramfs_dir *dir,
+                 struct stream *stream) {
 
-	const unsigned char *data8;
-	unsigned long int initial_data_size;
-	unsigned long int read_size;
-	unsigned long int file_array_size;
-	unsigned long int subdir_array_size;
 	unsigned long int i;
+	unsigned long int read_count;
+	uint32_t name_size;
+	uint32_t file_count;
+	uint32_t subdir_count;
 
-	if (data_size < 12) {
-		/* twelve bytes is the number
-		 * of bytes taken up by the
-		 * name size, file count, and
-		 * subdirectory count. */
-		return 0;
-	}
+	/* release memory that may be
+	 * currently occupied by the directory */
 
-	initial_data_size = data_size;
+	ramfs_dir_free(dir);
+	ramfs_dir_init(dir);
 
-	data8 = (const unsigned char *) data;
+	name_size = 0;
+	file_count = 0;
+	subdir_count = 0;
 
-	dir->name_size = 0;
-	dir->name_size |= data8[0];
-	dir->name_size |= data8[1] << 0x08;
-	dir->name_size |= data8[2] << 0x10;
-	dir->name_size |= data8[3] << 0x18;
+	read_count = 0;
+	read_count += stream_decode_uint32le(stream, &name_size);
+	read_count += stream_decode_uint32le(stream, &file_count);
+	read_count += stream_decode_uint32le(stream, &subdir_count);
 
-	/* skip passed the name size */
-	data8 = &data8[4];
-	data_size -= 4;
+	dir->name_size = name_size;
+	dir->file_count = file_count;
+	dir->subdir_count = subdir_count;
 
-	dir->file_count = 0;
-	dir->file_count |= data8[0];
-	dir->file_count |= data8[1] << 0x08;
-	dir->file_count |= data8[2] << 0x10;
-	dir->file_count |= data8[3] << 0x18;
+	dir->name = malloc(name_size + 1);
 
-	/* skip passed the file count */
-	data8 = &data8[4];
-	data_size -= 4;
+	dir->file_array = malloc(dir->file_count * sizeof(struct ramfs_file));
 
-	dir->subdir_count = 0;
-	dir->subdir_count |= data8[0];
-	dir->subdir_count |= data8[1] << 0x08;
-	dir->subdir_count |= data8[2] << 0x10;
-	dir->subdir_count |= data8[3] << 0x18;
+	dir->subdir_array = malloc(dir->subdir_count * sizeof(struct ramfs_dir));
 
-	/* skip passed the sub directory count */
-	data8 = &data8[4];
-	data_size -= 4;
-
-	/* there should be enough data for
-	 * the name left over */
-	if (data_size < dir->name_size) {
-		return 0;
-	}
-
-	dir->name = malloc(dir->name_size);
-	if (dir->name == NULL) {
-		return 0;
-	}
-
-	memcpy(dir->name, data8, dir->name_size);
-
-	data8 = &data8[dir->name_size];
-	data_size -= dir->name_size;
-
-	file_array_size = dir->file_count * sizeof(struct ramfs_file);
-
-	if (data_size < file_array_size) {
-		free(dir->name);
-		return 0;
-	}
-
-	dir->file_array = malloc(file_array_size);
-	if (dir->file_array == NULL) {
-		free(dir->name);
-		return 0;
-	}
-
-	data8 = &data8[file_array_size];
-	data_size -= file_array_size;
-
-	subdir_array_size = dir->subdir_count * sizeof(struct ramfs_dir);
-
-	if (data_size < subdir_array_size) {
+	if ((dir->name == NULL)
+	 || (dir->file_array == NULL)
+	 || (dir->subdir_array == NULL)) {
 		free(dir->name);
 		free(dir->file_array);
-		return 0;
+		free(dir->subdir_array);
+		dir->name = NULL;
+		dir->file_array = NULL;
+		dir->subdir_array = NULL;
+		return read_count;
 	}
 
-	dir->subdir_array = malloc(subdir_array_size);
-	if (dir->subdir_array == NULL) {
-		free(dir->name);
-		free(dir->file_array);
-		return 0;
-	}
+	read_count += stream_read(stream, dir->name, dir->name_size);
+
+	dir->name[dir->name_size] = 0;
 
 	/* Initialize the file and subdirectory structures */
 
@@ -204,37 +165,17 @@ ramfs_dir_import(struct ramfs_dir *dir,
 
 	/* Import the files and subdirectories */
 
-	for (i = 0; i < dir->file_count; i++) {
+	for (i = 0; i < dir->file_count; i++)
+		read_count += ramfs_file_decode(&dir->file_array[i], stream);
 
-		read_size = ramfs_file_import(&dir->file_array[i], data8, data_size);
-		if (read_size <= 0) {
-			ramfs_dir_free(dir);
-			return 0;
-		}
+	for (i = 0; i < dir->subdir_count; i++)
+		read_count += ramfs_dir_decode(&dir->subdir_array[i], stream);
 
-		data_size -= read_size;
-
-		data8 = &data8[read_size];
-	}
-
-	for (i = 0; i < dir->subdir_count; i++) {
-
-		read_size = ramfs_dir_import(&dir->subdir_array[i], data8, data_size);
-		if (read_size <= 0) {
-			ramfs_dir_free(dir);
-			return 0;
-		}
-
-		data_size -= read_size;
-
-		data8 = &data8[read_size];
-	}
-
-	return initial_data_size - data_size;
+	return read_count;
 }
 
 unsigned long int
-ramfs_dir_export(const struct ramfs_dir *dir,
+ramfs_dir_encode(const struct ramfs_dir *dir,
                  struct stream *stream) {
 
 	unsigned int i;
@@ -249,10 +190,10 @@ ramfs_dir_export(const struct ramfs_dir *dir,
 	write_count += stream_write(stream, dir->name, dir->name_size);
 
 	for (i = 0; i < dir->file_count; i++)
-		write_count += ramfs_file_export(&dir->file_array[i], stream);
+		write_count += ramfs_file_encode(&dir->file_array[i], stream);
 
 	for (i = 0; i < dir->subdir_count; i++)
-		write_count += ramfs_dir_export(&dir->subdir_array[i], stream);
+		write_count += ramfs_dir_encode(&dir->subdir_array[i], stream);
 
 	return write_count;
 }

@@ -56,27 +56,24 @@ ramfs_init(struct ramfs *ramfs);
 void
 ramfs_free(struct ramfs *ramfs);
 
-/** Imports a ramfs from a block of memory.
+/** Decodes a ramfs from a stream.
  * @param ramfs An initialized ramfs structure.
- * @param data A pointer to the memory block
- * containing the ramfs.
- * @param data_size The number of bytes associated
- * with the block of memory.
+ * @param stream The stream to read the ramfs from.
+ * @returns The number of bytes read from the stream.
  * */
 
 unsigned long int
-ramfs_import(struct ramfs *ramfs,
-             const void *data,
-             unsigned long int data_size);
+ramfs_decode(struct ramfs *ramfs,
+             struct stream *stream);
 
-/** Exports a ramfs to a stream structure.
+/** Encodes a ramfs to a stream structure.
  * @param ramfs An initialized ramfs structure.
- * @param stream The stream to export the ramfs to.
+ * @param stream The stream to decode the ramfs to.
  * @returns The number of bytes written to the stream.
  * */
 
 unsigned long int
-ramfs_export(const struct ramfs *ramfs,
+ramfs_encode(const struct ramfs *ramfs,
              struct stream *stream);
 
 /** Creates a directory.

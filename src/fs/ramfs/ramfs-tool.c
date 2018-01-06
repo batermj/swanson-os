@@ -70,56 +70,26 @@ ramfs_load(struct ramfs *fs,
            const char *path) {
 
 	int err;
-	FILE *file;
-	long int file_size;
-	void *data;
+	struct stream *stream;
+	struct disk *disk;
+	struct fdisk fdisk;
 
-	file = fopen(path, "rb");
-	if (file == NULL) {
-		fprintf(stderr, "Failed to open '%s'.\n", path);
-		return EXIT_FAILURE;
-	}
+	fdisk_init(&fdisk);
 
-	err = fseek(file, 0L, SEEK_END);
+	err = fdisk_open(&fdisk, path, "rb");
 	if (err != 0) {
-		fclose(file);
+		fprintf(stderr, "Failed to open disk '%s'.\n", path);
+		fdisk_close(&fdisk);
 		return EXIT_FAILURE;
 	}
 
-	file_size = ftell(file);
-	if (file_size == -1L) {
-		fclose(file);
-		return EXIT_FAILURE;
-	}
+	disk = fdisk_to_disk(&fdisk);
 
-	err = fseek(file, 0L, SEEK_SET);
-	if (err != 0) {
-		fclose(file);
-		return EXIT_FAILURE;
-	}
+	stream = disk_to_stream(disk);
 
-	data = malloc(file_size);
-	if (data == NULL) {
-		fclose(file);
-		return EXIT_FAILURE;
-	}
+	ramfs_decode(fs, stream);
 
-	if (fread(data, 1, file_size, file) != ((size_t) file_size)) {
-		fclose(file);
-		free(data);
-		return EXIT_FAILURE;
-	}
-
-	err = ramfs_import(fs, data, file_size);
-	if (err != 0) {
-		fclose(file);
-		free(data);
-		return EXIT_FAILURE;
-	}
-
-	free(data);
-
-	fclose(file);
+	fdisk_close(&fdisk);
 
 	return EXIT_SUCCESS;
 }
@@ -137,6 +107,7 @@ ramfs_unload(struct ramfs *fs,
 
 	err = fdisk_open(&fdisk, diskpath, "wb");
 	if (err != 0) {
+		fprintf(stderr, "Failed to open disk '%s'.\n", diskpath);
 		fdisk_close(&fdisk);
 		return EXIT_FAILURE;
 	}
@@ -145,7 +116,7 @@ ramfs_unload(struct ramfs *fs,
 
 	stream = disk_to_stream(disk);
 
-	ramfs_export(fs, stream);
+	ramfs_encode(fs, stream);
 
 	fdisk_close(&fdisk);
 
@@ -193,6 +164,7 @@ main(int argc, const char **argv) {
 	if (!create_flag) {
 		err = ramfs_load(&ramfs, diskpath);
 		if (err != 0) {
+			fprintf(stderr, "Failed to load ramfs '%s'.\n", diskpath);
 			ramfs_free(&ramfs);
 			return EXIT_FAILURE;
 		}
@@ -208,16 +180,16 @@ main(int argc, const char **argv) {
 		}
 	} else if (strcmp(argv[i], "cp") == 0) {
 
-	} else if (strcmp(argv[i], "help") == 0) {
-		help(argv[0]);
-		return EXIT_FAILURE;
 	} else if (strcmp(argv[i], "mkdir") == 0) {
+		i++;
 		while (i < argc) {
-			err = ramfs_mkdir(&ramfs, argv[i++]);
+			err = ramfs_mkdir(&ramfs, argv[i]);
 			if (err != 0) {
+				fprintf(stderr, "Failed to create directory '%s'.\n", argv[i]);
 				ramfs_free(&ramfs);
 				return EXIT_FAILURE;
 			}
+			i++;
 		}
 	} else if (strcmp(argv[i], "ls") == 0) {
 
@@ -225,6 +197,7 @@ main(int argc, const char **argv) {
 		/* not currently anything to do here */
 	} else {
 		fprintf(stderr, "Unknown command '%s'.\n", argv[i]);
+		ramfs_free(&ramfs);
 		return EXIT_FAILURE;
 	}
 
