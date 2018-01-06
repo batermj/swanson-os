@@ -19,14 +19,14 @@
 #ifndef SWANSON_OPTIONS_TEST_H
 #define SWANSON_OPTIONS_TEST_H
 
-#ifndef __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 void
 options_test(void);
 
-#ifndef __cplusplus
+#ifdef __cplusplus
 } /* extern "C" { */
 #endif
 

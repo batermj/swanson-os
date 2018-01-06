@@ -69,6 +69,8 @@ add_swanson_library("swanson"
 	"options.c"
 	"partition.h"
 	"partition.c"
+	"path.h"
+	"path.c"
 	"stream.h"
 	"stream.c"
 	"sstream.h"
@@ -90,6 +92,8 @@ add_custom_command(OUTPUT
 add_swanson_executable("gpt-tool" "gpt-tool.c")
 
 add_swanson_executable("ext4-tool" "ext4-tool.c")
+
+add_swanson_executable("ramfs-tool" "fs/ramfs/ramfs-tool.c")
 
 add_swanson_executable("swanson-pc" "main.c")
 
@@ -117,7 +121,9 @@ add_swanson_test("swanson-test"
 	"memmap-test.h"
 	"memmap-test.c"
 	"options-test.h"
-	"options-test.c")
+	"options-test.c"
+	"path-test.h"
+	"path-test.c")
 
 enable_testing()
 

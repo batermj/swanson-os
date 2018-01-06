@@ -7,3 +7,7 @@ add_library("ramfs"
 	"file.c"
 	"fs.h"
 	"fs.c")
+
+add_executable("ramfs-tool" "ramfs-tool.c")
+
+target_link_libraries("ramfs-tool" "ramfs")

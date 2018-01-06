@@ -21,6 +21,8 @@
 #include "crc32-test.h"
 #include "gpt-test.h"
 #include "memmap-test.h"
+#include "options-test.h"
+#include "path-test.h"
 
 #include <stdlib.h>
 
@@ -35,4 +37,6 @@ run_tests(void) {
 	crc32_test();
 	gpt_test();
 	memmap_test();
+	options_test();
+	path_test();
 }

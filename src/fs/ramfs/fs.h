@@ -27,6 +27,8 @@
 extern "C" {
 #endif
 
+struct stream;
+
 /** A ramfs file system structure.
  * Used by the kernel to find files
  * required to start the operating
@@ -47,6 +49,13 @@ struct ramfs {
 void
 ramfs_init(struct ramfs *ramfs);
 
+/** Releases resources allocated
+ * by the ramfs.
+ * */
+
+void
+ramfs_free(struct ramfs *ramfs);
+
 /** Imports a ramfs from a block of memory.
  * @param ramfs An initialized ramfs structure.
  * @param data A pointer to the memory block
@@ -59,6 +68,26 @@ unsigned long int
 ramfs_import(struct ramfs *ramfs,
              const void *data,
              unsigned long int data_size);
+
+/** Exports a ramfs to a stream structure.
+ * @param ramfs An initialized ramfs structure.
+ * @param stream The stream to export the ramfs to.
+ * @returns The number of bytes written to the stream.
+ * */
+
+unsigned long int
+ramfs_export(const struct ramfs *ramfs,
+             struct stream *stream);
+
+/** Creates a directory.
+ * @param ramfs An initialized ramfs structure.
+ * @param path_str The string of the new directory's path.
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+ramfs_mkdir(struct ramfs *ramfs,
+            const char *path_str);
 
 #ifdef __cplusplus
 } /* extern "C" { */

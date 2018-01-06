@@ -52,6 +52,16 @@ struct disk {
 void
 disk_init(struct disk *disk);
 
+/** Converts a disk structure to
+ * a stream structure.
+ * @param disk An intialized disk structure.
+ * @returns The stream structure of the
+ * disk, this is never NULL.
+ * */
+
+struct stream *
+disk_to_stream(struct disk *disk);
+
 /** Sets the sector size of the disk.
  * While this may be any value, the
  * traditional values are: 512 for older

@@ -19,6 +19,7 @@
 #include "dir.h"
 
 #include "file.h"
+#include "stream.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -38,6 +39,58 @@ ramfs_dir_free(struct ramfs_dir *dir) {
 	free(dir->subdir_array);
 	free(dir->file_array);
 	free(dir->name);
+}
+
+int
+ramfs_dir_add_subdir(struct ramfs_dir *dir,
+                     const char *name) {
+
+	int err;
+	struct ramfs_dir *subdir_array;
+	unsigned long int subdir_array_size;
+
+	if (ramfs_dir_name_exists(dir, name)) {
+		return -1;
+	}
+
+	subdir_array_size = dir->subdir_count + 1;
+	subdir_array_size *= sizeof(dir->subdir_array[0]);
+
+	subdir_array = dir->subdir_array;
+
+	subdir_array = realloc(subdir_array, subdir_array_size);
+	if (subdir_array == NULL) {
+		return -1;
+	}
+
+	ramfs_dir_init(&subdir_array[dir->subdir_count]);
+
+	err = ramfs_dir_set_name(&subdir_array[dir->subdir_count], name);
+	if (err != 0) {
+		ramfs_dir_free(&subdir_array[dir->subdir_count]);
+		return err;
+	}
+
+	return 0;
+}
+
+int
+ramfs_dir_name_exists(const struct ramfs_dir *dir,
+                      const char *name) {
+
+	unsigned int i;
+
+	for (i = 0; i < dir->file_count; i++) {
+		if (strcmp(dir->file_array[i].name, name) == 0)
+			return 1;
+	}
+
+	for (i = 0; i < dir->subdir_count; i++) {
+		if (strcmp(dir->subdir_array[i].name, name) == 0)
+			return 1;
+	}
+
+	return 0;
 }
 
 unsigned long int
@@ -178,4 +231,53 @@ ramfs_dir_import(struct ramfs_dir *dir,
 	}
 
 	return initial_data_size - data_size;
+}
+
+unsigned long int
+ramfs_dir_export(const struct ramfs_dir *dir,
+                 struct stream *stream) {
+
+	unsigned int i;
+	unsigned long int write_count;
+
+	write_count = 0;
+
+	write_count += stream_encode_uint32le(stream, dir->name_size);
+	write_count += stream_encode_uint32le(stream, dir->file_count);
+	write_count += stream_encode_uint32le(stream, dir->subdir_count);
+
+	write_count += stream_write(stream, dir->name, dir->name_size);
+
+	for (i = 0; i < dir->file_count; i++)
+		write_count += ramfs_file_export(&dir->file_array[i], stream);
+
+	for (i = 0; i < dir->subdir_count; i++)
+		write_count += ramfs_dir_export(&dir->subdir_array[i], stream);
+
+	return write_count;
+}
+
+int
+ramfs_dir_set_name(struct ramfs_dir *dir,
+                   const char *name) {
+
+	char *tmp_name;
+	unsigned long int name_size;
+
+	name_size = strlen(name);
+
+	tmp_name = malloc(name_size + 1);
+	if (tmp_name == NULL)
+		return -1;
+
+	memcpy(tmp_name, name, name_size);
+
+	tmp_name[name_size] = 0;
+
+	free(dir->name);
+
+	dir->name = tmp_name;
+	dir->name_size = name_size;
+
+	return 0;
 }

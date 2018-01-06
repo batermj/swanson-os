@@ -24,6 +24,11 @@ disk_init(struct disk *disk) {
 	disk->sector_size = 512;
 }
 
+struct stream *
+disk_to_stream(struct disk *disk) {
+	return &disk->stream;
+}
+
 void
 disk_set_sector_size(struct disk *disk,
                      uint64_t sector_size) {

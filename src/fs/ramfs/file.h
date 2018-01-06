@@ -23,6 +23,8 @@
 extern "C" {
 #endif
 
+struct stream;
+
 /** A ramfs file.
  * */
 
@@ -64,6 +66,16 @@ unsigned long int
 ramfs_file_import(struct ramfs_file *file,
                   const void *data,
                   unsigned long int data_size);
+
+/** Exports a ramfs file to a stream.
+ * @param file An initialized ramfs file.
+ * @param stream The stream to export the file to.
+ * @returns The number of bytes written to the stream.
+ * */
+
+unsigned long int
+ramfs_file_export(const struct ramfs_file *file,
+                  struct stream *stream);
 
 /** Returns the name of the file.
  * @param file An initialized file structure.

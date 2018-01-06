@@ -18,6 +18,8 @@
 
 #include "file.h"
 
+#include "stream.h"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -81,6 +83,24 @@ ramfs_file_import(struct ramfs_file *file,
 	memcpy(file->data, &data8[file->name_size], file->data_size);
 
 	return 8 + file->name_size + file->data_size;
+}
+
+unsigned long int
+ramfs_file_export(const struct ramfs_file *file,
+                  struct stream *stream) {
+
+	unsigned long int write_count;
+
+	write_count = 0;
+
+	write_count += stream_encode_uint32le(stream, file->name_size);
+	write_count += stream_encode_uint32le(stream, file->data_size);
+
+	write_count += stream_write(stream, file->name, file->name_size);
+
+	write_count += stream_write(stream, file->data, file->data_size);
+
+	return write_count;
 }
 
 const char *

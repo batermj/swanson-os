@@ -49,6 +49,22 @@ path_free(struct path *path) {
 	path->name_count = 0;
 }
 
+const char *
+path_get_name(const struct path *path,
+              unsigned int index) {
+
+	if (index >= path->name_count)
+		return NULL;
+
+	return path->name_array[index].data;
+}
+
+unsigned int
+path_get_name_count(const struct path *path) {
+
+	return path->name_count;
+}
+
 int
 path_parse(struct path *path,
            const char *path_str) {

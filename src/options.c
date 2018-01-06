@@ -115,6 +115,8 @@ options_parse_args(struct options *options,
 			if (err != 0)
 				return err;
 
+			i++;
+
 		} else {
 			return -1;
 		}

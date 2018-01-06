@@ -23,6 +23,8 @@
 extern "C" {
 #endif
 
+struct stream;
+
 struct ramfs_dir {
 	/** The number of bytes occupied
 	 * by the directory name. */
@@ -49,6 +51,36 @@ struct ramfs_dir {
 void
 ramfs_dir_init(struct ramfs_dir *dir);
 
+/** Releases memory allocated by a ramfs directory.
+ * @param dir An initialized ramfs directory.
+ * */
+
+void
+ramfs_dir_free(struct ramfs_dir *dir);
+
+/** Adds a subdirectory to the directory.
+ * @param dir An initialized directory structure.
+ * @param name The name of the subdirectory to create.
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+ramfs_dir_add_subdir(struct ramfs_dir *dir,
+                     const char *name);
+
+/** Checks whether or not a name exists
+ * within a directory, as either a file
+ * or a directory.
+ * @param dir An initialized directory structure.
+ * @param name The name to check for.
+ * @returns Zero if the name is not in the directory,
+ * one if it is.
+ * */
+
+int
+ramfs_dir_name_exists(const struct ramfs_dir *dir,
+                      const char *name);
+
 /** Deserializes a directory structure.
  * @param dir An initialized directory structure.
  * @param data The data to read the directory from.
@@ -61,6 +93,26 @@ unsigned long int
 ramfs_dir_import(struct ramfs_dir *dir,
                  const void *data,
                  unsigned long int data_size);
+
+/** Exports a ramfs directory to a stream.
+ * @param dir An initialized directory structure.
+ * @param stream The stream to export the directory to.
+ * @returns The number of bytes written to the stream.
+ * */
+
+unsigned long int
+ramfs_dir_export(const struct ramfs_dir *dir,
+                 struct stream *stream);
+
+/** Sets the name of the directory.
+ * @param dir An initialized directory structure.
+ * @param name The new name of the directory.
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+ramfs_dir_set_name(struct ramfs_dir *dir,
+                   const char *name);
 
 struct ramfs_file *
 ramfs_dir_get_file(struct ramfs_file *file,
