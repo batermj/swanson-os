@@ -72,6 +72,12 @@ ramfs_mkdir(struct ramfs *ramfs,
 		return -1;
 	}
 
+	err = path_normalize(&path);
+	if (err != 0) {
+		path_free(&path);
+		return -1;
+	}
+
 	parent_dir = &ramfs->root_dir;
 
 	name_count = path_get_name_count(&path);
@@ -137,6 +143,12 @@ ramfs_open_dir(struct ramfs *ramfs,
 	path_init(&path);
 
 	err = path_parse(&path, path_string);
+	if (err != 0) {
+		path_free(&path);
+		return NULL;
+	}
+
+	err = path_normalize(&path);
 	if (err != 0) {
 		path_free(&path);
 		return NULL;
