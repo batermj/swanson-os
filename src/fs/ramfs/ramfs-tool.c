@@ -209,6 +209,13 @@ main(int argc, const char **argv) {
 		}
 	} else if (strcmp(argv[i], "ls") == 0) {
 		i++;
+		if (i >= argc) {
+			err = ramfs_ls(&ramfs, "/");
+			if (err != EXIT_SUCCESS) {
+				ramfs_free(&ramfs);
+				return EXIT_FAILURE;
+			}
+		}
 		while (i < argc) {
 			err = ramfs_ls(&ramfs, argv[i]);
 			if (err != EXIT_SUCCESS) {
