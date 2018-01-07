@@ -58,6 +58,7 @@ ramfs_mkdir(struct ramfs *ramfs,
 	int err;
 	const char *name;
 	unsigned int name_count;
+	unsigned int subdir_count;
 	unsigned int i;
 	unsigned int j;
 	struct path path;
@@ -95,7 +96,9 @@ ramfs_mkdir(struct ramfs *ramfs,
 			return -1;
 		}
 
-		for (j = 0; j < parent_dir->subdir_count; i++) {
+		subdir_count = parent_dir->subdir_count;
+
+		for (j = 0; j < subdir_count; j++) {
 			subdir = &parent_dir->subdir_array[j];
 			if (subdir == NULL) {
 				continue;
@@ -105,7 +108,7 @@ ramfs_mkdir(struct ramfs *ramfs,
 			}
 		}
 
-		if (j >= parent_dir->subdir_count) {
+		if (j >= subdir_count) {
 			/* not found */
 			path_free(&path);
 			return -1;
@@ -177,6 +180,8 @@ ramfs_open_dir(struct ramfs *ramfs,
 			return NULL;
 		}
 	}
+
+	path_free(&path);
 
 	return parent_dir;
 }
