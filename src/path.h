@@ -84,6 +84,17 @@ path_get_name(const struct path *path,
 unsigned int
 path_get_name_count(const struct path *path);
 
+/** Resolve '.' and '..' references.
+ * If there are more '..' references than
+ * there are real directory names, the root
+ * directory will be leftover.
+ * @param path An initialized path structure
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+path_normalize(struct path *path);
+
 /** Parses a path string.
  * @param path An initialized path string.
  * @param path_string The string to parse

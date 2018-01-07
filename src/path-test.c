@@ -54,7 +54,35 @@ path_test_parse(void) {
 	path_free(&path);
 }
 
+static void
+path_test_normalize(void) {
+
+	int err;
+	struct path path;
+
+	path_init(&path);
+
+	err = 0;
+	err |= path_push_child(&path, "usr");
+	err |= path_push_child(&path, "bin");
+	err |= path_push_child(&path, "..");
+	err |= path_push_child(&path, "lib");
+	err |= path_push_child(&path, ".");
+	err |= path_push_child(&path, "x86_64");
+	assert(err == 0);
+
+	err = path_normalize(&path);
+	assert(err == 0);
+	assert(path_get_name_count(&path) == 3);
+	assert(strcmp(path_get_name(&path, 0), "usr") == 0);
+	assert(strcmp(path_get_name(&path, 1), "lib") == 0);
+	assert(strcmp(path_get_name(&path, 2), "x86_64") == 0);
+
+	path_free(&path);
+}
+
 void
 path_test(void) {
 	path_test_parse();
+	path_test_normalize();
 }

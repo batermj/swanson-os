@@ -66,6 +66,53 @@ path_get_name_count(const struct path *path) {
 }
 
 int
+path_normalize(struct path *path) {
+
+	unsigned int i;
+	unsigned int j;
+
+	i = 0;
+
+	while (i < path->name_count) {
+
+		if (strcmp(path->name_array[i].data, ".") == 0) {
+
+			free(path->name_array[i].data);
+
+			for (j = i + 1; j < path->name_count; j++) {
+				path->name_array[j - 1] = path->name_array[j];
+			}
+
+			path->name_count--;
+
+		} else if (strcmp(path->name_array[i].data, "..") == 0) {
+
+			free(path->name_array[i].data);
+
+			if (i == 0) {
+				path->name_count--;
+				continue;
+			}
+
+			i--;
+
+			free(path->name_array[i].data);
+
+			for (j = i + 2; j < path->name_count; j++)
+				path->name_array[j - 2] = path->name_array[j];
+
+			path->name_count -= 2;
+
+		} else {
+			i++;
+			continue;
+		}
+	}
+
+	return 0;
+}
+
+int
 path_parse(struct path *path,
            const char *path_str) {
 
