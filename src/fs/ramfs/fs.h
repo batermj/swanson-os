@@ -83,8 +83,18 @@ ramfs_encode(const struct ramfs *ramfs,
  * */
 
 int
-ramfs_mkdir(struct ramfs *ramfs,
-            const char *path_str);
+ramfs_make_dir(struct ramfs *ramfs,
+               const char *path_str);
+
+/** Creates a file.
+ * @param ramfs An initialized ramfs structure.
+ * @param path_str The string of the new file's path.
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+ramfs_make_file(struct ramfs *ramfs,
+                const char *path_str);
 
 /** Opens a directory from the file system.
  * @param ramfs An initialized ramfs structure.
@@ -97,6 +107,18 @@ ramfs_mkdir(struct ramfs *ramfs,
 struct ramfs_dir *
 ramfs_open_dir(struct ramfs *ramfs,
                const char *path);
+
+/** Opens a file from the file system.
+ * @param ramfs An initialized ramfs structure.
+ * @param path The path of the file to open.
+ * @returns The file, if it is found.
+ * A null pointer is returned if the file isn't
+ * found or if it is a directory instead.
+ * */
+
+struct ramfs_file *
+ramfs_open_file(struct ramfs *ramfs,
+                const char *path);
 
 #ifdef __cplusplus
 } /* extern "C" { */

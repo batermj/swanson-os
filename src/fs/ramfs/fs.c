@@ -19,6 +19,7 @@
 #include "fs.h"
 
 #include "path.h"
+#include "file.h"
 
 #include <string.h>
 
@@ -52,8 +53,8 @@ ramfs_encode(const struct ramfs *ramfs,
 }
 
 int
-ramfs_mkdir(struct ramfs *ramfs,
-            const char *path_str) {
+ramfs_make_dir(struct ramfs *ramfs,
+               const char *path_str) {
 
 	int err;
 	const char *name;
@@ -131,6 +132,86 @@ ramfs_mkdir(struct ramfs *ramfs,
 	return 0;
 }
 
+int
+ramfs_make_file(struct ramfs *ramfs,
+                const char *path_str) {
+
+	int err;
+	const char *name;
+	unsigned int name_count;
+	unsigned int subdir_count;
+	unsigned int i;
+	unsigned int j;
+	struct path path;
+	struct ramfs_dir *parent_dir;
+	struct ramfs_dir *subdir;
+
+	path_init(&path);
+
+	err = path_parse(&path, path_str);
+	if (err != 0) {
+		path_free(&path);
+		return -1;
+	}
+
+	err = path_normalize(&path);
+	if (err != 0) {
+		path_free(&path);
+		return -1;
+	}
+
+	parent_dir = &ramfs->root_dir;
+
+	name_count = path_get_name_count(&path);
+
+	if (name_count == 0) {
+		path_free(&path);
+		return -1;
+	}
+
+	for (i = 0; i < (name_count - 1); i++) {
+
+		name = path_get_name(&path, i);
+		if (name == NULL) {
+			path_free(&path);
+			return -1;
+		}
+
+		subdir_count = parent_dir->subdir_count;
+
+		for (j = 0; j < subdir_count; j++) {
+			subdir = &parent_dir->subdir_array[j];
+			if (subdir == NULL) {
+				continue;
+			} else if (strcmp(subdir->name, name) == 0) {
+				parent_dir = subdir;
+				break;
+			}
+		}
+
+		if (j >= subdir_count) {
+			/* not found */
+			path_free(&path);
+			return -1;
+		}
+	}
+
+	if (i != (name_count - 1)) {
+		path_free(&path);
+		return -1;
+	}
+
+	err = ramfs_dir_add_file(parent_dir, path.name_array[i].data);
+	if (err != 0) {
+		path_free(&path);
+		return -1;
+	}
+
+	path_free(&path);
+
+	return 0;
+}
+
 struct ramfs_dir *
 ramfs_open_dir(struct ramfs *ramfs,
                const char *path_string) {
@@ -184,4 +265,83 @@ ramfs_open_dir(struct ramfs *ramfs,
 	path_free(&path);
 
 	return parent_dir;
+}
+
+struct ramfs_file *
+ramfs_open_file(struct ramfs *ramfs,
+                const char *path_string) {
+
+	int err;
+	unsigned int i;
+	unsigned int j;
+	const char *name;
+	unsigned int name_count;
+	struct path path;
+	struct ramfs_dir *parent_dir;
+
+	path_init(&path);
+
+	err = path_parse(&path, path_string);
+	if (err != 0) {
+		path_free(&path);
+		return NULL;
+	}
+
+	err = path_normalize(&path);
+	if (err != 0) {
+		path_free(&path);
+		return NULL;
+	}
+
+	parent_dir = &ramfs->root_dir;
+
+	name_count = path_get_name_count(&path);
+
+	if (name_count == 0) {
+		/* there must be at least one
+		 * entry name in the path */
+		return NULL;
+	}
+
+	for (i = 0; i < (name_count - 1); i++) {
+		name = path_get_name(&path, i);
+		if (name == NULL) {
+			path_free(&path);
+			return NULL;
+		}
+
+		for (j = 0; j < parent_dir->subdir_count; j++) {
+			if (strcmp(parent_dir->subdir_array[j].name, name) == 0) {
+				parent_dir = &parent_dir->subdir_array[j];
+				break;
+			}
+		}
+
+		if (j >= parent_dir->subdir_count) {
+			path_free(&path);
+			return NULL;
+		}
+	}
+
+	name = path_get_name(&path, i);
+	if (name == NULL) {
+		/* This shouldn't happen, so
+		 * this check is a precaution */
+		return NULL;
+	}
+
+	/* 'name' is now the basename of the file. */
+
+	for (j = 0; j < parent_dir->file_count; j++) {
+		if (strcmp(parent_dir->file_array[j].name, name) == 0) {
+			path_free(&path);
+			return &parent_dir->file_array[j];
+		}
+	}
+
+	/* file not found */
+
+	path_free(&path);
+
+	return NULL;
 }
