@@ -6,7 +6,7 @@ Swanson OS
 </p>
 
 [![Build Status](https://travis-ci.org/swanson-os/swanson-os.svg?branch=master)](https://travis-ci.org/swanson-os/swanson-os)
-[![Build status](https://ci.appveyor.com/api/projects/status/9ydfcp7s3t6pp4u8/branch/master?svg=true)](https://ci.appveyor.com/project/swanson-os/swanson-os/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/9ydfcp7s3t6pp4u8?svg=true)](https://ci.appveyor.com/project/tholberton/swanson-os)
 
 Swanson is an operating system built for virtualization.
 
