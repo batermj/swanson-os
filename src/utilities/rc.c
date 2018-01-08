@@ -239,8 +239,5 @@ main(int argc, const char **argv) {
 	if (source != NULL)
 		fclose(source);
 
-	if (err != EXIT_SUCCESS)
-		return EXIT_FAILURE;
-	else
-		return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 }
