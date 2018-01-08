@@ -221,6 +221,7 @@ ramfs_open_dir(struct ramfs *ramfs,
 	unsigned int j;
 	const char *name;
 	unsigned int name_count;
+	unsigned int subdir_count;
 	struct path path;
 	struct ramfs_dir *parent_dir;
 
@@ -249,14 +250,15 @@ ramfs_open_dir(struct ramfs *ramfs,
 			return NULL;
 		}
 
-		for (j = 0; j < parent_dir->subdir_count; j++) {
+		subdir_count = parent_dir->subdir_count;
+		for (j = 0; j < subdir_count; j++) {
 			if (strcmp(parent_dir->subdir_array[j].name, name) == 0) {
 				parent_dir = &parent_dir->subdir_array[j];
 				break;
 			}
 		}
 
-		if (j >= parent_dir->subdir_count) {
+		if (j >= subdir_count) {
 			path_free(&path);
 			return NULL;
 		}
@@ -275,6 +277,7 @@ ramfs_open_file(struct ramfs *ramfs,
 	unsigned int i;
 	unsigned int j;
 	const char *name;
+	unsigned int subdir_count;
 	unsigned int name_count;
 	struct path path;
 	struct ramfs_dir *parent_dir;
@@ -310,14 +313,15 @@ ramfs_open_file(struct ramfs *ramfs,
 			return NULL;
 		}
 
-		for (j = 0; j < parent_dir->subdir_count; j++) {
+		subdir_count = parent_dir->subdir_count;
+		for (j = 0; j < subdir_count; j++) {
 			if (strcmp(parent_dir->subdir_array[j].name, name) == 0) {
 				parent_dir = &parent_dir->subdir_array[j];
 				break;
 			}
 		}
 
-		if (j >= parent_dir->subdir_count) {
+		if (j >= subdir_count) {
 			path_free(&path);
 			return NULL;
 		}
