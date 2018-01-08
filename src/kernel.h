@@ -21,9 +21,11 @@
 #ifndef SWANSON_KERNEL_H
 #define SWANSON_KERNEL_H
 
+#include "fs/any.h"
+#include "fs/ramfs/fs.h"
 #include "memmap.h"
 #include "partition.h"
-#include "fs/any.h"
+#include "sstream.h"
 
 #include <stdint.h>
 
@@ -62,6 +64,8 @@ struct kernel {
 	struct partition root_partition;
 	/** The root file system. */
 	struct any_fs root_fs;
+	/** Initial ramfs file system. */
+	struct ramfs initramfs;
 };
 
 /** Initializes the kernel structure.
@@ -70,6 +74,13 @@ struct kernel {
 
 void
 kernel_init(struct kernel *kernel);
+
+/** Releases resources allocated by the kernel.
+ * @param kernel An initialized kernel structure.
+ * */
+
+void
+kernel_free(struct kernel *kernel);
 
 /** Add a disk to the disk array.
  * @param kernel An initialized kernel structure.
@@ -93,6 +104,15 @@ int
 kernel_add_memory(struct kernel *kernel,
                   void *addr,
                   unsigned long int size);
+
+/** Mounts the initial file system executes
+ * the 'init' program.
+ * @param kernel An initialized kernel structure.
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+kernel_load_initramfs(struct kernel *kernel);
 
 /** Entry point of the kernel.
  * @param kernel an initialized kernel structure.

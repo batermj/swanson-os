@@ -22,9 +22,20 @@
 #include "disk.h"
 #include "gpt.h"
 
+#ifdef SWANSON_WITH_INITRAMFS_DATA_H
+#include "initramfs-data.h"
+#endif /* SWANSON_WITH_INITRAMFS_DATA_H */
+
+#include <stdlib.h>
+#include <string.h>
+
 #ifndef NULL
 #define NULL ((void *) 0x00)
 #endif
+
+/* below is unused code */
+
+#if 0
 
 static int
 probe_gpt_header(void *kernel_ptr,
@@ -133,6 +144,8 @@ find_fs(struct kernel *kernel) {
 	return KERNEL_FAILURE;
 }
 
+#endif
+
 void
 kernel_init(struct kernel *kernel) {
 	any_fs_init(&kernel->root_fs);
@@ -140,6 +153,12 @@ kernel_init(struct kernel *kernel) {
 	kernel->disk_array = NULL;
 	kernel->disk_count = 0;
 	partition_init(&kernel->root_partition);
+	ramfs_init(&kernel->initramfs);
+}
+
+void
+kernel_free(struct kernel *kernel) {
+	ramfs_free(&kernel->initramfs);
 }
 
 int
@@ -184,25 +203,51 @@ kernel_add_memory(struct kernel *kernel,
 	return 0;
 }
 
+int
+kernel_load_initramfs(struct kernel *kernel) {
+
+	void *data;
+	struct sstream sstream;
+	struct stream *stream;
+
+	data = malloc(initramfs_data_size);
+	if (data == NULL)
+		return -1;
+
+	memcpy(data, initramfs_data, initramfs_data_size);
+
+	/** The 'sstream' represents a stream that
+	 * contains the initramfs serialized data.
+	 * */
+
+	sstream_init(&sstream);
+
+	sstream_setbuf(&sstream, data, initramfs_data_size);
+
+	stream = sstream_to_stream(&sstream);
+
+	ramfs_decode(&kernel->initramfs, stream);
+
+	free(data);
+
+	return 0;
+}
+
 enum kernel_exitcode
 kernel_main(struct kernel *kernel) {
 
 	int err;
-	struct vfs *vfs;
-	struct vfs_file init_file;
-	const char *init_path = "/sbin/init";
+	struct ramfs_file *init;
 
-	err = find_fs(kernel);
-	if (err != KERNEL_SUCCESS) {
-		debug("Failed to find file system.\n");
-		return err;
+	err = kernel_load_initramfs(kernel);
+	if (err != 0) {
+		debug("Failed to load initramfs.\n");
+		return KERNEL_FAILURE;
 	}
 
-	vfs = &kernel->root_fs.vfs;
-
-	err = vfs_open_file(vfs, &init_file, init_path);
-	if (err != 0) {
-		debug("Failed to open '%s'.\n", init_path);
+	init = ramfs_open_file(&kernel->initramfs, "/init");
+	if (init == NULL) {
+		debug("Failed to open 'init'.\n");
 		return KERNEL_FAILURE;
 	}
 
