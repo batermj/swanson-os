@@ -116,3 +116,51 @@ unsigned long int
 ramfs_file_get_size(const struct ramfs_file *file) {
 	return file->data_size;
 }
+
+int
+ramfs_file_set_name(struct ramfs_file *file,
+                    const char *name) {
+
+	char *tmp_name;
+	unsigned long int name_size;
+
+	name_size = strlen(name);
+
+	tmp_name = malloc(name_size + 1);
+	if (tmp_name == NULL) {
+		return -1;
+	}
+
+	memcpy(tmp_name, name, name_size);
+
+	tmp_name[name_size] = 0;
+
+	free(file->name);
+
+	file->name = tmp_name;
+	file->name_size = name_size;
+
+	return 0;
+}
+
+int
+ramfs_file_set_data(struct ramfs_file *file,
+                    const void *data,
+                    unsigned long int data_size) {
+
+	void *tmp_data;
+
+	tmp_data = malloc(data_size);
+	if (tmp_data == NULL) {
+		return -1;
+	}
+
+	memcpy(tmp_data, data, data_size);
+
+	free(file->data);
+
+	file->data = tmp_data;
+	file->data_size = data_size;
+
+	return 0;
+}

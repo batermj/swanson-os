@@ -109,6 +109,29 @@ ramfs_file_get_data(struct ramfs_file *file);
 unsigned long int
 ramfs_file_get_size(const struct ramfs_file *file);
 
+/** Set the name of the file.
+ * @param file An initialized file structure.
+ * @param name A null-terminated file name.
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+ramfs_file_set_name(struct ramfs_file *file,
+                    const char *name);
+
+/** Set the file data.
+ * @param file An initialized file structure
+ * @param data The new file data.
+ * @param data_size The number of bytes occupied
+ * by the new file data.
+ * @returns Zero on success, a negative number on failure.
+ * */
+
+int
+ramfs_file_set_data(struct ramfs_file *file,
+                    const void *data,
+                    unsigned long int data_size);
+
 #ifdef __cplusplus
 } /* extern "C" { */
 #endif
