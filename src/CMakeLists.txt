@@ -74,28 +74,26 @@ add_swanson_library("swanson"
 	"stream.h"
 	"stream.c"
 	"sstream.h"
-	"sstream.c"
-	"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.h"
-	"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.c")
+	"sstream.c")
 
 add_custom_command(OUTPUT
 		"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.h"
 		"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.c"
 	DEPENDS "rc" "init"
 	COMMAND
+		$<TARGET_FILE:ramfs-tool> --disk "${CMAKE_CURRENT_BINARY_DIR}/initramfs.img" --create format
+	COMMAND
+		$<TARGET_FILE:ramfs-tool> --disk "${CMAKE_CURRENT_BINARY_DIR}/initramfs.img" cp $<TARGET_FILE:init> "init"
+	COMMAND
 		$<TARGET_FILE:rc> --header "${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.h"
 		                  --source "${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.c"
-		                  --input $<TARGET_FILE:init>
+		                  --input "${CMAKE_CURRENT_BINARY_DIR}/initramfs.img"
 		                  --name "initramfs_data")
 
-
-add_swanson_executable("gpt-tool" "gpt-tool.c")
-
-add_swanson_executable("ext4-tool" "ext4-tool.c")
-
-add_swanson_executable("ramfs-tool" "fs/ramfs/ramfs-tool.c")
-
-add_swanson_executable("swanson-pc" "main.c")
+add_swanson_executable("swanson-pc"
+	"main.c"
+	"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.h"
+	"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.c")
 
 add_custom_command(TARGET "swanson-pc"
 	POST_BUILD
@@ -107,6 +105,12 @@ install(TARGETS "swanson" "swanson-pc"
 	RUNTIME DESTINATION "bin"
 	ARCHIVE DESTINATION "lib"
 	LIBRARY DESTINATION "lib")
+
+add_swanson_executable("gpt-tool" "gpt-tool.c")
+
+add_swanson_executable("ext4-tool" "ext4-tool.c")
+
+add_swanson_executable("ramfs-tool" "fs/ramfs/ramfs-tool.c")
 
 add_subdirectory("init")
 add_subdirectory("utilities")
