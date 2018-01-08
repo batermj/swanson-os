@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 list (APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
@@ -14,10 +15,12 @@ if (MSVC)
 	# 4710 warnings about functions like 'printf'
 	#      not being inlined.
 	list (APPEND SWANSON_CFLAGS /Wall /WX /wd4820 /wd4996 /wd4710)
+	lsit (APPEND SWANSON_CFLAGS /DSWANSON_WITH_INITRAMFS_DATA_H=1)
 endif (MSVC)
 
 if (CMAKE_COMPILER_IS_GNUCC OR SWANSON_WITH_CLANG)
 	list (APPEND SWANSON_CFLAGS -Wall -Wextra -Werror -Wfatal-errors)
+	list (APPEND SWANSON_CFLAGS -DSWANSON_WITH_INITRAMFS_DATA_H=1)
 endif (CMAKE_COMPILER_IS_GNUCC OR SWANSON_WITH_CLANG)
 
 # Use these functions for adding targets
