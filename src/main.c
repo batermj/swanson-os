@@ -110,6 +110,7 @@ free_kernel_memory(struct kernel *kernel) {
 	for (i = 0; i < kernel->memmap.unused_section_count; i++) {
 		free(kernel->memmap.unused_section_array[0].addr);
 	}
+	kernel_free(kernel);
 }
 
 int
