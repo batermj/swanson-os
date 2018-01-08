@@ -49,14 +49,68 @@ ramfs_cat(struct ramfs *fs,
 	return EXIT_SUCCESS;
 }
 
-#if 0
-
 static int
 ramfs_cp(struct ramfs *fs,
          const char *source_path,
-         const char *destination_path);
+         const char *destination_path) {
 
-#endif
+	int err;
+	struct ramfs_file *destination;
+	void *data;
+	long int data_size;
+	FILE *source;
+
+	source = fopen(source_path, "rb");
+	if (source == NULL) {
+		return EXIT_FAILURE;
+	}
+
+	err = fseek(source, 0L, SEEK_END);
+	if (err != 0) {
+		return EXIT_FAILURE;
+	}
+
+	data_size = ftell(source);
+	if (data_size == -1L) {
+		return EXIT_FAILURE;
+	}
+
+	err = fseek(source, 0L, SEEK_SET);
+	if (err != 0) {
+		return EXIT_FAILURE;
+	}
+
+	data = malloc((unsigned long int) data_size);
+	if (data == NULL) {
+		return EXIT_FAILURE;
+	}
+
+	data_size = fread(data, 1, data_size, source);
+
+	fclose(source);
+
+	err = ramfs_make_file(fs, destination_path);
+	if (err != 0) {
+		free(data);
+		return EXIT_FAILURE;
+	}
+
+	destination = ramfs_open_file(fs, destination_path);
+	if (destination == NULL) {
+		free(data);
+		return EXIT_FAILURE;
+	}
+
+	err = ramfs_file_set_data(destination, data, (unsigned long int) data_size);
+	if (err != 0) {
+		free(data);
+		return EXIT_FAILURE;
+	}
+
+	free(data);
+
+	return EXIT_SUCCESS;
+}
 
 static int
 ramfs_ls(struct ramfs *fs,
@@ -67,6 +121,7 @@ ramfs_ls(struct ramfs *fs,
 
 	dir = ramfs_open_dir(fs, path);
 	if (dir == NULL) {
+		fprintf(stderr, "Failed to open directory '%s'.\n", path);
 		return EXIT_FAILURE;
 	}
 
@@ -196,10 +251,29 @@ main(int argc, const char **argv) {
 		}
 	} else if (strcmp(argv[i], "cp") == 0) {
 
+		i++;
+
+		if (i >= argc) {
+			fprintf(stderr, "Missing source path.\n");
+			ramfs_free(&ramfs);
+			return EXIT_FAILURE;
+		} else if ((i + 1) >= argc) {
+			fprintf(stderr, "Missing destination path.\n");
+			ramfs_free(&ramfs);
+			return EXIT_FAILURE;
+		}
+
+		err = ramfs_cp(&ramfs, argv[i], argv[i + 1]);
+		if (err != 0) {
+			fprintf(stderr, "Failed to copy '%s' to '%s'.\n", argv[i], argv[i + 1]);
+			ramfs_free(&ramfs);
+			return EXIT_FAILURE;
+		}
+
 	} else if (strcmp(argv[i], "mkdir") == 0) {
 		i++;
 		while (i < argc) {
-			err = ramfs_mkdir(&ramfs, argv[i]);
+			err = ramfs_make_dir(&ramfs, argv[i]);
 			if (err != 0) {
 				fprintf(stderr, "Failed to create directory '%s'.\n", argv[i]);
 				ramfs_free(&ramfs);
