@@ -121,7 +121,7 @@ write_source(struct plan *plan) {
 	fprintf(source, "};\n");
 
 	fprintf(source, "\n");
-	fprintf(source, "const void *%s = 0;\n", plan->name);
+	fprintf(source, "const void *%s = %s_bytes;\n", plan->name, plan->name);
 
 	fprintf(source, "\n");
 	fprintf(source, "const unsigned long int %s_size = sizeof(%s_bytes);\n", plan->name, plan->name);
