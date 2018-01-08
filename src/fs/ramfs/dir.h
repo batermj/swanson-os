@@ -58,6 +58,16 @@ ramfs_dir_init(struct ramfs_dir *dir);
 void
 ramfs_dir_free(struct ramfs_dir *dir);
 
+/** Adds a file to the directory.
+ * @param dir An initialized directory structure.
+ * @param name The name of the file to create.
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+ramfs_dir_add_file(struct ramfs_dir *dir,
+                   const char *name);
+
 /** Adds a subdirectory to the directory.
  * @param dir An initialized directory structure.
  * @param name The name of the subdirectory to create.

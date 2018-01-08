@@ -51,6 +51,41 @@ ramfs_dir_free(struct ramfs_dir *dir) {
 }
 
 int
+ramfs_dir_add_file(struct ramfs_dir *dir,
+                   const char *name) {
+
+	int err;
+	struct ramfs_file *file_array;
+	unsigned long int file_array_size;
+
+	if (ramfs_dir_name_exists(dir, name))
+		return -1;
+
+	file_array_size = dir->file_count + 1;
+	file_array_size *= sizeof(dir->file_array[0]);
+
+	file_array = dir->file_array;
+
+	file_array = realloc(file_array, file_array_size);
+	if (file_array == NULL) {
+		return -1;
+	}
+
+	ramfs_file_init(&file_array[dir->file_count]);
+
+	err = ramfs_file_set_name(&file_array[dir->file_count], name);
+	if (err != 0) {
+		ramfs_file_free(&file_array[dir->file_count]);
+		return -1;
+	}
+
+	dir->file_array = file_array;
+	dir->file_count++;
+
+	return 0;
+}
+
+int
 ramfs_dir_add_subdir(struct ramfs_dir *dir,
                      const char *name) {
 
