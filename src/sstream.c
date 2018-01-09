@@ -18,8 +18,6 @@
 
 #include "sstream.h"
 
-#include "sstream.h"
-
 #ifndef NULL
 #define NULL ((void *) 0x00)
 #endif
