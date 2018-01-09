@@ -27,9 +27,40 @@
 #define NULL ((void *) 0x00)
 #endif
 
+static int
+get_file_count(void *ramfs_dir_ptr,
+               uintmax_t *file_count) {
+
+	struct ramfs_dir *ramfs_dir;
+
+	ramfs_dir = (struct ramfs_dir *) ramfs_dir_ptr;
+
+	*file_count = ramfs_dir->file_count;
+
+	return 0;
+}
+
+static enum vfs_error
+get_root_dir(void *ramfs_ptr,
+             struct vfs_dir *root_dir) {
+
+	struct ramfs *ramfs;
+
+	ramfs = (struct ramfs *) ramfs_ptr;
+
+	root_dir->data = &ramfs->root_dir;
+	root_dir->get_file_count = get_file_count;
+
+	return VFS_ERROR_NONE;
+}
+
 void
 ramfs_init(struct ramfs *ramfs) {
+
 	vfs_init(&ramfs->vfs);
+	ramfs->vfs.data = ramfs;
+	ramfs->vfs.get_root_dir = get_root_dir;
+
 	ramfs_dir_init(&ramfs->root_dir);
 }
 

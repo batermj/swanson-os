@@ -23,13 +23,28 @@
 #endif
 
 void
+vfs_file_init(struct vfs_file *file) {
+	file->data = NULL;
+	file->get_name = NULL;
+	file->get_size = NULL;
+	file->read = NULL;
+	file->write = NULL;
+}
+
+void
 vfs_dir_init(struct vfs_dir *dir) {
 	dir->data = NULL;
+	dir->get_name = NULL;
+	dir->get_file = NULL;
+	dir->get_file_count = NULL;
+	dir->get_subdir = NULL;
+	dir->get_subdir_count = NULL;
 }
 
 void
 vfs_init(struct vfs *vfs) {
 	vfs->data = NULL;
+	vfs->get_root_dir = NULL;
 }
 
 int

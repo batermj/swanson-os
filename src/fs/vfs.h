@@ -42,27 +42,29 @@ enum vfs_error {
 	VFS_ERROR_NOT_IMPLEMENTED
 };
 
-/** A directory entry in the virtual file system.
- * */
-
-struct vfs_entry {
-	/** Implementation data */
-	void *data;
-};
-
 /** A handle for a file in the virtual file system.
  * */
 
 struct vfs_file {
-	/** The stream used for reading and writing file
-	 * data. */
-	struct stream stream;
-	/** The offset within the stream that the file
-	 * data starts in. */
-	uint64_t offset;
-	/** The size of the file data, in bytes. */
-	uint64_t length;
+	/** Implementation data. */
+	void *data;
+	/** Get the file name. */
+	const char *(*get_name)(void *data);
+	/** Get the file size. */
+	uintmax_t (*get_size)(void *data);
+	/** Read the file data. */
+	int (*read)(void *data, void *buf, uintmax_t buf_size);
+	/** Write file data. */
+	int (*write)(void *data, const void *buf, uintmax_t buf_size);
 };
+
+/** Initializes a virtual file system
+ * file structure.
+ * @param file An uninitialized file structure.
+ * */
+
+void
+vfs_file_init(struct vfs_file *file);
 
 /** A handle for a directory within the virtual file system.
  * */
@@ -70,10 +72,23 @@ struct vfs_file {
 struct vfs_dir {
 	/** Implementation data. */
 	void *data;
-	/** Get an entry structure. */
-	int (*get_entry)(void *dir_ptr, struct vfs_entry *vfs_entry);
+	/** Get the directory name. */
+	const char *(*get_name)(void *data);
+	/** Get a file in the directory. */
+	int (*get_file)(void *dir_ptr,
+	                uintmax_t index,
+	                struct vfs_file *file);
 	/** Get the number of entries in the directory. */
-	int (*get_entry_count)(void *data, intmax_t *entry_count);
+	int (*get_file_count)(void *data,
+	                      uintmax_t *file_count);
+	/** Get a subdirectory in the directory. */
+	int (*get_subdir)(void *data,
+	                  uintmax_t index,
+	                  struct vfs_dir *subdir);
+	/** Get the number of subdirectories in
+	 * the directory. */
+	int (*get_subdir_count)(void *data,
+	                        uintmax_t *subdir_count);
 };
 
 /** Initializes a virtual file
