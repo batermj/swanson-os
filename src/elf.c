@@ -18,6 +18,8 @@
 
 #include "elf.h"
 
+#include "stream.h"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -81,8 +83,34 @@ elf_file_free(struct elf_file *file) {
 int
 elf_file_decode(struct elf_file *file,
                 struct stream *stream) {
+
+	int err;
+	unsigned long int read_count;
+	unsigned char signature[4];
+	uint16_t machine_type;
+
+	read_count = stream_read(stream, signature, 4);
+	if (read_count != 4)
+		return -1;
+
+	if ((signature[0] != 0x7f)
+	 || (signature[1] != 'E')
+	 || (signature[2] != 'L')
+	 || (signature[3] != 'F'))
+		return -1;
+
+	err = stream_setpos(stream, 0x12);
+	if (err != 0)
+		return err;
+
+	read_count = stream_decode_uint16le(stream, &machine_type);
+	if (read_count != 2)
+		return -1;
+	else if (machine_type != 0xdf00)
+		return -1;
+
 	(void) file;
-	(void) stream;
+
 	return 0;
 }
 
