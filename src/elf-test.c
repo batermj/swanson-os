@@ -16,29 +16,40 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "test.h"
-
-#include "crc32-test.h"
 #include "elf-test.h"
-#include "gpt-test.h"
-#include "memmap-test.h"
-#include "options-test.h"
-#include "path-test.h"
 
-#include <stdlib.h>
+#include "assert.h"
+#include "elf.h"
+#include "elf-data.h"
+#include "rstream.h"
 
-int
-main(void) {
-	run_tests();
-	return EXIT_SUCCESS;
+static void
+elf_test_decode(void) {
+
+	int err;
+	struct rstream elf_rstream;
+	struct stream *elf_stream;
+	struct elf_file elf_file;
+
+	rstream_init(&elf_rstream);
+
+	rstream_setbuf(&elf_rstream,
+	               elf_data,
+	               elf_data_size);
+
+	elf_stream = rstream_to_stream(&elf_rstream);
+
+	elf_file_init(&elf_file);
+
+	err = elf_file_decode(&elf_file, elf_stream);
+	assert(err == 0);
+	assert(elf_file.segment_count == 6);
+	assert(elf_file.segment_array[0].data_size == 0);
+
+	elf_file_free(&elf_file);
 }
 
 void
-run_tests(void) {
-	crc32_test();
-	elf_test();
-	gpt_test();
-	memmap_test();
-	options_test();
-	path_test();
+elf_test(void) {
+	elf_test_decode();
 }
