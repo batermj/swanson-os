@@ -93,7 +93,7 @@ init_fake_cpu(struct cpu *cpu) {
 }
 
 static void
-cpu_test_and(struct cpu *cpu) {
+cpu_test_bitwise(struct cpu *cpu) {
 
 	cpu_set_pc(cpu, 0x00);
 	code[0] = 0x26; /* 'and' */
@@ -105,6 +105,19 @@ cpu_test_and(struct cpu *cpu) {
 	assert(cpu_get_pc(cpu) == 0x02);
 }
 
+static void
+cpu_test_arithmetic(struct cpu *cpu) {
+
+	cpu_set_pc(cpu, 0x00);
+	code[0] = 0x05;
+	code[1] = 0x34;
+	cpu->regs[3] = 9;
+	cpu->regs[4] = 22;
+	assert(cpu_step(cpu, 1) == 1);
+	assert(cpu->regs[3] == 31);
+	assert(cpu_get_pc(cpu) == 0x02);
+}
+
 void
 cpu_test(void) {
 
@@ -112,5 +125,6 @@ cpu_test(void) {
 
 	init_fake_cpu(&cpu);
 
-	cpu_test_and(&cpu);
+	cpu_test_arithmetic(&cpu);
+	cpu_test_bitwise(&cpu);
 }

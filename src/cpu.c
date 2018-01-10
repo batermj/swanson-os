@@ -25,6 +25,10 @@
 #define NULL ((void *) 0x00)
 #endif
 
+#define get_a(inst) ((inst & 0x00f0) >> 4)
+
+#define get_b(inst) (inst & 0x000f)
+
 static uintmax_t
 cpu_step_once(struct cpu *cpu) {
 
@@ -42,9 +46,14 @@ cpu_step_once(struct cpu *cpu) {
 
 	switch ((inst & 0xff00) >> 8) {
 	case 0x26: /* and */
-		a = (inst & 0x00f0) >> 4;
-		b = (inst & 0x000f) >> 0;
+		a = get_a(inst);
+		b = get_b(inst);
 		cpu->regs[a] = cpu->regs[a] & cpu->regs[b];
+		break;
+	case 0x05: /* add */
+		a = get_a(inst);
+		b = get_b(inst);
+		cpu->regs[a] = cpu->regs[a] + cpu->regs[b];
 		break;
 	default:
 		/* illegal instruction */
