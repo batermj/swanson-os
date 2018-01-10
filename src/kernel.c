@@ -21,10 +21,7 @@
 #include "debug.h"
 #include "disk.h"
 #include "gpt.h"
-
-#ifdef SWANSON_WITH_INITRAMFS_DATA_H
-#include "initramfs-data.h"
-#endif /* SWANSON_WITH_INITRAMFS_DATA_H */
+#include "rstream.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -204,31 +201,24 @@ kernel_add_memory(struct kernel *kernel,
 }
 
 int
-kernel_load_initramfs(struct kernel *kernel) {
+kernel_load_initramfs(struct kernel *kernel,
+                      const void *buf,
+                      unsigned long int buf_size) {
 
-	void *data;
-	struct sstream sstream;
+	struct rstream rstream;
 	struct stream *stream;
 
-	data = malloc(initramfs_data_size);
-	if (data == NULL)
-		return -1;
-
-	memcpy(data, initramfs_data, initramfs_data_size);
-
-	/** The 'sstream' represents a stream that
+	/** The 'rstream' represents a stream that
 	 * contains the initramfs serialized data.
 	 * */
 
-	sstream_init(&sstream);
+	rstream_init(&rstream);
 
-	sstream_setbuf(&sstream, data, initramfs_data_size);
+	rstream_setbuf(&rstream, buf, buf_size);
 
-	stream = sstream_to_stream(&sstream);
+	stream = rstream_to_stream(&rstream);
 
 	ramfs_decode(&kernel->initramfs, stream);
-
-	free(data);
 
 	return 0;
 }
@@ -236,14 +226,7 @@ kernel_load_initramfs(struct kernel *kernel) {
 enum kernel_exitcode
 kernel_main(struct kernel *kernel) {
 
-	int err;
 	struct ramfs_file *init;
-
-	err = kernel_load_initramfs(kernel);
-	if (err != 0) {
-		debug("Failed to load initramfs.\n");
-		return KERNEL_FAILURE;
-	}
 
 	init = ramfs_open_file(&kernel->initramfs, "/init");
 	if (init == NULL) {

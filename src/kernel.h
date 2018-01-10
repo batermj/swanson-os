@@ -108,11 +108,15 @@ kernel_add_memory(struct kernel *kernel,
 /** Mounts the initial file system executes
  * the 'init' program.
  * @param kernel An initialized kernel structure.
+ * @param buf The buffer containing the ramfs.
+ * @param buf_size The size of the buffer containing the ramfs.
  * @returns Zero on success, non-zero on failure.
  * */
 
 int
-kernel_load_initramfs(struct kernel *kernel);
+kernel_load_initramfs(struct kernel *kernel,
+                      const void *buf,
+                      unsigned long int buf_size);
 
 /** Entry point of the kernel.
  * @param kernel an initialized kernel structure.
