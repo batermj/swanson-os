@@ -16,31 +16,18 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "test.h"
+#ifndef SWANSON_CPU_TEST_H
+#define SWANSON_CPU_TEST_H
 
-#include "cpu-test.h"
-#include "crc32-test.h"
-#include "elf-test.h"
-#include "gpt-test.h"
-#include "memmap-test.h"
-#include "options-test.h"
-#include "path-test.h"
-
-#include <stdlib.h>
-
-int
-main(void) {
-	run_tests();
-	return EXIT_SUCCESS;
-}
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void
-run_tests(void) {
-	cpu_test();
-	crc32_test();
-	elf_test();
-	gpt_test();
-	memmap_test();
-	options_test();
-	path_test();
-}
+cpu_test(void);
+
+#ifdef __cplusplus
+} /* extern "C" { */
+#endif
+
+#endif /* SWANSON_CPU_TEST_H */
