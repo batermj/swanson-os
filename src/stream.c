@@ -80,6 +80,28 @@ stream_write(struct stream *stream,
 }
 
 uint64_t
+stream_decode_uint16be(struct stream *stream,
+                       uint16_t *n_ptr) {
+
+	uint8_t buf[2];
+	uint64_t read_count;
+	uint16_t n;
+
+	read_count = stream_read(stream, buf, sizeof(buf));
+	if (read_count != sizeof(buf))
+		return read_count;
+
+	n = 0;
+	n |= (buf[0] << 0x08) & 0x0000ff00;
+	n |= (buf[1] << 0x00) & 0x000000ff;
+
+	if (n_ptr != NULL)
+		*n_ptr = n;
+
+	return read_count;
+}
+
+uint64_t
 stream_decode_uint16le(struct stream *stream,
                        uint16_t *n_ptr) {
 
@@ -94,6 +116,30 @@ stream_decode_uint16le(struct stream *stream,
 	n = 0;
 	n |= (buf[0] << 0x00) & 0x000000ff;
 	n |= (buf[1] << 0x08) & 0x0000ff00;
+
+	if (n_ptr != NULL)
+		*n_ptr = n;
+
+	return read_count;
+}
+
+uint64_t
+stream_decode_uint32be(struct stream *stream,
+                       uint32_t *n_ptr) {
+
+	uint8_t buf[4];
+	uint64_t read_count;
+	uint32_t n;
+
+	read_count = stream_read(stream, buf, sizeof(buf));
+	if (read_count != sizeof(buf))
+		return read_count;
+
+	n = 0;
+	n |= (buf[0] << 0x18) & 0xff000000;
+	n |= (buf[1] << 0x10) & 0x00ff0000;
+	n |= (buf[2] << 0x08) & 0x0000ff00;
+	n |= (buf[3] << 0x00) & 0x000000ff;
 
 	if (n_ptr != NULL)
 		*n_ptr = n;
