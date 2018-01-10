@@ -24,6 +24,10 @@
 #include "kernel.h"
 #include "options.h"
 
+#ifdef SWANSON_WITH_INITRAMFS_DATA_H
+#include "initramfs-data.h"
+#endif /* SWANSON_WITH_INITRAMFS_DATA_H */
+
 static int
 add_memory_from_options(struct kernel *kernel,
                         const struct options *options) {
@@ -123,6 +127,14 @@ main(int argc, const char **argv) {
 	kernel_init(&kernel);
 
 	err = parse_args(&kernel, argc - 1, &argv[1]);
+	if (err != 0) {
+		free_kernel_memory(&kernel);
+		return EXIT_FAILURE;
+	}
+
+	err = kernel_load_initramfs(&kernel,
+	                            initramfs_data,
+	                            initramfs_data_size);
 	if (err != 0) {
 		free_kernel_memory(&kernel);
 		return EXIT_FAILURE;
