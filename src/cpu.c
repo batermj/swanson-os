@@ -60,6 +60,11 @@ cpu_step_once(struct cpu *cpu) {
 		b = get_b(inst);
 		cpu->regs[a] = cpu->regs[a] << cpu->regs[b];
 		break;
+	case 0x2d: /* ashr */
+		a = get_a(inst);
+		b = get_b(inst);
+		cpu->regs[a] = cpu->regs[a] >> cpu->regs[b];
+		break;
 	default:
 		/* illegal instruction */
 		cpu->exception = SIGILL;

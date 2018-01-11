@@ -112,6 +112,15 @@ cpu_test_bitwise(struct cpu *cpu) {
 	assert(cpu_step(cpu, 1) == 1);
 	assert(cpu->regs[2] == 0x10);
 	assert(cpu_get_pc(cpu) == 0x02);
+
+	cpu_set_pc(cpu, 0x00);
+	code[0] = 0x2d; /* 'ashr' - arithmetic shift right  */
+	code[1] = 0x27; /* registers 2 and 7 */
+	cpu->regs[2] = 0x04;
+	cpu->regs[7] = 0x01;
+	assert(cpu_step(cpu, 1) == 1);
+	assert(cpu->regs[2] == 0x02);
+	assert(cpu_get_pc(cpu) == 0x02);
 }
 
 static void
