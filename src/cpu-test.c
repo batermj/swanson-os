@@ -152,6 +152,19 @@ cpu_test_branching(struct cpu *cpu) {
 	assert(cpu_get_pc(cpu) == 8);
 }
 
+static void
+cpu_test_misc(struct cpu *cpu) {
+
+	/* test breakpoint */
+	cpu_set_pc(cpu, 0x00);
+	code[0] = 0x25; /* brk */
+	code[1] = 0;    /* (ignored) */
+	code[2] = 0x0f; /* nop */
+	assert(cpu_step(cpu, 2) == 1);
+	assert(cpu->exception == SIGTRAP);
+	assert(cpu_get_pc(cpu) == 2);
+}
+
 void
 cpu_test(void) {
 
@@ -162,4 +175,5 @@ cpu_test(void) {
 	cpu_test_arithmetic(&cpu);
 	cpu_test_bitwise(&cpu);
 	cpu_test_branching(&cpu);
+	cpu_test_misc(&cpu);
 }

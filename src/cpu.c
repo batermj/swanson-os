@@ -119,6 +119,9 @@ cpu_step_once(struct cpu *cpu) {
 		b = get_b(inst);
 		cpu->regs[a] = cpu->regs[a] >> cpu->regs[b];
 		break;
+	case 0x25:
+		cpu->exception = SIGTRAP;
+		break;
 	default:
 		/* illegal instruction */
 		cpu->exception = SIGILL;
@@ -173,7 +176,7 @@ cpu_step(struct cpu *cpu,
 
 	uintmax_t i;
 
-	for (i = 0; i < steps; i++) {
+	for (i = 0; (i < steps) && (cpu->exception == 0); i++) {
 		if (cpu_step_once(cpu) != 1)
 			break;
 	}
