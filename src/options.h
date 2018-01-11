@@ -48,6 +48,7 @@ options_init(struct options *options);
 
 /** Releases resources allocated by the options
  * structure.
+ * @param options An initialized options structure.
  * */
 
 void
