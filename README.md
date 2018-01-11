@@ -61,12 +61,8 @@ Here's a list of dependencies for building the project.
 | Name            | Comment                               | Required |
 |-----------------|---------------------------------------|----------|
 | cmake           | Used for building the project.        | Yes      |
-| moxie-toolchain | User for compiling userspace programs | Yes      |
 | doxygen         | Used for generating documentation.    | No       |
 | graphviz        | Used for generating documentation.    | No       |
 | qmake           | Used for development.                 | No       |
 
 It's assumed you will have either GCC, Clang or Microsoft Visual Studio already installed.
-
-You can get the Moxie GCC toolchain [here](http://repos.moxielogic.org:7114/MoxieLogic).
-
