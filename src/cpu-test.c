@@ -93,6 +93,19 @@ init_fake_cpu(struct cpu *cpu) {
 }
 
 static void
+cpu_test_arithmetic(struct cpu *cpu) {
+
+	cpu_set_pc(cpu, 0x00);
+	code[0] = 0x05;
+	code[1] = 0x34;
+	cpu->regs[3] = 9;
+	cpu->regs[4] = 22;
+	assert(cpu_step(cpu, 1) == 1);
+	assert(cpu->regs[3] == 31);
+	assert(cpu_get_pc(cpu) == 0x02);
+}
+
+static void
 cpu_test_bitwise(struct cpu *cpu) {
 
 	cpu_set_pc(cpu, 0x00);
@@ -124,16 +137,19 @@ cpu_test_bitwise(struct cpu *cpu) {
 }
 
 static void
-cpu_test_arithmetic(struct cpu *cpu) {
+cpu_test_branching(struct cpu *cpu) {
 
 	cpu_set_pc(cpu, 0x00);
-	code[0] = 0x05;
-	code[1] = 0x34;
-	cpu->regs[3] = 9;
-	cpu->regs[4] = 22;
+	code[0] = 0xc0; /* 'beq' - branch if equal */
+	code[1] = 0x04; /* address of 0x004 */
+	cpu->condition = CPU_CONDITION_NE;
 	assert(cpu_step(cpu, 1) == 1);
-	assert(cpu->regs[3] == 31);
-	assert(cpu_get_pc(cpu) == 0x02);
+	assert(cpu_get_pc(cpu) == 2);
+	/* test again, but with a positive branch */
+	cpu_set_pc(cpu, 0x00);
+	cpu->condition = CPU_CONDITION_EQ;
+	assert(cpu_step(cpu, 1) == 1);
+	assert(cpu_get_pc(cpu) == 8);
 }
 
 void
@@ -145,4 +161,5 @@ cpu_test(void) {
 
 	cpu_test_arithmetic(&cpu);
 	cpu_test_bitwise(&cpu);
+	cpu_test_branching(&cpu);
 }

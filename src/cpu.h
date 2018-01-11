@@ -25,6 +25,25 @@
 extern "C" {
 #endif
 
+/** Describes a CPU condition
+ * code.
+ * */
+
+enum cpu_condition {
+	/** Not equal to */
+	CPU_CONDITION_NE = 0x00,
+	/** Equal to */
+	CPU_CONDITION_EQ = 0x01,
+	/** Greater than */
+	CPU_CONDITION_GT = 0x02,
+	/** Less than */
+	CPU_CONDITION_LT = 0x04,
+	/** Greater than (unsigned) */
+	CPU_CONDITION_GT_UNSIGNED = 0x08,
+	/** Less than (unsigned) */
+	CPU_CONDITION_LT_UNSIGNED = 0x10
+};
+
 /** A Moxie CPU simulator.
  * This is used for executing application code.
  * */
@@ -49,7 +68,7 @@ struct cpu {
 	/** Special-purpose registers. */
 	uint32_t sregs[256];
 	/** Condition register */
-	uint32_t condition;
+	enum cpu_condition condition;
 	/** Exception flag. */
 	int exception;
 	/** Instruction counter. */

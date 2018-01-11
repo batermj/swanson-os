@@ -29,6 +29,8 @@
 
 #define get_b(inst) (inst & 0x000f)
 
+#define get_v(inst) ((((int16_t)((inst & ((1 << 10) - 1)) << 6)) >> 6) << 1)
+
 static uintmax_t
 cpu_step_once(struct cpu *cpu) {
 
@@ -37,12 +39,48 @@ cpu_step_once(struct cpu *cpu) {
 	uint16_t inst;
 	uint32_t a;
 	uint32_t b;
+	int16_t offset;
 
 	pc = cpu_get_pc(cpu);
 
 	err = cpu_read16(cpu, pc, &inst);
 	if (err != 0)
 		return 0;
+
+	/* check 6-bit instuctions */
+
+	switch ((inst & 0xfc00) >> 0x0a) {
+	case 0x30: /* beq */
+		offset = get_v(inst);
+		/* check for underflow/overflow */
+		if (offset < 0) {
+			if (((uint16_t)(offset * -1)) > pc) {
+				cpu->exception = SIGILL;
+				return 0;
+			}
+		} else if (pc > (UINT32_MAX - ((uint32_t) offset))) {
+			cpu->exception = SIGILL;
+			return 0;
+		} else if (cpu->condition & CPU_CONDITION_EQ) {
+
+			if (offset > 0)
+				pc += (uint32_t)(offset);
+			else
+				pc -= (uint32_t)(offset * -1);
+
+			cpu_set_pc(cpu, pc);
+			return 1;
+
+		} else {
+			pc += 2;
+			cpu_set_pc(cpu, pc);
+			return 1;
+		}
+	default:
+		break;
+	}
+
+	/* check 8-bit instuctions */
 
 	switch ((inst & 0xff00) >> 8) {
 	case 0x26: /* and */
@@ -87,7 +125,7 @@ cpu_init(struct cpu *cpu) {
 	cpu->write32 = NULL;
 	memset(cpu->regs, 0, sizeof(cpu->regs));
 	memset(cpu->sregs, 0, sizeof(cpu->sregs));
-	cpu->condition = 0;
+	cpu->condition = CPU_CONDITION_NE;
 	cpu->exception = 0;
 	cpu->instruction_count = 0;
 }
