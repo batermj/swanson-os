@@ -40,6 +40,8 @@ cpu_step_once(struct cpu *cpu) {
 	uint32_t a;
 	uint32_t b;
 	int16_t offset;
+	uint8_t cc_required;
+	uint8_t cc_actual;
 
 	pc = cpu_get_pc(cpu);
 
@@ -51,6 +53,20 @@ cpu_step_once(struct cpu *cpu) {
 
 	switch ((inst & 0xfc00) >> 0x0a) {
 	case 0x30: /* beq */
+	case 0x36: /* bge */
+	case 0x38: /* bgeu */
+	case 0x33: /* bgt */
+	case 0x35: /* bgtu */
+	case 0x37: /* ble */
+	case 0x39: /* bleu */
+	case 0x32: /* blt */
+	case 0x34: /* bltu */
+	case 0x31: /* bne */
+		/* condition code required */
+		cc_required = (inst & 0x3c00) >> 0x0a;
+		/* actual condition code of the cpu */
+		cc_actual = cpu->condition;
+		/* get branch offset (if taken) */
 		offset = get_v(inst);
 		/* check for underflow/overflow */
 		if (offset < 0) {
@@ -61,7 +77,7 @@ cpu_step_once(struct cpu *cpu) {
 		} else if (pc > (UINT32_MAX - ((uint32_t) offset))) {
 			cpu->exception = SIGILL;
 			return 0;
-		} else if (cpu->condition & CPU_CONDITION_EQ) {
+		} else if (cc_required == cc_actual) {
 
 			if (offset > 0)
 				pc += (uint32_t)(offset);
@@ -125,7 +141,7 @@ cpu_init(struct cpu *cpu) {
 	cpu->write32 = NULL;
 	memset(cpu->regs, 0, sizeof(cpu->regs));
 	memset(cpu->sregs, 0, sizeof(cpu->sregs));
-	cpu->condition = CPU_CONDITION_NE;
+	cpu->condition = CPU_CONDITION_EQ;
 	cpu->exception = 0;
 	cpu->instruction_count = 0;
 }

@@ -26,22 +26,32 @@ extern "C" {
 #endif
 
 /** Describes a CPU condition
- * code.
+ * code. This codes are carefully
+ * chosen to match the encoding of
+ * the branching instructions.
  * */
 
 enum cpu_condition {
-	/** Not equal to */
-	CPU_CONDITION_NE = 0x00,
-	/** Equal to */
-	CPU_CONDITION_EQ = 0x01,
-	/** Greater than */
-	CPU_CONDITION_GT = 0x02,
-	/** Less than */
-	CPU_CONDITION_LT = 0x04,
-	/** Greater than (unsigned) */
-	CPU_CONDITION_GT_UNSIGNED = 0x08,
-	/** Less than (unsigned) */
-	CPU_CONDITION_LT_UNSIGNED = 0x10
+	/** Equal to. */
+	CPU_CONDITION_EQ = 0x00,
+	/** Greater than or equal to. */
+	CPU_CONDITION_GE = 0x06,
+	/** Greater than or equal to (unsigned). */
+	CPU_CONDITION_GEU = 0x08,
+	/** Greater than. */
+	CPU_CONDITION_GT = 0x03,
+	/** Greater than (unsigned). */
+	CPU_CONDITION_GTU = 0x05,
+	/** Less than or equal to. */
+	CPU_CONDITION_LE = 0x07,
+	/** Less than or equal to (unsigned). */
+	CPU_CONDITION_LEU = 0x09,
+	/** Less than. */
+	CPU_CONDITION_LT = 0x02,
+	/** Less than (unsigned). */
+	CPU_CONDITION_LTU = 0x04,
+	/** Not equal to. */
+	CPU_CONDITION_NE = 0x01
 };
 
 /** A Moxie CPU simulator.
