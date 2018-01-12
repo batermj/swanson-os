@@ -112,6 +112,15 @@ cpu_read16(struct cpu *cpu,
            uint32_t addr,
            uint16_t *value);
 
+/** Recover from an exception.
+ * Internally, this just clears
+ * the exception register.
+ * @param cpu An initialized cpu structure.
+ * */
+
+void
+cpu_recover(struct cpu *cpu);
+
 /** Set the program counter to a
  * specified address.
  * @param cpu An initialized CPU structure.

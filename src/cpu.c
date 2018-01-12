@@ -39,6 +39,8 @@ cpu_step_once(struct cpu *cpu) {
 	uint16_t inst;
 	uint32_t a;
 	uint32_t b;
+	uint32_t reg_a;
+	uint32_t reg_b;
 	int16_t offset;
 	uint8_t cc_required;
 	uint8_t cc_actual;
@@ -122,6 +124,28 @@ cpu_step_once(struct cpu *cpu) {
 	case 0x25:
 		cpu->exception = SIGTRAP;
 		break;
+	case 0x0e:
+
+		a = get_a(inst);
+		b = get_b(inst);
+
+		reg_a = cpu->regs[a];
+		reg_b = cpu->regs[b];
+
+		if (reg_a > reg_b)
+			cpu->condition = CPU_CONDITION_GTU;
+		else if (reg_a < reg_b)
+			cpu->condition = CPU_CONDITION_LTU;
+		else
+			cpu->condition = CPU_CONDITION_EQ;
+
+		if (((int32_t) reg_a) > ((int32_t) reg_b))
+			cpu->condition |= CPU_CONDITION_GT;
+		else if (((int32_t) reg_a) < ((int32_t) reg_b))
+			cpu->condition |= CPU_CONDITION_LT;
+
+		break;
+
 	default:
 		/* illegal instruction */
 		cpu->exception = SIGILL;
@@ -162,6 +186,11 @@ cpu_read16(struct cpu *cpu,
 		return cpu->read16(cpu->data, addr, value);
 	else
 		return -1;
+}
+
+void
+cpu_recover(struct cpu *cpu) {
+	cpu->exception = 0;
 }
 
 void

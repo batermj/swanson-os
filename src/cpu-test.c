@@ -163,6 +163,18 @@ cpu_test_misc(struct cpu *cpu) {
 	assert(cpu_step(cpu, 2) == 1);
 	assert(cpu->exception == SIGTRAP);
 	assert(cpu_get_pc(cpu) == 2);
+
+	cpu_recover(cpu);
+
+	/* test cmp */
+	cpu_set_pc(cpu, 0x00);
+	code[0] = 0x0e;
+	code[1] = 0x12;
+	cpu->regs[1] = 0x01;
+	cpu->regs[2] = 0x02;
+	cpu->condition = CPU_CONDITION_EQ;
+	assert(cpu_step(cpu, 1) == 1);
+	assert(cpu->condition == (CPU_CONDITION_LT | CPU_CONDITION_LTU));
 }
 
 void
