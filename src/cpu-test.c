@@ -192,6 +192,17 @@ cpu_test_misc(struct cpu *cpu) {
 	cpu->condition = CPU_CONDITION_EQ;
 	assert(cpu_step(cpu, 1) == 1);
 	assert(cpu->condition == (CPU_CONDITION_LT | CPU_CONDITION_LTU));
+	assert(cpu_get_pc(cpu) == 2);
+
+	/* test gsr (get special register) */
+	cpu_set_pc(cpu, 0x00);
+	code[0] = 0xa1;
+	code[1] = 0xff;
+	cpu->regs[1] = 0;
+	cpu->sregs[0xff] = 42;
+	assert(cpu_step(cpu, 1) == 1);
+	assert(cpu->regs[1] == 42);
+	assert(cpu_get_pc(cpu) == 2);
 }
 
 void

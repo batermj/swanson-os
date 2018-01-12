@@ -59,6 +59,11 @@ cpu_step_once(struct cpu *cpu) {
 		cpu->regs[a] -= inst & 0xff;
 		cpu_set_pc(cpu, pc + 2);
 		return 1;
+	case 0x0a:
+		a = (inst & 0x0f00) >> 0x08;
+		cpu->regs[a] = cpu->sregs[inst & 0xff];
+		cpu_set_pc(cpu, pc + 2);
+		return 1;
 	default:
 		break;
 	}
