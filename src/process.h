@@ -25,6 +25,108 @@
 extern "C" {
 #endif
 
+/** A section in the address space
+ * of a process.
+ * */
+
+struct addr_section {
+	/** The virtual address */
+	uint32_t vaddr;
+	/** The physical address */
+	void *paddr;
+	/** The number of bytes occupied by
+	 * the section. */
+	uint32_t size;
+	/** Memory in this section may
+	 * be executed. */
+	bool execute_permission;
+	/** Memory in this section may
+	 * be read from. */
+	bool read_permission;
+	/** Memory in this section may
+	 * be written to. */
+	bool write_permission;
+};
+
+/** Initializes an address space section.
+ * @param section An uninitialized address
+ * space section.
+ * */
+
+void
+addr_section_init(struct addr_section *section);
+
+/** Releases memory allocated by an address
+ * space section.
+ * @param section An initialized address space section.
+ * */
+
+void
+addr_section_free(struct addr_section *section);
+
+/** Resizes an address space section.
+ * Care should be taken that the new size of the
+ * address space section doesn't cause it to overlap
+ * with another section.
+ * @param section An initialized address space section.
+ * @param size The new size of the address space section.
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+addr_section_resize(struct addr_section *section,
+                    uint32_t size);
+
+/** The address space of a process.
+ * */
+
+struct addr_space {
+	/** The section array. Every
+	 * section contains part of the
+	 * address space. */
+	struct addr_section *section_array;
+	/** The number of sections in the
+	 * address space. */
+	uint32_t section_count;
+};
+
+/** Initializes an address space.
+ * @param space An uninitialized address space.
+ * */
+
+void
+addr_space_init(struct addr_space *space);
+
+/** Releases all of the memory in the address space.
+ * @param space An initialized address space.
+ * */
+
+void
+addr_space_free(struct addr_space *space);
+
+/** Allocates memory in the address space.
+ * @param space An initialized address space.
+ * @param vaddr The virtual address to use.
+ * @param size The number of bytes to allocate.
+ * @returns The section structure, if it is
+ * allocated (null if it is not).
+ * */
+
+struct addr_section *
+addr_space_alloc(struct addr_space *space,
+                 uint32_t vaddr,
+                 uint32_t size);
+
+/** Releases a section of the address space.
+ * @param space An initialized address.
+ * @param vaddr The virtual address of the
+ * section to be released.
+ * */
+
+void
+addr_space_release(struct addr_space *space,
+                   uint32_t vaddr);
+
 /** Represents a stack of a thread.
  * This stack doesn't grow downwards,
  * like normal stacks do. It grows upwards.
@@ -32,59 +134,14 @@ extern "C" {
  * From the native address space, it grows upwards.
  * */
 
-struct stack {
-	/** The starting address of the
-	 * stack. */
-	void *addr;
-	/** The number of bytes occupied
-	 * by the stack. */
-	uintmax_t size;
-	/** The current position within
-	 * the stack. */
-	uintmax_t pos;
-};
-
-/** Initializes the stack.
- * @param stack An uninitialized stack.
- * */
-
-void
-stack_init(struct stack *stack);
-
-/** Pushes a value to the stack.
- * @param stack An initialized stack.
- * @param value The value to push to
- * the stack. This may be NULL.
- * @param size The number of bytes
- * to push to the stack.
- * @returns Zero on success, non-zero
- * on failure.
- * */
-
-int
-stack_push(struct stack *stack,
-           const void *value,
-           uintmax_t size);
-
-/** Pop a value from the stack.
- * @param stack An initialized stack.
- * @param size The number of bytes to
- * pop from the stack.
- * @returns Zero on success, non-zero
- * on failure.
- * */
-
-int
-stack_pop(struct stack *stack,
-          uintmax_t size);
-
 /** A thread running in the application
  * address space.
  * */
 
 struct thread {
-	/** The thread's stack. */
-	struct stack stack;
+	/** The CPU that executes instructions
+	 * on behalf of the thread. */
+	struct cpu cpu;
 };
 
 /** Initializes the thread.
@@ -113,13 +170,17 @@ thread_step(struct thread *thread,
  * */
 
 struct process {
+	/** The address space of the process. */
+	struct addr_space addr_space;
 	/** The threads that make up the process. */
 	struct thread *thread_array;
 	/** The number of threads in the process. */
 	uintmax_t thread_count;
-	/** The index of the thread that the process
-	 * is currently executing. */
-	uintmax_t thread_index;
+	/** Processes started by this one. */
+	struct process *child_array;
+	/** The number of processes that are
+	 * children to this process. */
+	uintmax_t child_count;
 };
 
 /** Initializes the process.
@@ -130,9 +191,9 @@ void
 process_init(struct process *process);
 
 /** Moves the process' execution by a
- * specified number of steps. The process
- * will use the current thread and then increment
- * the thread index.
+ * specified number of steps. All threads
+ * in this process and all sub processes are
+ * incremented by the same number of steps.
  * @param process An initialized process structure.
  * @param steps The number of steps for the process to take.
  * @returns The number of steps actually taken.
