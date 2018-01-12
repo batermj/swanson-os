@@ -112,6 +112,19 @@ cpu_read16(struct cpu *cpu,
            uint32_t addr,
            uint16_t *value);
 
+/** Reads a 32-bit value from memory.
+ * @param cpu An initialized CPU structure.
+ * @param addr The address of the 32-bit value to read.
+ * @param value The address of the variable that will
+ * contain the value read from memory.
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+cpu_read32(struct cpu *cpu,
+           uint32_t addr,
+           uint32_t *value);
+
 /** Recover from an exception.
  * Internally, this just clears
  * the exception register.

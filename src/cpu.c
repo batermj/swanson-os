@@ -177,9 +177,17 @@ cpu_step_once(struct cpu *cpu) {
 		}
 		cpu->regs[a] /= cpu->regs[b];
 		break;
-	case 0x25:
+	case 0x25: /* jmp */
 		a = get_a(inst);
 		cpu_set_pc(cpu, cpu->regs[a]);
+		return 1;
+	case 0x1a: /* jmpa */
+		err = cpu_read32(cpu, pc + 2, &pc);
+		if (err != 0) {
+			cpu->exception = SIGSEGV;
+			return 0;
+		}
+		cpu_set_pc(cpu, pc);
 		return 1;
 	default:
 		/* illegal instruction */
@@ -219,6 +227,16 @@ cpu_read16(struct cpu *cpu,
            uint16_t *value) {
 	if (cpu->read16 != NULL)
 		return cpu->read16(cpu->data, addr, value);
+	else
+		return -1;
+}
+
+int
+cpu_read32(struct cpu *cpu,
+           uint32_t addr,
+           uint32_t *value) {
+	if (cpu->read32 != NULL)
+		return cpu->read32(cpu->data, addr, value);
 	else
 		return -1;
 }
