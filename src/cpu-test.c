@@ -96,12 +96,20 @@ static void
 cpu_test_arithmetic(struct cpu *cpu) {
 
 	cpu_set_pc(cpu, 0x00);
-	code[0] = 0x05;
+	code[0] = 0x05; /* add */
 	code[1] = 0x34;
 	cpu->regs[3] = 9;
 	cpu->regs[4] = 22;
 	assert(cpu_step(cpu, 1) == 1);
 	assert(cpu->regs[3] == 31);
+	assert(cpu_get_pc(cpu) == 0x02);
+
+	cpu_set_pc(cpu, 0x00);
+	code[0] = 0x91; /* dec */
+	code[1] = 0x07;
+	cpu->regs[1] = 0x09;
+	assert(cpu_step(cpu, 1) == 1);
+	assert(cpu->regs[1] == 2);
 	assert(cpu_get_pc(cpu) == 0x02);
 }
 
