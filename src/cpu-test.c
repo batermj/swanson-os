@@ -120,6 +120,14 @@ cpu_test_arithmetic(struct cpu *cpu) {
 	assert(cpu_step(cpu, 1) == 1);
 	assert(cpu->regs[5] == 3);
 	assert(cpu_get_pc(cpu) == 0x02);
+
+	cpu_set_pc(cpu, 0x00);
+	code[0] = 0x82; /* inc */
+	code[1] = 0x24;
+	cpu->regs[2] = 2;
+	assert(cpu_step(cpu, 1) == 1);
+	assert(cpu->regs[2] == 0x26);
+	assert(cpu_get_pc(cpu) == 0x02);
 }
 
 static void

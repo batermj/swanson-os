@@ -54,6 +54,11 @@ cpu_step_once(struct cpu *cpu) {
 	/* check 4-bit instructions */
 
 	switch ((inst & 0xf000) >> 0x0c) {
+	case 0x08:
+		a = (inst & 0x0f00) >> 0x08;
+		cpu->regs[a] += inst & 0xff;
+		cpu_set_pc(cpu, pc + 2);
+		return 1;
 	case 0x09:
 		a = (inst & 0x0f00) >> 0x08;
 		cpu->regs[a] -= inst & 0xff;
