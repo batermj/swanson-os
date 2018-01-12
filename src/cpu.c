@@ -143,7 +143,7 @@ cpu_step_once(struct cpu *cpu) {
 		b = get_b(inst);
 		cpu->regs[a] = cpu->regs[a] >> cpu->regs[b];
 		break;
-	case 0x25: /* brk */
+	case 0x35: /* brk */
 		cpu->exception = SIGTRAP;
 		break;
 	case 0x0e: /* cmp */
@@ -177,6 +177,10 @@ cpu_step_once(struct cpu *cpu) {
 		}
 		cpu->regs[a] /= cpu->regs[b];
 		break;
+	case 0x25:
+		a = get_a(inst);
+		cpu_set_pc(cpu, cpu->regs[a]);
+		return 1;
 	default:
 		/* illegal instruction */
 		cpu->exception = SIGILL;

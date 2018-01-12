@@ -178,11 +178,22 @@ cpu_test_branching(struct cpu *cpu) {
 }
 
 static void
+cpu_test_jumping(struct cpu *cpu) {
+
+	cpu_set_pc(cpu, 0x00);
+	code[0] = 0x25; /* jmp */
+	code[1] = 0x30;
+	cpu->regs[3] = 0x27;
+	assert(cpu_step(cpu, 1) == 1);
+	assert(cpu_get_pc(cpu) == 0x27);
+}
+
+static void
 cpu_test_misc(struct cpu *cpu) {
 
 	/* test breakpoint */
 	cpu_set_pc(cpu, 0x00);
-	code[0] = 0x25; /* brk */
+	code[0] = 0x35; /* brk */
 	code[1] = 0;    /* (ignored) */
 	code[2] = 0x0f; /* nop */
 	assert(cpu_step(cpu, 2) == 1);
@@ -224,4 +235,5 @@ cpu_test(void) {
 	cpu_test_bitwise(&cpu);
 	cpu_test_branching(&cpu);
 	cpu_test_misc(&cpu);
+	cpu_test_jumping(&cpu);
 }
