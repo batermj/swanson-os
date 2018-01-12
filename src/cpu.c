@@ -157,6 +157,16 @@ cpu_step_once(struct cpu *cpu) {
 			cpu->condition |= CPU_CONDITION_LT;
 
 		break;
+
+	case 0x31: /* div */
+		a = get_a(inst);
+		b = get_b(inst);
+		if (b == 0) {
+			cpu->exception = SIGFPE;
+			break;
+		}
+		cpu->regs[a] /= cpu->regs[b];
+		break;
 	default:
 		/* illegal instruction */
 		cpu->exception = SIGILL;

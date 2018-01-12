@@ -111,6 +111,15 @@ cpu_test_arithmetic(struct cpu *cpu) {
 	assert(cpu_step(cpu, 1) == 1);
 	assert(cpu->regs[1] == 2);
 	assert(cpu_get_pc(cpu) == 0x02);
+
+	cpu_set_pc(cpu, 0x00);
+	code[0] = 0x31; /* div */
+	code[1] = 0x56;
+	cpu->regs[5] = 6;
+	cpu->regs[6] = 2;
+	assert(cpu_step(cpu, 1) == 1);
+	assert(cpu->regs[5] == 3);
+	assert(cpu_get_pc(cpu) == 0x02);
 }
 
 static void
