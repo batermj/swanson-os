@@ -199,6 +199,20 @@ cpu_test_jumping(struct cpu *cpu) {
 }
 
 static void
+cpu_test_loading(struct cpu *cpu) {
+
+	cpu_set_pc(cpu, 0x00);
+	code[0] = 0x1c; /* ld.b */
+	code[1] = 0x12;
+	code[9] = 42;
+	cpu->regs[1] = 0x00;
+	cpu->regs[2] = 0x09;
+	assert(cpu_step(cpu, 1) == 1);
+	assert(cpu->regs[1] == 42);
+	assert(cpu_get_pc(cpu) == 2);
+}
+
+static void
 cpu_test_misc(struct cpu *cpu) {
 
 	/* test breakpoint */
@@ -246,4 +260,5 @@ cpu_test(void) {
 	cpu_test_branching(&cpu);
 	cpu_test_misc(&cpu);
 	cpu_test_jumping(&cpu);
+	cpu_test_loading(&cpu);
 }
