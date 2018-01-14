@@ -25,6 +25,12 @@
 #define NULL ((void *) 0x00)
 #endif
 
+/* Since most instructions encode
+ * a register number (or multiple register
+ * numbers) within their 32-bit space, these
+ * macros are available to easily decode them.
+ * */
+
 #define get_a(inst) ((inst & 0x00f0) >> 4)
 
 #define get_b(inst) (inst & 0x000f)
@@ -44,6 +50,7 @@ cpu_step_once(struct cpu *cpu) {
 	int16_t offset;
 	uint8_t cc_required;
 	uint8_t cc_actual;
+	uint8_t value8;
 
 	pc = cpu_get_pc(cpu);
 
@@ -189,6 +196,16 @@ cpu_step_once(struct cpu *cpu) {
 		}
 		cpu_set_pc(cpu, pc);
 		return 1;
+	case 0x1c: /* ld.b */
+		a = get_a(inst);
+		b = get_b(inst);
+		err = cpu_read8(cpu, cpu->regs[b], &value8);
+		if (err != 0) {
+			cpu->exception = SIGSEGV;
+			return 0;
+		}
+		cpu->regs[a] = value8;
+		break;
 	default:
 		/* illegal instruction */
 		cpu->exception = SIGILL;
@@ -219,6 +236,16 @@ cpu_init(struct cpu *cpu) {
 uint32_t
 cpu_get_pc(const struct cpu *cpu) {
 	return cpu->regs[16];
+}
+
+int
+cpu_read8(struct cpu *cpu,
+           uint32_t addr,
+           uint8_t *value) {
+	if (cpu->read8 != NULL)
+		return cpu->read8(cpu->data, addr, value);
+	else
+		return -1;
 }
 
 int

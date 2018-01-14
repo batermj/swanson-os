@@ -99,6 +99,19 @@ cpu_init(struct cpu *cpu);
 uint32_t
 cpu_get_pc(const struct cpu *cpu);
 
+/** Reads a 8-bit value from memory.
+ * @param cpu An initialized CPU structure.
+ * @param addr The address of the 8-bit value to read.
+ * @param value An address to the variable that will
+ * contain the value read from memory.
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+cpu_read8(struct cpu *cpu,
+          uint32_t addr,
+          uint8_t *value);
+
 /** Reads a 16-bit value from memory.
  * @param cpu An initialized CPU structure.
  * @param addr The address of the 16-bit value to read.
