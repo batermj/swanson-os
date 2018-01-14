@@ -51,6 +51,7 @@ cpu_step_once(struct cpu *cpu) {
 	uint8_t cc_required;
 	uint8_t cc_actual;
 	uint8_t value8;
+	uint32_t value32;
 
 	pc = cpu_get_pc(cpu);
 
@@ -205,6 +206,16 @@ cpu_step_once(struct cpu *cpu) {
 			return 0;
 		}
 		cpu->regs[a] = value8;
+		break;
+	case 0x0a: /* ld.b */
+		a = get_a(inst);
+		b = get_b(inst);
+		err = cpu_read32(cpu, cpu->regs[b], &value32);
+		if (err != 0) {
+			cpu->exception = SIGSEGV;
+			return 0;
+		}
+		cpu->regs[a] = value32;
 		break;
 	default:
 		/* illegal instruction */

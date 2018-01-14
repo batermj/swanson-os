@@ -210,6 +210,19 @@ cpu_test_loading(struct cpu *cpu) {
 	assert(cpu_step(cpu, 1) == 1);
 	assert(cpu->regs[1] == 42);
 	assert(cpu_get_pc(cpu) == 2);
+
+	cpu_set_pc(cpu, 0x00);
+	code[0] = 0x0a; /* ld.l */
+	code[1] = 0x34;
+	code[5] = 0x01;
+	code[6] = 0x02;
+	code[7] = 0x03;
+	code[8] = 0x04;
+	cpu->regs[3] = 0x00;
+	cpu->regs[4] = 0x05;
+	assert(cpu_step(cpu, 1) == 1);
+	assert(cpu->regs[3] == 0x01020304);
+	assert(cpu_get_pc(cpu) == 2);
 }
 
 static void
