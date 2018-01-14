@@ -127,8 +127,6 @@ install(TARGETS "swanson" "swanson-pc"
 
 add_swanson_executable("gpt-tool" "gpt-tool.c")
 
-add_swanson_executable("ext4-tool" "ext4-tool.c")
-
 add_swanson_executable("ramfs-tool" "fs/ramfs/ramfs-tool.c")
 
 add_subdirectory("utilities")
