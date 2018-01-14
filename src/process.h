@@ -19,6 +19,8 @@
 #ifndef SWANSON_PROCESS_H
 #define SWANSON_PROCESS_H
 
+#include "path.h"
+
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -181,6 +183,11 @@ struct process {
 	/** The number of processes that are
 	 * children to this process. */
 	uintmax_t child_count;
+	/** The root directory of the process. */
+	struct path root;
+	/** The current working directory of
+	 * the process. */
+	struct path cwd;
 };
 
 /** Initializes the process.
