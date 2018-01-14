@@ -38,6 +38,37 @@
 #define get_v(inst) ((((int16_t)((inst & ((1 << 10) - 1)) << 6)) >> 6) << 1)
 
 static uintmax_t
+jsr(struct cpu *cpu,
+    uint32_t addr) {
+
+	int err;
+	uint32_t pc;
+
+	pc = cpu_get_pc(cpu);
+
+	/* Save slot in static chain */
+	err = cpu_push32(cpu, 0x00);
+	if (err != 0)
+		return 0;
+
+	/* Return address */
+	err = cpu_push32(cpu, pc + 2);
+	if (err != 0)
+		return 0;
+
+	/* Current frame pointer */
+	err = cpu_push32(cpu, cpu_get_fp(cpu));
+	if (err != 0)
+		return 0;
+
+	cpu_set_fp(cpu, cpu_get_sp(cpu));
+
+	cpu_set_pc(cpu, addr);
+
+	return 1;
+}
+
+static uintmax_t
 cpu_step_once(struct cpu *cpu) {
 
 	int err;
@@ -197,6 +228,8 @@ cpu_step_once(struct cpu *cpu) {
 		}
 		cpu_set_pc(cpu, pc);
 		return 1;
+	case 0x19:
+		return jsr(cpu, cpu->regs[get_a(inst)]);
 	case 0x1c: /* ld.b */
 		a = get_a(inst);
 		b = get_b(inst);
@@ -245,8 +278,42 @@ cpu_init(struct cpu *cpu) {
 }
 
 uint32_t
+cpu_get_fp(const struct cpu *cpu) {
+	return cpu->regs[0];
+}
+
+uint32_t
 cpu_get_pc(const struct cpu *cpu) {
 	return cpu->regs[16];
+}
+
+uint32_t
+cpu_get_sp(const struct cpu *cpu) {
+	return cpu->regs[1];
+}
+
+int
+cpu_push32(struct cpu *cpu,
+           uint32_t value) {
+
+	int err;
+	uint32_t sp;
+
+	sp = cpu_get_sp(cpu);
+	if (sp < 4) {
+		cpu->exception = SIGSEGV;
+		return -1;
+	}
+
+	sp -= 4;
+
+	err = cpu_write32(cpu, sp, value);
+	if (err != 0)
+		return -1;
+
+	cpu_set_sp(cpu, sp);
+
+	return 0;
 }
 
 int
@@ -285,9 +352,21 @@ cpu_recover(struct cpu *cpu) {
 }
 
 void
+cpu_set_fp(struct cpu *cpu,
+           uint32_t value) {
+	cpu->regs[0] = value;
+}
+
+void
 cpu_set_pc(struct cpu *cpu,
            uint32_t addr) {
 	cpu->regs[16] = addr;
+}
+
+void
+cpu_set_sp(struct cpu *cpu,
+           uint32_t value) {
+	cpu->regs[1] = value;
 }
 
 uintmax_t
@@ -302,4 +381,17 @@ cpu_step(struct cpu *cpu,
 	}
 
 	return i;
+}
+
+int
+cpu_write32(struct cpu *cpu,
+            uint32_t addr,
+            uint32_t value) {
+
+	if ((cpu->write32 == NULL) || (cpu->write32(cpu, addr, value) != 0)) {
+		cpu->exception = SIGSEGV;
+		return -1;
+	}
+
+	return 0;
 }

@@ -83,6 +83,26 @@ read32(void *cpu_ptr, uint32_t addr, uint32_t *value) {
 	return 0;
 }
 
+static int
+write32(void *cpu_ptr, uint32_t addr, uint32_t value) {
+
+	struct cpu *cpu;
+
+	cpu = (struct cpu *) cpu_ptr;
+
+	if (addr < sizeof(code)) {
+		code[addr + 0] = (value & 0xff) << 0x18;
+		code[addr + 1] = (value & 0xff) << 0x10;
+		code[addr + 2] = (value & 0xff) << 0x08;
+		code[addr + 3] = (value & 0xff) << 0x00;
+	} else {
+		cpu->exception = SIGBUS;
+		return -1;
+	}
+
+	return 0;
+}
+
 static void
 init_fake_cpu(struct cpu *cpu) {
 	cpu_init(cpu);
@@ -90,6 +110,7 @@ init_fake_cpu(struct cpu *cpu) {
 	cpu->read8 = read8;
 	cpu->read16 = read16;
 	cpu->read32 = read32;
+	cpu->write32 = write32;
 }
 
 static void
@@ -188,7 +209,7 @@ cpu_test_jumping(struct cpu *cpu) {
 	assert(cpu_get_pc(cpu) == 0x27);
 
 	cpu_set_pc(cpu, 0x00);
-	code[0] = 0x1a;
+	code[0] = 0x1a; /* jmpa */
 	code[1] = 0x00;
 	code[2] = 0x01;
 	code[3] = 0x02;
@@ -196,6 +217,15 @@ cpu_test_jumping(struct cpu *cpu) {
 	code[5] = 0x04;
 	assert(cpu_step(cpu, 1) == 1);
 	assert(cpu_get_pc(cpu) == 0x01020304);
+
+	cpu_set_pc(cpu, 0x00);
+	cpu_set_sp(cpu, 0x10);
+	cpu_set_fp(cpu, 0x10);
+	code[0] = 0x19; /* jsr */
+	code[1] = 0x30;
+	cpu->regs[3] = 0x20;
+	assert(cpu_step(cpu, 1) == 1);
+	assert(cpu_get_pc(cpu) == 0x20);
 }
 
 static void

@@ -92,12 +92,37 @@ struct cpu {
 void
 cpu_init(struct cpu *cpu);
 
+/** Get the current frame pointer.
+ * @param cpu An initialized CPU structure.
+ * */
+
+uint32_t
+cpu_get_fp(const struct cpu *cpu);
+
 /** Get the current program counter.
  * @param cpu An initialized CPU structure.
  * */
 
 uint32_t
 cpu_get_pc(const struct cpu *cpu);
+
+/** Get the current stack pointer.
+ * @param cpu An initialized CPU structure.
+ * @returns The current stack pointer.
+ * */
+
+uint32_t
+cpu_get_sp(const struct cpu *cpu);
+
+/** Push a 32-bit value onto the stack.
+ * @param cpu An initialized CPU structure.
+ * @param value The value to push to the stack.
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+cpu_push32(struct cpu *cpu,
+           uint32_t value);
 
 /** Reads a 8-bit value from memory.
  * @param cpu An initialized CPU structure.
@@ -147,6 +172,15 @@ cpu_read32(struct cpu *cpu,
 void
 cpu_recover(struct cpu *cpu);
 
+/** Set the current frame pointer.
+ * @param cpu An initialized CPU structure.
+ * @param value The new value of the frame pointer.
+ * */
+
+void
+cpu_set_fp(struct cpu *cpu,
+           uint32_t value);
+
 /** Set the program counter to a
  * specified address.
  * @param cpu An initialized CPU structure.
@@ -158,6 +192,15 @@ void
 cpu_set_pc(struct cpu *cpu,
            uint32_t addr);
 
+/** Set the stack pointer.
+ * @param cpu An initialized CPU structure.
+ * @param addr The new address of the stack pointer.
+ * */
+
+void
+cpu_set_sp(struct cpu *cpu,
+           uint32_t addr);
+
 /** Processes a specified number of instructions.
  * @param cpu An initialized cpu structure.
  * @param steps The number of steps (or instructions) to take.
@@ -167,6 +210,20 @@ cpu_set_pc(struct cpu *cpu,
 uintmax_t
 cpu_step(struct cpu *cpu,
          uintmax_t steps);
+
+/** Write a 32-bit value to memory.
+ * An invalid address will set the exception
+ * flag internally.
+ * @param cpu An initialized CPU structure.
+ * @param addr The address to write the 32-bit value at
+ * @param value The value to write to memory.
+ * @returns Zero on success, non-zero on failure.
+ * */
+
+int
+cpu_write32(struct cpu *cpu,
+            uint32_t addr,
+            uint32_t value);
 
 #ifdef __cplusplus
 } /* extern "C" { */
