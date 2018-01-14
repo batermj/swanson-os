@@ -109,18 +109,18 @@ add_custom_command(OUTPUT
 		                  --input "${CMAKE_CURRENT_BINARY_DIR}/initramfs.img"
 		                  --name "initramfs_data")
 
-add_swanson_executable("swanson-pc"
+add_swanson_executable("swanson-os"
 	"main.c"
 	"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.h"
 	"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.c")
 
-add_custom_command(TARGET "swanson-pc"
+add_custom_command(TARGET "swanson-os"
 	POST_BUILD
 	COMMAND $<TARGET_FILE:gpt-tool> "--create" "--image-path" "swanson.img" "format"
 	COMMAND $<TARGET_FILE:gpt-tool> "--image-path" "swanson.img" "add-partition"
 	COMMENT "Generating swanson.img")
 
-install(TARGETS "swanson" "swanson-pc"
+install(TARGETS "swanson" "swanson-os"
 	RUNTIME DESTINATION "bin"
 	ARCHIVE DESTINATION "lib"
 	LIBRARY DESTINATION "lib")
