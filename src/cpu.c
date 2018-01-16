@@ -82,6 +82,7 @@ cpu_step_once(struct cpu *cpu) {
 	uint8_t cc_required;
 	uint8_t cc_actual;
 	uint8_t value8;
+	uint16_t value16;
 	uint32_t value32;
 
 	pc = cpu_get_pc(cpu);
@@ -234,21 +235,25 @@ cpu_step_once(struct cpu *cpu) {
 		a = get_a(inst);
 		b = get_b(inst);
 		err = cpu_read8(cpu, cpu->regs[b], &value8);
-		if (err != 0) {
-			cpu->exception = SIGSEGV;
+		if (err != 0)
 			return 0;
-		}
 		cpu->regs[a] = value8;
 		break;
-	case 0x0a: /* ld.b */
+	case 0x0a: /* ld.l */
 		a = get_a(inst);
 		b = get_b(inst);
 		err = cpu_read32(cpu, cpu->regs[b], &value32);
-		if (err != 0) {
-			cpu->exception = SIGSEGV;
+		if (err != 0)
 			return 0;
-		}
 		cpu->regs[a] = value32;
+		break;
+	case 0x21: /* ld.s */
+		a = get_a(inst);
+		b = get_b(inst);
+		err = cpu_read16(cpu, cpu->regs[b], &value16);
+		if (err != 0)
+			return 0;
+		cpu->regs[a] = value16;
 		break;
 	default:
 		/* illegal instruction */
@@ -320,30 +325,39 @@ int
 cpu_read8(struct cpu *cpu,
            uint32_t addr,
            uint8_t *value) {
-	if (cpu->read8 != NULL)
-		return cpu->read8(cpu->data, addr, value);
-	else
+
+	if ((cpu->read8 == NULL) || (cpu->read8(cpu->data, addr, value) != 0)) {
+		cpu->exception = SIGSEGV;
 		return -1;
+	}
+
+	return 0;
 }
 
 int
 cpu_read16(struct cpu *cpu,
            uint32_t addr,
            uint16_t *value) {
-	if (cpu->read16 != NULL)
-		return cpu->read16(cpu->data, addr, value);
-	else
+
+	if ((cpu->read16 == NULL) || (cpu->read16(cpu->data, addr, value) != 0)) {
+		cpu->exception = SIGSEGV;
 		return -1;
+	}
+
+	return 0;
 }
 
 int
 cpu_read32(struct cpu *cpu,
            uint32_t addr,
            uint32_t *value) {
-	if (cpu->read32 != NULL)
-		return cpu->read32(cpu->data, addr, value);
-	else
+
+	if ((cpu->read32 == NULL) || (cpu->read32(cpu->data, addr, value) != 0)) {
+		cpu->exception = SIGSEGV;
 		return -1;
+	}
+
+	return 0;
 }
 
 void

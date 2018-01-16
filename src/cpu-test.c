@@ -29,14 +29,11 @@ unsigned char code[256];
 static int
 read8(void *cpu_ptr, uint32_t addr, uint8_t *value) {
 
-	struct cpu *cpu;
-
-	cpu = (struct cpu *) cpu_ptr;
+	(void) cpu_ptr;
 
 	if (addr < sizeof(code)) {
 		*value = code[addr];
 	} else {
-		cpu->exception = SIGBUS;
 		return -1;
 	}
 
@@ -46,16 +43,13 @@ read8(void *cpu_ptr, uint32_t addr, uint8_t *value) {
 static int
 read16(void *cpu_ptr, uint32_t addr, uint16_t *value) {
 
-	struct cpu *cpu;
-
-	cpu = (struct cpu *) cpu_ptr;
+	(void) cpu_ptr;
 
 	if (addr < sizeof(code)) {
 		*value = 0;
 		*value |= code[addr + 0] << 0x08;
 		*value |= code[addr + 1] << 0x00;
 	} else {
-		cpu->exception = SIGBUS;
 		return -1;
 	}
 
@@ -65,9 +59,7 @@ read16(void *cpu_ptr, uint32_t addr, uint16_t *value) {
 static int
 read32(void *cpu_ptr, uint32_t addr, uint32_t *value) {
 
-	struct cpu *cpu;
-
-	cpu = (struct cpu *) cpu_ptr;
+	(void) cpu_ptr;
 
 	if (addr < sizeof(code)) {
 		*value = 0;
@@ -76,7 +68,6 @@ read32(void *cpu_ptr, uint32_t addr, uint32_t *value) {
 		*value |= code[addr + 2] << 0x08;
 		*value |= code[addr + 3] << 0x00;
 	} else {
-		cpu->exception = SIGBUS;
 		return -1;
 	}
 
@@ -252,6 +243,17 @@ cpu_test_loading(struct cpu *cpu) {
 	cpu->regs[4] = 0x05;
 	assert(cpu_step(cpu, 1) == 1);
 	assert(cpu->regs[3] == 0x01020304);
+	assert(cpu_get_pc(cpu) == 2);
+
+	cpu_set_pc(cpu, 0x00);
+	code[0] = 0x21; /* ld.s */
+	code[1] = 0x34;
+	code[5] = 0xaa;
+	code[6] = 0xbb;
+	cpu->regs[3] = 0x00;
+	cpu->regs[4] = 0x05;
+	assert(cpu_step(cpu, 1) == 1);
+	assert(cpu->regs[3] == 0xaabb);
 	assert(cpu_get_pc(cpu) == 2);
 }
 
