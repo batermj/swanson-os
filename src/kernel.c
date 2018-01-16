@@ -151,6 +151,7 @@ kernel_init(struct kernel *kernel) {
 	kernel->disk_count = 0;
 	partition_init(&kernel->root_partition);
 	ramfs_init(&kernel->initramfs);
+	process_init(&kernel->init);
 }
 
 void

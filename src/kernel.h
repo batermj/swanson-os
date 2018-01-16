@@ -25,6 +25,7 @@
 #include "fs/ramfs/fs.h"
 #include "memmap.h"
 #include "partition.h"
+#include "process.h"
 #include "sstream.h"
 
 #include <stdint.h>
@@ -66,6 +67,8 @@ struct kernel {
 	struct any_fs root_fs;
 	/** Initial ramfs file system. */
 	struct ramfs initramfs;
+	/** The root process. */
+	struct process init;
 };
 
 /** Initializes the kernel structure.

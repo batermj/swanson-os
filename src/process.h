@@ -19,8 +19,10 @@
 #ifndef SWANSON_PROCESS_H
 #define SWANSON_PROCESS_H
 
+#include "cpu.h"
 #include "path.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
