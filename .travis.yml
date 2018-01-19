@@ -1,8 +1,21 @@
-language: c
+language: cpp
 
 compiler:
-  - gcc
-  - clang
+- gcc
+- clang
+
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    - llvm-toolchain-precise-5.0
+    packages:
+    - g++-7
+    - clang-5.0
+
+install:
+- "[ $CXX = g++ ] && export CXX=g++-7 || true"
+- "[ $CXX = clang++ ] && export CXX=clang++-5.0 || true"
 
 script:
   - mkdir build && cd build
