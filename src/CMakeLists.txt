@@ -111,8 +111,7 @@ add_custom_command(OUTPUT
 		                  --input "${CMAKE_CURRENT_BINARY_DIR}/initramfs.img"
 		                  --name "initramfs_data")
 
-add_swanson_executable("swanson-os"
-	"main.c"
+add_swanson_executable("swanson-os" "swanson-os.cpp"
 	"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.h"
 	"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.c")
 

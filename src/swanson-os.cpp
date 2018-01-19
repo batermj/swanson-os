@@ -28,21 +28,18 @@
 #include "initramfs-data.h"
 #endif /* SWANSON_WITH_INITRAMFS_DATA_H */
 
-static int
-add_memory_from_options(struct kernel *kernel,
+namespace {
+
+int add_memory_from_options(struct kernel *kernel,
                         const struct options *options) {
 
-	int err;
-	void *memory;
-	unsigned long int memory_size;
+	auto memory_size = options_get_memory(options);
 
-	memory_size = options_get_memory(options);
-
-	memory = malloc(memory_size);
-	if (memory == NULL)
+	auto memory = malloc(memory_size);
+	if (memory == nullptr)
 		return -1;
 
-	err = kernel_add_memory(kernel, memory, memory_size);
+	auto err = kernel_add_memory(kernel, memory, memory_size);
 	if (err != 0) {
 		free(memory);
 		return err;
@@ -51,24 +48,18 @@ add_memory_from_options(struct kernel *kernel,
 	return 0;
 }
 
-static int
-add_disks_from_options(struct kernel *kernel,
-                       struct options *options) {
+int add_disks_from_options(struct kernel *kernel,
+                           struct options *options) {
 
-	int err;
-	struct disk *disk;
-	unsigned long int disk_count;
-	unsigned long int i;
+	auto disk_count = options_get_disk_count(options);
 
-	disk_count = options_get_disk_count(options);
+	for (decltype(disk_count) i = 0; i < disk_count; i++) {
 
-	for (i = 0; i < disk_count; i++) {
-
-		disk = options_get_disk(options, i);
-		if (disk == NULL)
+		auto disk = options_get_disk(options, i);
+		if (disk == nullptr)
 			continue;
 
-		err = kernel_add_disk(kernel, disk);
+		auto err = kernel_add_disk(kernel, disk);
 		if (err != 0)
 			continue;
 	}
@@ -76,16 +67,14 @@ add_disks_from_options(struct kernel *kernel,
 	return 0;
 }
 
-static int
-parse_args(struct kernel *kernel,
-           int argc, const char **argv) {
+int parse_args(struct kernel *kernel,
+               int argc, const char **argv) {
 
-	int err;
 	struct options options;
 
 	options_init(&options);
 
-	err = options_parse_args(&options, argc, argv);
+	auto err = options_parse_args(&options, argc, argv);
 	if (err != 0) {
 		options_free(&options);
 		return err;
@@ -108,25 +97,23 @@ parse_args(struct kernel *kernel,
 	return 0;
 }
 
-static void
-free_kernel_memory(struct kernel *kernel) {
-	unsigned long int i;
-	for (i = 0; i < kernel->memmap.unused_section_count; i++) {
+void free_kernel_memory(struct kernel *kernel) {
+
+	for (auto i = 0UL; i < kernel->memmap.unused_section_count; i++)
 		free(kernel->memmap.unused_section_array[0].addr);
-	}
+
 	kernel_free(kernel);
 }
 
-int
-main(int argc, const char **argv) {
+} // namespace
 
-	int err;
-	enum kernel_exitcode exitcode;
+int main(int argc, const char **argv) {
+
 	struct kernel kernel;
 
 	kernel_init(&kernel);
 
-	err = parse_args(&kernel, argc - 1, &argv[1]);
+	auto err = ::parse_args(&kernel, argc - 1, &argv[1]);
 	if (err != 0) {
 		free_kernel_memory(&kernel);
 		return EXIT_FAILURE;
@@ -140,9 +127,9 @@ main(int argc, const char **argv) {
 		return EXIT_FAILURE;
 	}
 
-	exitcode = kernel_main(&kernel);
+	auto exitcode = kernel_main(&kernel);
 
-	free_kernel_memory(&kernel);
+	::free_kernel_memory(&kernel);
 
 	if (exitcode == KERNEL_SUCCESS)
 		return EXIT_SUCCESS;
