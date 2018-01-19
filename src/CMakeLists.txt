@@ -19,6 +19,7 @@ if (MSVC)
 endif (MSVC)
 
 if (CMAKE_COMPILER_IS_GNUCC OR SWANSON_WITH_CLANG)
+	set (CMAKE_CXX_FLAGS "-Wall -Wextra -Werror -Wfatal-errors -std=c++17")
 	list (APPEND SWANSON_CFLAGS -Wall -Wextra -Werror -Wfatal-errors)
 	list (APPEND SWANSON_CFLAGS -DSWANSON_WITH_INITRAMFS_DATA_H=1)
 endif (CMAKE_COMPILER_IS_GNUCC OR SWANSON_WITH_CLANG)
