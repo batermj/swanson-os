@@ -18,6 +18,8 @@
 #ifndef SWANSON_STREAM_HPP
 #define SWANSON_STREAM_HPP
 
+#include <cstdint>
+
 namespace swanson {
 
 class Stream {
@@ -27,11 +29,30 @@ public:
 	/// Writes a buffer to the stream.
 	/// @param buf The buffer containing the data to write.
 	/// @param bufSize The number of bytes to write.
-	virtual void Write(const void *buf, uintmax_t bufSize) = 0;
+	virtual void Write(const void *buf, uint64_t bufSize) = 0;
 	/// Reads data into a buffer.
 	/// @param buf The buffer to put the data into.
 	/// @param bufSize The number of bytes to read.
-	virtual void Read(void *buf, uintmax_t bufSize) = 0;
+	virtual void Read(void *buf, uint64_t bufSize) = 0;
+	/// Set the position of the stream.
+	/// @param position The new position
+	/// of the stream.
+	virtual void SetPosition(uint64_t position) = 0;
+	/// Decode a 64-bit, big-endian number
+	/// from the stream.
+	/// @param n The variable to assign the
+	/// decoded value.
+	void DecodeBE(uint64_t &n);
+	/// Decode a 32-bit, big-endian number
+	/// from the stream.
+	/// @param n The variable to assign the
+	/// decoded value.
+	void DecodeBE(uint32_t &n);
+	/// Decode a 16-bit, big-endian number
+	/// from the stream.
+	/// @param n The variable to assign the
+	/// decoded value.
+	void DecodeBE(uint16_t &n);
 };
 
 } // namespace swanson
