@@ -19,7 +19,9 @@
 #include <swanson/kernel.hpp>
 
 #include <swanson/exception.hpp>
+#include <swanson/stream.hpp>
 
+#include "fs/ramfs/file.h"
 #include "debug.h"
 #include "disk.h"
 #include "gpt.h"
@@ -27,6 +29,39 @@
 
 #include <cstdlib>
 #include <cstring>
+
+namespace {
+
+class InitStream final : public swanson::Stream{
+	const void *data;
+	uintmax_t size;
+	uintmax_t offset;
+public:
+	InitStream(const void *data_, uintmax_t size_) noexcept {
+		data = data_;
+		size = size_;
+		offset = 0;
+	}
+	~InitStream() {
+
+	}
+	void Read(void *buf, uintmax_t bufSize) {
+
+		if ((bufSize + offset) >= size)
+			throw swanson::Exception("Overflow has been detected.");
+
+		auto data8 = (const unsigned char *) data;
+
+		std::memcpy(buf, &data8[offset], bufSize);
+
+		offset += bufSize;
+	}
+	void Write(const void *, uintmax_t) {
+		throw swanson::Exception("Write operations not permitted.");
+	}
+};
+
+} // namespace
 
 namespace swanson {
 
@@ -71,13 +106,13 @@ void Kernel::LoadInitRamfs(const void *buf, uintmax_t buf_size) {
 
 ExitCode Kernel::Main() {
 
-	struct ramfs_file *init;
-
-	init = ramfs_open_file(&initramfs, "/init");
+	auto init = ramfs_open_file(&initramfs, "/init");
 	if (init == NULL) {
 		debug("Failed to open 'init'.\n");
 		return ExitCode::Failure;
 	}
+
+	::InitStream initStream(init->data, init->data_size);
 
 	return ExitCode::Success;
 }
