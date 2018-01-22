@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Taylor Holberton
+/* Copyright (C) 2017 - 2018 Taylor Holberton
  *
  * This file is part of Swanson.
  *
@@ -16,18 +16,14 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SWANSON_ELF_TEST_H
-#define SWANSON_ELF_TEST_H
+#ifndef SWANSON_ELF_TEST_HPP
+#define SWANSON_ELF_TEST_HPP
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace swanson::tests {
 
-void
-elf_test(void);
+/// Test the ELF file functions.
+void TestELF();
 
-#ifdef __cplusplus
-} /* extern "C" { */
-#endif
+} // namespace swanson::tests
 
-#endif /* SWANSON_ELF_TEST_H */
+#endif /* SWANSON_ELF_TEST_HPP */

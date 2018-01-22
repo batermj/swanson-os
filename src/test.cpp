@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Taylor Holberton
+/* Copyright (C) 2017 - 2018 Taylor Holberton
  *
  * This file is part of Swanson.
  *
@@ -16,11 +16,12 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "test.h"
+#include "test.hpp"
+
+#include "elf-test.hpp"
 
 #include "cpu-test.h"
 #include "crc32-test.h"
-#include "elf-test.h"
 #include "gpt-test.h"
 #include "memmap-test.h"
 #include "options-test.h"
@@ -30,17 +31,22 @@
 
 int
 main(void) {
-	run_tests();
+	swanson::tests::RunTests();
 	return EXIT_SUCCESS;
 }
 
-void
-run_tests(void) {
+namespace swanson::tests {
+
+void RunTests() {
+	// C++ tests
+	TestELF();
+	// Standard C tests
 	cpu_test();
 	crc32_test();
-	elf_test();
 	gpt_test();
 	memmap_test();
 	options_test();
 	path_test();
 }
+
+} // namespace swanson::tests

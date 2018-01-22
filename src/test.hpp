@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Taylor Holberton
+/* Copyright (C) 2017 - 2018 Taylor Holberton
  *
  * This file is part of Swanson.
  *
@@ -16,17 +16,13 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SWANSON_TEST_H
-#define SWANSON_TEST_H
+#ifndef SWANSON_TEST_HPP
+#define SWANSON_TEST_HPP
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace swanson::tests {
 
-void run_tests(void);
+void RunTests();
 
-#ifdef __cplusplus
-} /* extern "C" { */
-#endif
+} // namespace swanson::tests
 
-#endif /* SWANSON_TEST_H */
+#endif /* SWANSON_TEST_HPP */
