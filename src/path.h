@@ -33,7 +33,7 @@ struct path_name {
 	/** The number of characters
 	 * in the name. */
 	unsigned long int size;
-} *name_array;
+};
 
 /** A file system path.
  * */
