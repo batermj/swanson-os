@@ -18,6 +18,8 @@
 
 #include <swanson/kernel.hpp>
 
+#include <swanson/exception.hpp>
+
 #include "debug.h"
 #include "disk.h"
 #include "gpt.h"
@@ -45,11 +47,8 @@ void Kernel::AddDisk(disk *disk) {
 }
 
 void Kernel::AddMemory(void *addr, uintmax_t size) {
-
-	auto error = memmap_add(&mmap, addr, size);
-	if (error != MEMMAP_ERROR_NONE) {
-		/* TODO : error message. */
-	}
+	if (memmap_add(&mmap, addr, size) != MEMMAP_ERROR_NONE)
+		throw Exception("Failed to add memory segment.");
 }
 
 void Kernel::LoadInitRamfs(const void *buf, uintmax_t buf_size) {
