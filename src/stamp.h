@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Taylor Holberton
+/* Copyright (C) 2018 Taylor Holberton
  *
  * This file is part of Swanson.
  *
