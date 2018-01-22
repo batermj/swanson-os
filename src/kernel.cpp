@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Taylor Holberton
+/* Copyright (C) 2017 - 2018 Taylor Holberton
  *
  * This file is part of Swanson.
  *
@@ -34,10 +34,10 @@ namespace {
 
 class InitStream final : public swanson::Stream{
 	const void *data;
-	uintmax_t size;
-	uintmax_t offset;
+	uint64_t size;
+	uint64_t offset;
 public:
-	InitStream(const void *data_, uintmax_t size_) noexcept {
+	InitStream(const void *data_, uint64_t size_) noexcept {
 		data = data_;
 		size = size_;
 		offset = 0;
@@ -45,7 +45,7 @@ public:
 	~InitStream() {
 
 	}
-	void Read(void *buf, uintmax_t bufSize) {
+	void Read(void *buf, uint64_t bufSize) {
 
 		if ((bufSize + offset) >= size)
 			throw swanson::Exception("Overflow has been detected.");
@@ -56,7 +56,10 @@ public:
 
 		offset += bufSize;
 	}
-	void Write(const void *, uintmax_t) {
+	void SetPosition(uint64_t position) {
+		offset = position;
+	}
+	void Write(const void *, uint64_t) {
 		throw swanson::Exception("Write operations not permitted.");
 	}
 };
