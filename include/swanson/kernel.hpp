@@ -22,14 +22,16 @@
 #include "fs/ramfs/fs.h"
 #include "memmap.h"
 #include "partition.h"
-#include "process.h"
 #include "sstream.h"
 
+#include <memory>
 #include <vector>
 
 #include <cstdint>
 
 namespace swanson {
+
+class Process;
 
 /// The code returned from the kernel entry point.
 /// Indicates whether or not the kernel ran without a panic.
@@ -56,8 +58,8 @@ class Kernel final {
 	any_fs root_fs;
 	/// Initial ramfs file system.
 	ramfs initramfs;
-	/// The root process.
-	process init;
+	/// The array of processes.
+	std::vector<std::shared_ptr<Process>> processes;
 public:
 	/// Default constructor.
 	Kernel() noexcept;

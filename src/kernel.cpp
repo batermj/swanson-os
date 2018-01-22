@@ -70,7 +70,6 @@ Kernel::Kernel() noexcept {
 	memmap_init(&mmap);
 	partition_init(&root_partition);
 	ramfs_init(&initramfs);
-	process_init(&init);
 }
 
 Kernel::~Kernel() {
