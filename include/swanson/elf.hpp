@@ -94,7 +94,7 @@ public:
 	void Resize(uintmax_t size);
 	/// Get the virtual address of the segment.
 	/// @returns The virtual address of the segment.
-	auto GetAddr() { return virtualAddress; }
+	auto GetAddress() { return virtualAddress; }
 	/// Get the data pointer for the segment.
 	/// @returns The segment data (nullptr if
 	/// the segment doesn't currently have data.
