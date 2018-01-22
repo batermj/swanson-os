@@ -130,7 +130,7 @@ public:
 	/// Get the number of segments in the file.
 	auto GetSegmentCount() { return segments.size(); }
 	/// Get a segment pointer from the file.
-	auto GetSegment(auto index) { return segments[index]; }
+	auto GetSegment(uint64_t index) { return segments[index]; }
 	/// Get the beginning segment iterator.
 	/// Used for loops.
 	/// @returns The beginning iterator.
