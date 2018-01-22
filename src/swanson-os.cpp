@@ -16,123 +16,141 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <swanson/exception.hpp>
+#include <swanson/kernel.hpp>
 
 #include "debug.h"
-#include "kernel.h"
 #include "options.h"
 
 #ifdef SWANSON_WITH_INITRAMFS_DATA_H
 #include "initramfs-data.h"
 #endif /* SWANSON_WITH_INITRAMFS_DATA_H */
 
+#include <iostream>
+
+#include <cstdlib>
+#include <cstring>
+
 namespace {
 
-int add_memory_from_options(struct kernel *kernel,
-                        const struct options *options) {
+/// A section of memory, described
+/// by an address and size.
+struct MemorySection {
+	/// The address of the memory section.
+	void *addr;
+	/// The number of bytes allocated by
+	/// the section.
+	uintmax_t size;
+};
 
-	auto memory_size = options_get_memory(options);
+/// The hosted environment for the
+/// kernel to run in. Contains the
+/// memory and the disks that the
+/// kernel will use to run the operating
+/// system.
+class KernelHost {
+	/// The memory sections that will be
+	/// used by the kernel.
+	std::vector<MemorySection> memorySections;
+	/// The kernel that is being hosted.
+	swanson::Kernel &kernel;
+public:
+	/// Default constructor
+	KernelHost(swanson::Kernel &kernel_) noexcept : kernel(kernel_) {
 
-	auto memory = malloc(memory_size);
-	if (memory == nullptr)
-		return -1;
-
-	auto err = kernel_add_memory(kernel, memory, memory_size);
-	if (err != 0) {
-		free(memory);
-		return err;
 	}
-
-	return 0;
-}
-
-int add_disks_from_options(struct kernel *kernel,
-                           struct options *options) {
-
-	auto disk_count = options_get_disk_count(options);
-
-	for (decltype(disk_count) i = 0; i < disk_count; i++) {
-
-		auto disk = options_get_disk(options, i);
-		if (disk == nullptr)
-			continue;
-
-		auto err = kernel_add_disk(kernel, disk);
-		if (err != 0)
-			continue;
+	/// Default constructor.
+	~KernelHost() {
+		for (auto &memorySection : memorySections)
+			std::free(memorySection.addr);
 	}
+	/// Add a section of memory for the kernel to use.
+	/// @param size The number of bytes that the memory
+	/// section will contain.
+	void AddMemorySection(uintmax_t size) {
 
-	return 0;
-}
+		MemorySection memorySection;
+		memorySection.addr = std::malloc(size);
+		memorySection.size = size;
+		memorySections.push_back(memorySection);
 
-int parse_args(struct kernel *kernel,
-               int argc, const char **argv) {
-
-	struct options options;
-
-	options_init(&options);
-
-	auto err = options_parse_args(&options, argc, argv);
-	if (err != 0) {
-		options_free(&options);
-		return err;
+		kernel.AddMemory(memorySection.addr, memorySection.size);
 	}
+	/// Read the command line arguments
+	/// and adjust the kernel host accordingly.
+	/// @param argc The number of arguments in the
+	/// argument array.
+	/// @param argv The argument array. This does not
+	/// include the name of the program, which is typically
+	/// the first argument in a standard entry point.
+	void ReadArgs(int argc, const char **argv) {
 
-	err = add_memory_from_options(kernel, &options);
-	if (err != 0) {
-		options_free(&options);
-		return err;
+		options opts;
+
+		options_init(&opts);
+
+		auto err = options_parse_args(&opts, argc, argv);
+		if (err != 0) {
+			options_free(&opts);
+			throw swanson::Exception("Failed to parse command line arguments.");
+		}
+
+		ReadOptions(opts);
+
+		options_free(&opts);
 	}
+	/// Read the options that were passed via
+	/// the command line.
+	/// @param opts The options structure to read.
+	void ReadOptions(options &opts) {
 
-	err = add_disks_from_options(kernel, &options);
-	if (err != 0) {
-		options_free(&options);
-		return err;
+		auto memorySize = options_get_memory(&opts);
+
+		AddMemorySection(memorySize);
+
+		auto diskCount = options_get_disk_count(&opts);
+		for (decltype(diskCount) i = 0; i < diskCount; i++) {
+
+			auto disk = options_get_disk(&opts, i);
+			if (disk == nullptr)
+				continue;
+
+			kernel.AddDisk(disk);
+		}
 	}
+};
 
-	options_free(&options);
+/// The entry point of the program.
+/// The entry point is put here so that
+/// exception handling could be implemented
+/// by the caller.
+int Main(int argc, const char **argv) {
 
-	return 0;
-}
+	swanson::Kernel kernel;
 
-void free_kernel_memory(struct kernel *kernel) {
+	::KernelHost kernelHost(kernel);
 
-	for (auto i = 0UL; i < kernel->memmap.unused_section_count; i++)
-		free(kernel->memmap.unused_section_array[0].addr);
+	kernelHost.ReadArgs(argc - 1, &argv[1]);
 
-	kernel_free(kernel);
+	kernel.LoadInitRamfs(initramfs_data, initramfs_data_size);
+
+	auto exitCode = kernel.Main();
+
+	if (exitCode == swanson::ExitCode::Success)
+		return EXIT_SUCCESS;
+	else
+		return EXIT_FAILURE;
 }
 
 } // namespace
 
 int main(int argc, const char **argv) {
-
-	struct kernel kernel;
-
-	kernel_init(&kernel);
-
-	auto err = ::parse_args(&kernel, argc - 1, &argv[1]);
-	if (err != 0) {
-		free_kernel_memory(&kernel);
+	try {
+		return Main(argc, argv);
+	} catch (const swanson::Exception &exception) {
+		std::cerr << "Error: " << exception.What() << std::endl;
+		return EXIT_FAILURE;
+	} catch (...) {
 		return EXIT_FAILURE;
 	}
-
-	err = kernel_load_initramfs(&kernel,
-	                            initramfs_data,
-	                            initramfs_data_size);
-	if (err != 0) {
-		free_kernel_memory(&kernel);
-		return EXIT_FAILURE;
-	}
-
-	auto exitcode = kernel_main(&kernel);
-
-	::free_kernel_memory(&kernel);
-
-	if (exitcode == KERNEL_SUCCESS)
-		return EXIT_SUCCESS;
-	else
-		return EXIT_FAILURE;
 }

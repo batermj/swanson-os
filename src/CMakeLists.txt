@@ -30,6 +30,9 @@ include("AddSwansonLibrary")
 include("AddSwansonExecutable")
 include("AddSwansonTest")
 
+set (SRCDIR "${PROJECT_SOURCE_DIR}/src")
+set (INCDIR "${PROJECT_SOURCE_DIR}/include/swanson")
+
 add_swanson_library("swanson"
 	"assert.h"
 	"assert.c"
@@ -67,8 +70,8 @@ add_swanson_library("swanson"
 	"gpt-source.c"
 	"guid.h"
 	"guid.c"
-	"kernel.h"
-	"kernel.c"
+	"${INCDIR}/kernel.hpp"
+	"${SRCDIR}/kernel.cpp"
 	"memmap.h"
 	"memmap.c"
 	"module.h"
