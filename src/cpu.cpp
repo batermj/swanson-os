@@ -258,7 +258,7 @@ void CPU::StepOnce() {
 	case 0x31: /* div */
 		a = get_a(inst);
 		b = get_b(inst);
-		if (b == 0) {
+		if (regs[b] == 0) {
 			HandleDivideByZero();
 			return;
 		}
@@ -313,6 +313,7 @@ void CPU::Push32(uint32_t value) {
 	stackPointer -= 4;
 
 	auto &memoryBus = GetMemoryBus();
+
 	memoryBus.Write32(stackPointer, value);
 
 	SetStackPointer(stackPointer);
