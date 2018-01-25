@@ -97,6 +97,10 @@ int File::Decode(Stream &stream) {
 	if (machine_type != 0xdf)
 		return -1;
 
+	/* Get entry point of the program. */
+	stream.SetPosition(0x18);
+	stream.DecodeBE(entryPoint);
+
 	/* Get program header offset */
 	uint32_t ph_offset;
 	stream.SetPosition(0x1c);
