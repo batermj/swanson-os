@@ -51,6 +51,11 @@ public:
 	                           executePermission(false) { }
 	/// Default deconstructor.
 	~MemorySection() { }
+	/// Get the number of bytes occupied by
+	/// the memory section.
+	/// @returns The number of bytes occupied
+	/// by the memory section.
+	auto GetSize() const noexcept { return bytes.size(); }
 	/// Indicate whether or not read
 	/// operations may occur at this section.
 	/// @param state True if read operations are

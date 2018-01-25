@@ -60,7 +60,7 @@ uint32_t MemorySection::Read32(uint32_t addr) const {
 
 	uint32_t offset = addr - address;
 
-	if ((offset + 4) >= bytes.size())
+	if ((offset + 4) > bytes.size())
 		throw Segfault(addr);
 
 	uint32_t value = 0;
@@ -79,7 +79,7 @@ uint16_t MemorySection::Read16(uint32_t addr) const {
 
 	uint32_t offset = addr - address;
 
-	if ((offset + 2) >= bytes.size())
+	if ((offset + 2) > bytes.size())
 		throw Segfault(addr);
 
 	uint16_t value = 0;
@@ -96,7 +96,7 @@ uint8_t MemorySection::Read8(uint32_t addr) const {
 
 	uint32_t offset = addr - address;
 
-	if (offset >= bytes.size())
+	if ((offset + 1) > bytes.size())
 		throw Segfault(addr);
 
 	return (uint8_t) bytes[offset];
@@ -109,7 +109,7 @@ void MemorySection::Write32(uint32_t addr, uint32_t value) {
 
 	uint32_t offset = addr - address;
 
-	if ((offset + 4) >= bytes.size())
+	if ((offset + 4) > bytes.size())
 		throw Segfault(addr);
 
 	bytes[offset + 0] = (value >> 0x18) & 0xff;
@@ -125,7 +125,7 @@ void MemorySection::Write16(uint32_t addr, uint16_t value) {
 
 	uint32_t offset = addr - address;
 
-	if ((offset + 2) >= bytes.size())
+	if ((offset + 2) > bytes.size())
 		throw Segfault(addr);
 
 	bytes[offset + 0] = (value << 0x08) & 0xff;
@@ -139,7 +139,7 @@ void MemorySection::Write8(uint32_t addr, uint8_t value) {
 
 	uint32_t offset = addr - address;
 
-	if ((offset + 2) >= bytes.size())
+	if ((offset + 1) > bytes.size())
 		throw Segfault(addr);
 
 	bytes[offset] = value;
