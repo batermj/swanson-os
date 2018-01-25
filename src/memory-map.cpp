@@ -22,6 +22,16 @@
 
 namespace swanson {
 
+uint32_t MemoryMap::GetSize() const noexcept {
+
+	uint32_t size = 0;
+
+	for (auto &section : sections)
+		size += section->GetSize();
+
+	return size;
+}
+
 uint32_t MemoryMap::Exec32(uint32_t addr) const {
 
 	for (const auto &section : sections) {

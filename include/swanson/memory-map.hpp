@@ -36,6 +36,11 @@ class MemoryMap final : public MemoryBus {
 public:
 	/// Default deconstructor
 	~MemoryMap() { }
+	/// Get the total number of bytes that may
+	/// be contained by the memory map.
+	/// @returns The number of bytes that may
+	/// be contained by the memory map.
+	uint32_t GetSize() const noexcept;
 	/// Read a 32-bit value from memory.
 	/// @param addr The address to read from.
 	/// @returns The value from memory.
