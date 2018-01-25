@@ -94,16 +94,25 @@ public:
 	void Resize(uintmax_t size);
 	/// Get the virtual address of the segment.
 	/// @returns The virtual address of the segment.
-	auto GetAddress() { return virtualAddress; }
+	auto GetAddress() const noexcept { return virtualAddress; }
 	/// Get the data pointer for the segment.
 	/// @returns The segment data (nullptr if
 	/// the segment doesn't currently have data.
-	auto GetData() { return data; }
+	auto GetData() const noexcept { return data; }
 	/// Get the size of the segment, in bytes.
 	/// This is the size of the actual segment
 	/// data.
 	/// @returns The size of the segment.
-	auto GetSize() { return dataSize; }
+	auto GetSize() const noexcept { return dataSize; }
+	/// Indicates whether or not read operations
+	/// are allowed in this segment.
+	auto ReadAllowed() const noexcept { return readPermission; }
+	/// Indicates whether or not write operations
+	/// are allowed in this segment.
+	auto WriteAllowed() const noexcept { return writePermission; }
+	/// Indicates whether or not this segment
+	/// can be executed.
+	auto ExecuteAllowed() const noexcept { return executePermission; }
 };
 
 /// Contains the contents of an ELF file that
@@ -111,9 +120,11 @@ public:
 class File {
 	/// The segments contained by the ELF file.
 	std::vector<std::shared_ptr<Segment>> segments;
+	/// The memory address to start the process at.
+	uint32_t entryPoint;
 public:
 	/// Default constructor
-	File() noexcept { }
+	File() noexcept : entryPoint(0x00) { }
 	/// Default deconstructor
 	~File() { }
 	/// Decode an ELF file from a stream.
@@ -127,6 +138,9 @@ public:
 	/// @param segment The segment
 	/// to add to the file.
 	void Push(std::shared_ptr<Segment> &segment);
+	/// Get the entry point of the ELF executable.
+	/// @returns The 32-bit address of the entry point.
+	auto GetEntryPoint() const noexcept { return entryPoint; }
 	/// Get the number of segments in the file.
 	auto GetSegmentCount() { return segments.size(); }
 	/// Get a segment pointer from the file.
