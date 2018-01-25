@@ -17,9 +17,16 @@
 
 #include <swanson/memory-section.hpp>
 
-#include <swanson/exception.hpp>
+#include <swanson/segfault.hpp>
+
+#include <cstring>
 
 namespace swanson {
+
+void MemorySection::CopyData(const void *data, uint32_t size) {
+	bytes.resize(size);
+	std::memcpy(bytes.data(), data, size);
+}
 
 bool MemorySection::Exists(uint32_t addr) const noexcept {
 	if (addr < address)
@@ -30,18 +37,112 @@ bool MemorySection::Exists(uint32_t addr) const noexcept {
 		return true;
 }
 
+uint32_t MemorySection::Exec32(uint32_t addr) const {
+
+	if (!executePermission)
+		throw Segfault(addr);
+
+	return Read32(addr);
+}
+
+uint16_t MemorySection::Exec16(uint32_t addr) const {
+
+	if (!executePermission)
+		throw Segfault(addr);
+
+	return Read16(addr);
+}
+
 uint32_t MemorySection::Read32(uint32_t addr) const {
 
-	if ((addr < address) || ((addr + 3) < (address + bytes.size())))
-		throw Exception("Invalid read operation detected.");
+	if ((addr < address) || (!readPermission))
+		throw Segfault(addr);
+
+	uint32_t offset = addr - address;
+
+	if ((offset + 4) >= bytes.size())
+		throw Segfault(addr);
 
 	uint32_t value = 0;
-	value |= ((uint32_t) bytes[addr + 3]) << 0x18;
-	value |= ((uint32_t) bytes[addr + 2]) << 0x10;
-	value |= ((uint32_t) bytes[addr + 1]) << 0x08;
-	value |= ((uint32_t) bytes[addr + 0]) << 0x00;
+	value |= ((uint32_t) bytes[offset + 0]) << 0x18;
+	value |= ((uint32_t) bytes[offset + 1]) << 0x10;
+	value |= ((uint32_t) bytes[offset + 2]) << 0x08;
+	value |= ((uint32_t) bytes[offset + 3]) << 0x00;
 
 	return value;
+}
+
+uint16_t MemorySection::Read16(uint32_t addr) const {
+
+	if ((addr < address) || (!readPermission))
+		throw Segfault(addr);
+
+	uint32_t offset = addr - address;
+
+	if ((offset + 2) >= bytes.size())
+		throw Segfault(addr);
+
+	uint16_t value = 0;
+	value |= ((uint16_t) bytes[offset + 0]) << 0x08;
+	value |= ((uint16_t) bytes[offset + 1]) << 0x00;
+
+	return value;
+}
+
+uint8_t MemorySection::Read8(uint32_t addr) const {
+
+	if ((addr < address) || (!readPermission))
+		throw Segfault(addr);
+
+	uint32_t offset = addr - address;
+
+	if (offset >= bytes.size())
+		throw Segfault(addr);
+
+	return (uint8_t) bytes[offset];
+}
+
+void MemorySection::Write32(uint32_t addr, uint32_t value) {
+
+	if ((addr < address) || (!writePermission))
+		throw Segfault(addr);
+
+	uint32_t offset = addr - address;
+
+	if ((offset + 4) >= bytes.size())
+		throw Segfault(addr);
+
+	bytes[offset + 0] = (value >> 0x18) & 0xff;
+	bytes[offset + 1] = (value >> 0x10) & 0xff;
+	bytes[offset + 2] = (value >> 0x08) & 0xff;
+	bytes[offset + 3] = (value >> 0x00) & 0xff;
+}
+
+void MemorySection::Write16(uint32_t addr, uint16_t value) {
+
+	if ((addr < address) || (!writePermission))
+		throw Segfault(addr);
+
+	uint32_t offset = addr - address;
+
+	if ((offset + 2) >= bytes.size())
+		throw Segfault(addr);
+
+	bytes[offset + 0] = (value << 0x08) & 0xff;
+	bytes[offset + 1] = (value << 0x00) & 0xff;
+}
+
+void MemorySection::Write8(uint32_t addr, uint8_t value) {
+
+	if ((addr < address) || (!writePermission))
+		throw Segfault(addr);
+
+	uint32_t offset = addr - address;
+
+	if ((offset + 2) >= bytes.size())
+		throw Segfault(addr);
+
+	bytes[offset] = value;
 }
 
 void MemorySection::Resize(uint32_t size) {
