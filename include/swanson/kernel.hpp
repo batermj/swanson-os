@@ -73,6 +73,13 @@ public:
 	void LoadInitRamfs(const void *addr, uintmax_t size);
 	/// The kernel's entry point.
 	ExitCode Main();
+protected:
+	/// Add a process to the kernel.
+	/// The process should be loaded
+	/// with an ELF file before calling
+	/// this function.
+	/// @param process The process to add.
+	void AddProcess(std::shared_ptr<Process> &process);
 };
 
 } // namespace swanson

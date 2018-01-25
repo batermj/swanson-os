@@ -19,6 +19,8 @@
 #include <swanson/kernel.hpp>
 
 #include <swanson/exception.hpp>
+#include <swanson/elf.hpp>
+#include <swanson/process.hpp>
 #include <swanson/stream.hpp>
 
 #include "fs/ramfs/file.h"
@@ -116,7 +118,21 @@ ExitCode Kernel::Main() {
 
 	::InitStream initStream(init->data, init->data_size);
 
+	elf::File file;
+
+	file.Decode(initStream);
+
+	auto process = std::make_shared<Process>();
+
+	process->Load(file);
+
+	AddProcess(process);
+
 	return ExitCode::Success;
+}
+
+void Kernel::AddProcess(std::shared_ptr<Process> &process) {
+	processes.emplace_back(process);
 }
 
 } // namespace swanson
