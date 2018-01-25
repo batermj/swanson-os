@@ -22,9 +22,9 @@
 
 #include "cpu-test.hpp"
 
-#include <assert.h>
-#include <signal.h>
-#include <stdint.h>
+#include <cassert>
+#include <csignal>
+#include <cstdint>
 
 namespace {
 
