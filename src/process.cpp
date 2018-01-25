@@ -18,14 +18,49 @@
 
 #include <swanson/process.hpp>
 
+#include <swanson/elf.hpp>
+#include <swanson/memory-map.hpp>
+#include <swanson/memory-section.hpp>
+#include <swanson/thread.hpp>
+
+#include <debug.h>
+
 namespace swanson {
 
-void Process::Load(const elf &) {
+Process::Process() noexcept : memoryMap(std::make_shared<MemoryMap>()), entryPoint(0x00) {
 
 }
 
-void Process::Step(uintmax_t) {
+void Process::Load(const elf::File &file) {
 
+	for (auto &segment : file)
+		Load(*segment);
+
+	auto mainThread = std::make_shared<Thread>();
+	mainThread->SetInstructionPointer(file.GetEntryPoint());
+	// TODO : stack pointer?
+	// TODO : frame poitner?
+	AddThread(mainThread);
+}
+
+void Process::Load(const elf::Segment &segment) {
+
+	auto memorySection = std::make_shared<MemorySection>();
+	memorySection->CopyData(segment.GetData(), segment.GetSize());
+	memorySection->AllowRead(segment.ReadAllowed());
+	memorySection->AllowWrite(segment.WriteAllowed());
+	memorySection->AllowExecute(segment.ExecuteAllowed());
+
+	memoryMap->AddSection(memorySection);
+}
+
+void Process::Step(uint32_t steps) {
+	for (auto &thread : threads)
+		thread->Step(steps);
+}
+
+void Process::AddThread(std::shared_ptr<Thread> &thread) {
+	threads.emplace_back(thread);
 }
 
 } // namespace swanson

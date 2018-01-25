@@ -19,9 +19,6 @@
 #ifndef SWANSON_PROCESS_HPP
 #define SWANSON_PROCESS_HPP
 
-#include "cpu.h"
-#include "path.h"
-
 #include <memory>
 #include <vector>
 
@@ -29,14 +26,20 @@
 
 namespace swanson {
 
+namespace elf {
+
+class File;
+class Segment;
+
+} // namespace elf
+
 class Thread;
-class MemoryBus;
+class MemoryMap;
 class Path;
-struct elf;
 
 class Process final {
 	/// Used to read from and write to memory.
-	std::shared_ptr<MemoryBus> memoryBus;
+	std::shared_ptr<MemoryMap> memoryMap;
 	/// The array of threads currently used
 	/// by the process.
 	std::vector<std::shared_ptr<Thread>> threads;
@@ -49,23 +52,35 @@ class Process final {
 	/// of the process.
 	std::shared_ptr<Path> cwd;
 	/// Process identification number.
-	int pid;
+	int id;
+	/// The entry point of the process.
+	uint32_t entryPoint;
 public:
 	/// Default constructor
-	Process() noexcept : pid(0) { }
+	Process() noexcept;
 	/// Default deconstructor
 	~Process() { }
 	/// Kill the process.
 	void Kill();
 	/// Load an ELF file into the process.
-	/// @param elfFile The ELF file to load.
-	void Load(const elf &elfFile);
+	/// @param file The ELF file to load.
+	void Load(const elf::File &file);
+	/// Load an ELF segment into the process.
+	/// @param segment The segment to load.
+	void Load(const elf::Segment &segment);
+	/// Set the ID of the process.
+	/// @param id_ The new ID of the process.
+	void SetID(int id_) { id = id_; }
 	/// Allow each of the threads in the
 	/// process to run for a specified number
 	/// of instructions.
 	/// @param steps The number of instructions
 	/// to execute on each thread.
-	void Step(uintmax_t steps);
+	void Step(uint32_t steps);
+protected:
+	/// Add a thread to the process.
+	/// @param thread The thread to add.
+	void AddThread(std::shared_ptr<Thread> &thread);
 };
 
 } // namespace swanson
