@@ -29,9 +29,40 @@ class MemoryBus {
 public:
 	/// Default deconstructor
 	virtual ~MemoryBus() { }
-	/// Read a 32-bit word from memory.
-	/// @param addr The address of the work.
+	/// Read a 32-bit value from memory.
+	/// @param addr The address of the value.
+	/// @returns The value from memory.
 	virtual uint32_t Read32(uint32_t addr) const = 0;
+	/// Read a 16-bit value from memory.
+	/// @param addr The address of the value.
+	/// @returns The value from memory.
+	virtual uint16_t Read16(uint32_t addr) const = 0;
+	/// Read a 8-bit value from memory.
+	/// @param addr The address of the value.
+	/// @returns The value from memory.
+	virtual uint8_t Read8(uint32_t addr) const = 0;
+	/// Fetch a 16-bit executable code from memory.
+	/// This function checks that the memory is executable.
+	/// @param addr The address of the instruction.
+	/// @returns The executable code from memory.
+	virtual uint16_t Exec16(uint32_t addr) const = 0;
+	/// Fetch a 32-bit executable code from memory.
+	/// This function checks that the memory is executable.
+	/// @param addr The address of the instruction.
+	/// @returns The executable code from memory.
+	virtual uint32_t Exec32(uint32_t addr) const = 0;
+	/// Write a 32-bit value to the memory bus.
+	/// @param addr The address to write the 32-bit value to.
+	/// @param value The value to write to the memory bus.
+	virtual void Write32(uint32_t addr, uint32_t value) = 0;
+	/// Write a 16-bit value to the memory bus.
+	/// @param addr The address to write the 32-bit value to.
+	/// @param value The value to write to the memory bus.
+	virtual void Write16(uint32_t addr, uint16_t value) = 0;
+	/// Write an 8-bit value to the memory bus.
+	/// @param addr The address to write the 32-bit value to.
+	/// @param value The value to write to the memory bus.
+	virtual void Write8(uint32_t addr, uint8_t value) = 0;
 };
 
 } // namespace swanson
