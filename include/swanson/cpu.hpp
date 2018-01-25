@@ -98,6 +98,9 @@ protected:
 	void HandleDivideByZero();
 	/// Handle a stack overflow.
 	void HandleStackOverflow();
+	/// Handle a software interrupt, specified by type.
+	/// @param type The type of interrupt.
+	void HandleInterrupt(uint32_t type);
 	/// Execute a single instruction.
 	void StepOnce();
 	/// Push a 32-bit value to the stack.

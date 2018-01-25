@@ -155,7 +155,9 @@ void CPU::StepOnce() {
 	// in the branch instructions.
 	uint8_t conditionRequired;
 	uint8_t conditionPresent;
-
+	// An immediate value that
+	// follows an instruction.
+	uint32_t immediate;
 	switch ((inst & 0xfc00) >> 0x0a) {
 	case 0x30: /* beq */
 	case 0x36: /* bge */
@@ -290,6 +292,11 @@ void CPU::StepOnce() {
 		b = get_b(inst);
 		regs[a] = memoryBus.Read16(regs[b]);
 		break;
+	case 0x30: /* swi */
+		immediate = memoryBus.Exec32(instructionPointer + 2);
+		HandleInterrupt(immediate);
+		SetInstructionPointer(instructionPointer + 6);
+		return;
 	default:
 		/* illegal instruction */
 		HandleBadInstruction();
@@ -340,6 +347,15 @@ void CPU::HandleStackOverflow() {
 
 void CPU::HandleDivideByZero() {
 
+}
+
+void CPU::HandleInterrupt(uint32_t type) {
+	// check if interrupt is syscall
+	if (type == 0x80) {
+		// syscall data is in r0,
+		// which is regs[2]
+		// TODO
+	}
 }
 
 } // namespace swanson
