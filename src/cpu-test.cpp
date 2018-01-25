@@ -26,6 +26,8 @@
 #include <csignal>
 #include <cstdint>
 
+#include <iostream>
+
 namespace {
 
 class Test final {
@@ -102,6 +104,7 @@ void TestArithmetic() {
 	Test test3;
 	test3.SetCodeBytes({ 0x31, 0x56 });
 	test3.SetRegister(5, 6);
+	test3.SetRegister(6, 2);
 	test3.Run();
 	assert(test3.CheckRegister(5, 3));
 
@@ -176,11 +179,21 @@ void TestJumping() {
 	Test test3;
 	test3.SetFramePointer(0x1010);
 	test3.SetStackPointer(0x1010);
-	test3.SetCodeBytes({ 0x19, 0x30 } );
-	test3.SetDataBytes({ 0x00, 0x00, 0x00, 0x00 });
-	test3.SetRegister(3, 0x20);
+	test3.SetCodeBytes({
+		0x19, 0x30, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00
+	});
+	test3.SetDataBytes({
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00
+	});
+	test3.SetRegister(3, 0x08);
 	test3.Run();
-	assert(test3.CheckInstructionPointer(0x20));
+	assert(test3.CheckInstructionPointer(0x08));
 }
 
 void TestLoading() {
@@ -195,7 +208,7 @@ void TestLoading() {
 	test1.SetRegister(1, 0);
 	test1.SetRegister(2, 9);
 	test1.Run();
-	assert(test1.CheckRegister(1, 42));
+	assert(test1.CheckRegister(1, 0x42));
 
 	// ld.l
 	Test test2;
@@ -212,7 +225,8 @@ void TestLoading() {
 	// ld.s
 	Test test3;
 	test3.SetCodeBytes({
-		0x21, 0x34, 0xaa, 0xbb
+		0x21, 0x34, 0x00, 0x00,
+		0x00, 0xaa, 0xbb, 0x00
 	});
 	test3.SetRegister(3, 0);
 	test3.SetRegister(4, 5);
