@@ -36,9 +36,56 @@ class MemoryMap final : public MemoryBus {
 public:
 	/// Default deconstructor
 	~MemoryMap() { }
-	/// Read 32-bits from memory.
+	/// Read a 32-bit value from memory.
 	/// @param addr The address to read from.
+	/// @returns The value from memory.
 	uint32_t Read32(uint32_t addr) const;
+	/// Read a 16-bit value from memory.
+	/// @param addr The address to read from.
+	/// @returns The value from memory.
+	uint16_t Read16(uint32_t addr) const;
+	/// Read an 8-bit value from memory.
+	/// @param addr The address to read from.
+	/// @returns The value from memory.
+	uint8_t Read8(uint32_t addr) const;
+	/// Fetch a 32-bit instruction from memory.
+	/// The section of memory must have execute
+	/// permission for this to work without an exception.
+	/// @param addr The address of the 32-bit portion
+	/// of the instruction.
+	/// @returns The 32-bit instruction component.
+	uint32_t Exec32(uint32_t addr) const;
+	/// Fetch a 16-bit instruction from memory.
+	/// The section of memory must have execute
+	/// permission for this to work without an exception.
+	/// @param addr The address of the 16-bit portion
+	/// of the instruction.
+	/// @returns The 16-bit instruction component.
+	uint16_t Exec16(uint32_t addr) const;
+	/// Write a 32-bit value to the memory map.
+	/// The section that contains this address must
+	/// have write permissions for this function to
+	/// work without causing an exception.
+	/// @param addr The address to write the value at.
+	/// @param value The value to write to the memory map.
+	void Write32(uint32_t addr, uint32_t value);
+	/// Write a 16-bit value to the memory map.
+	/// The section that contains this address must
+	/// have write permissions for this function to
+	/// work without causing an exception.
+	/// @param addr The address to write the value at.
+	/// @param value The value to write to the memory map.
+	void Write16(uint32_t addr, uint16_t value);
+	/// Write a 8-bit value to the memory map.
+	/// The section that contains this address must
+	/// have write permissions for this function to
+	/// work without causing an exception.
+	/// @param addr The address to write the value at.
+	/// @param value The value to write to the memory map.
+	void Write8(uint32_t addr, uint8_t value);
+	/// Add a memory section to the memory map.
+	/// @param memorySection The memory section to add.
+	void AddSection(std::shared_ptr<MemorySection> &memorySection);
 };
 
 } // namespace swanson
