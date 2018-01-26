@@ -91,6 +91,13 @@ public:
 	/// Add a memory section to the memory map.
 	/// @param memorySection The memory section to add.
 	void AddSection(std::shared_ptr<MemorySection> &memorySection);
+	/// Find an available address to accommodate a
+	/// specified amount of memory and create a new
+	/// section.
+	/// @param size The size that the memory section
+	/// should accommodate.
+	/// @returns A pointer to the newly formed memory section.
+	std::shared_ptr<MemorySection> AddSection(uint32_t size);
 };
 
 } // namespace swanson

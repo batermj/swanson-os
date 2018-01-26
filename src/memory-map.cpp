@@ -113,7 +113,29 @@ void MemoryMap::Write8(uint32_t addr, uint8_t value) {
 }
 
 void MemoryMap::AddSection(std::shared_ptr<MemorySection> &section) {
+
+	// TODO : ensure that the section does not
+	// overlap with another section.
+
 	sections.emplace_back(section);
+}
+
+std::shared_ptr<MemorySection> MemoryMap::AddSection(uint32_t size) {
+
+	uint32_t address = 0;
+
+	for (auto &existingSection : sections) {
+		if ((address + size) > existingSection->GetAddress())
+			address = existingSection->GetAddress() + existingSection->GetSize();
+	}
+
+	auto section = std::make_shared<MemorySection>();
+	section->Resize(size);
+	section->SetAddress(address);
+
+	AddSection(section);
+
+	return section;
 }
 
 } // namespace swanson
