@@ -18,6 +18,7 @@
 
 #include <swanson/kernel.hpp>
 
+#include <swanson/bad-instruction.hpp>
 #include <swanson/exception.hpp>
 #include <swanson/elf.hpp>
 #include <swanson/process.hpp>
@@ -128,7 +129,26 @@ ExitCode Kernel::Main() {
 
 	AddProcess(process);
 
+	// Run until the first process
+	// exits.
+	while (!process->Exited()) {
+		Step(100);
+	}
+
 	return ExitCode::Success;
+}
+
+void Kernel::Step(uint32_t steps) {
+	auto processID = 0UL;
+	for (auto &process : processes) {
+		try {
+			process->Step(steps);
+		} catch (BadInstruction &badInstruction) {
+			badInstruction.SetProcessID(processID);
+			throw;
+		}
+		processID++;
+	}
 }
 
 void Kernel::AddProcess(std::shared_ptr<Process> &process) {
