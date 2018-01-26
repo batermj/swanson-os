@@ -118,6 +118,11 @@ protected:
 	/// @param value The value to store.
 	/// @param offset The offset to add to the base address.
 	void StoreOffset32(uint32_t addr, uint32_t value, int16_t offset);
+	/// Load the value at the offset of a memory base address.
+	/// @param a The destination register index.
+	/// @param b The index of the register containing the base address.
+	/// @param offset The offset to add to the base address.
+	void LoadOffset32(uint8_t a, uint8_t b, int16_t offset);
 	/// Get the memory bus, if it exists.
 	/// This function will throw an exception
 	/// if there has not yet been a memory bus

@@ -302,6 +302,71 @@ void TestLoadImmediate() {
 	test2.Run();
 }
 
+class LoadOffsetLongTest final {
+	uint8_t a;
+	uint8_t b;
+	int16_t offset;
+	uint32_t baseAddress;
+	uint32_t value;
+public:
+	LoadOffsetLongTest() noexcept {
+		a = 0;
+		b = 0;
+		offset = 0;
+		baseAddress = 0;
+		value = 0;
+	}
+	void SetRegisterA(uint8_t a_) noexcept { a = a_; }
+	void SetRegisterB(uint8_t b_) noexcept { b = b_; }
+	void SetBaseAddress(uint32_t base) noexcept { baseAddress = base; }
+	void SetOffset(int16_t offset_) noexcept { offset = offset_; };
+	void SetValue(uint32_t value_) noexcept { value = value_; }
+	void Run() const {
+		Test test;
+		test.SetCodeBytes({
+			0x0c,
+			(unsigned char)(((a << 4) & 0xf0) | (b & 0x0f)),
+			(unsigned char)((offset >> 0x08) & 0xff),
+			(unsigned char)((offset >> 0x00) & 0xff)
+		});
+		test.SetRegister(a, 0);
+		test.SetRegister(b, baseAddress);
+		test.SetDataBytes({
+			(unsigned char)((value >> 0x18) & 0xff),
+			(unsigned char)((value >> 0x10) & 0xff),
+			(unsigned char)((value >> 0x08) & 0xff),
+			(unsigned char)((value >> 0x00) & 0xff)
+		});
+		test.Run();
+		assert(test.CheckRegister(a, value));
+	}
+};
+
+void TestLoadOffset() {
+
+	// In these tests, the base address
+	// plus the offset should result in
+	// the address 0x1000. This is required
+	// due to the test class always loading
+	// the value there.
+
+	LoadOffsetLongTest test1;
+	test1.SetRegisterA(4);
+	test1.SetRegisterB(5);
+	test1.SetBaseAddress(0x1000 - 4);
+	test1.SetOffset(4);
+	test1.SetValue(3141);
+	test1.Run();
+
+	LoadOffsetLongTest test2;
+	test2.SetRegisterA(5);
+	test2.SetRegisterB(6);
+	test2.SetBaseAddress(0x1000 + 6);
+	test2.SetOffset(-6);
+	test2.SetValue(59265);
+	test2.Run();
+}
+
 #if 0
 
 void TestMisc() {
@@ -358,6 +423,7 @@ void TestCPU() {
 	TestMisc();
 	TestStoreOffset();
 	TestLoadImmediate();
+	TestLoadOffset();
 }
 
 } // namespace swanson::tests

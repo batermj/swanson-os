@@ -150,6 +150,17 @@ void CPU::StoreOffset32(uint32_t addr, uint32_t value, int16_t offset) {
 	memoryBus.Write32(addr, value);
 }
 
+void CPU::LoadOffset32(uint8_t a, uint8_t b, int16_t offset) {
+
+	auto addr = regs[b];
+
+	addr = CalculateOffset(addr, offset);
+
+	auto &memoryBus = GetMemoryBus();
+
+	regs[a] = memoryBus.Read32(addr);
+}
+
 void CPU::StepOnce() {
 
 	uint32_t a;
@@ -338,6 +349,12 @@ void CPU::StepOnce() {
 		regs[a] = memoryBus.Exec32(instructionPointer + 2);
 		SetInstructionPointer(instructionPointer + 6);
 		return;
+	case 0x0c:
+		a = get_a(inst);
+		b = get_b(inst);
+		instructionPointer += 2;
+		LoadOffset32(a, b, (int16_t) memoryBus.Exec16(instructionPointer));
+		break;
 	case 0x0f: /* nop */
 		break;
 	case 0x04: /* ret */
