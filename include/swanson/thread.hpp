@@ -55,7 +55,7 @@ public:
 	/// currently present (if any.)
 	/// @param memoryBus The new memory bus
 	/// for the thread.
-	void SetMemoryBus(std::shared_ptr<MemoryBus> &memoryBus) noexcept;
+	void SetMemoryBus(std::shared_ptr<MemoryBus> memoryBus) noexcept;
 	/// Run a specified number of instructions
 	/// on the thread.
 	/// @param steps The number of instructions
