@@ -19,6 +19,8 @@
 #ifndef SWANSON_PROCESS_HPP
 #define SWANSON_PROCESS_HPP
 
+#include <swanson/interrupt-handler.hpp>
+
 #include <memory>
 #include <vector>
 
@@ -37,7 +39,7 @@ class Thread;
 class MemoryMap;
 class Path;
 
-class Process final {
+class Process final : public InterruptHandler {
 	/// Used to read from and write to memory.
 	std::shared_ptr<MemoryMap> memoryMap;
 	/// The array of threads currently used
@@ -55,11 +57,30 @@ class Process final {
 	int id;
 	/// The entry point of the process.
 	uint32_t entryPoint;
+	/// A flag that is set to true when
+	/// the processes has exited.
+	bool exited;
+	/// The exit code of the process. This
+	/// field is only valid if the exit flag
+	/// is set to true.
+	int32_t exitCode;
 public:
 	/// Default constructor
-	Process() noexcept;
+	Process();
 	/// Default deconstructor
 	~Process() { }
+	/// Indicates whether or not the function
+	/// has exited.
+	/// @returns True if the process has exited,
+	/// false if it has not.
+	bool Exited() const noexcept { return exited; }
+	/// Handle a system call.
+	void HandleSyscall(Syscall &syscall);
+	/// Get the exit code (if the process is executed.)
+	/// @returns The exit code of the process.
+	/// If the process has not exited, this function
+	/// will return zero.
+	int32_t GetExitCode() const noexcept { return exitCode; }
 	/// Kill the process.
 	void Kill();
 	/// Load an ELF file into the process.
