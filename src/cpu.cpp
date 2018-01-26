@@ -66,6 +66,21 @@
 // Not equal to.
 #define CPU_CONDITION_NE 0x01
 
+namespace {
+
+uint32_t CalculateOffset(uint32_t addr, int16_t offset) {
+	if (offset < 0) {
+		if (((uint32_t) (offset * -1)) > addr)
+			throw swanson::Exception("Integer underflow detected.");
+	} else if (offset > 0) {
+		if ((UINT32_MAX - ((uint32_t) offset)) < addr)
+			throw swanson::Exception("Integer overflow detected.");
+	}
+	return (uint32_t)(((int32_t) addr) + offset);
+}
+
+} // namespace
+
 namespace swanson {
 
 CPU::CPU() noexcept {
@@ -124,6 +139,15 @@ void CPU::ReturnFromSubroutine() {
 
 	// skip static chain slot
 	Pop32();
+}
+
+void CPU::StoreOffset32(uint32_t addr, uint32_t value, int16_t offset) {
+
+	addr = CalculateOffset(addr, offset);
+
+	auto &memoryBus = GetMemoryBus();
+
+	memoryBus.Write32(addr, value);
 }
 
 void CPU::StepOnce() {
@@ -314,6 +338,12 @@ void CPU::StepOnce() {
 	case 0x04: /* ret */
 		ReturnFromSubroutine();
 		return;
+	case 0x0d: /* sto.l */
+		a = get_a(inst);
+		b = get_b(inst);
+		instructionPointer += 2;
+		StoreOffset32(regs[a], regs[b], (int16_t) memoryBus.Exec16(instructionPointer));
+		break;
 	case 0x30: /* swi */
 		immediate = memoryBus.Exec32(instructionPointer + 2);
 		HandleInterrupt(immediate);

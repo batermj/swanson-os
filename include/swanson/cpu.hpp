@@ -113,6 +113,11 @@ protected:
 	void JumpToSubroutine(uint32_t addr);
 	/// Return from a subroutine.
 	void ReturnFromSubroutine();
+	/// Store a value at the offset of a memory address.
+	/// @param addr The base address.
+	/// @param value The value to store.
+	/// @param offset The offset to add to the base address.
+	void StoreOffset32(uint32_t addr, uint32_t value, int16_t offset);
 	/// Get the memory bus, if it exists.
 	/// This function will throw an exception
 	/// if there has not yet been a memory bus

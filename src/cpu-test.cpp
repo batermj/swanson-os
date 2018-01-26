@@ -73,11 +73,14 @@ public:
 	void SetCondition(uint32_t condition) noexcept {
 		cpu->SetCondition(condition);
 	}
-	bool CheckInstructionPointer(uint32_t addr) {
+	bool CheckInstructionPointer(uint32_t addr) const noexcept {
 		return addr == cpu->GetInstructionPointer();
 	}
-	bool CheckRegister(uint32_t index, uint32_t value) {
+	bool CheckRegister(uint32_t index, uint32_t value) const noexcept {
 		return cpu->GetRegister(index) == value;
+	}
+	bool CheckMemory(uint32_t address, uint32_t value) const {
+		return memoryMap->Read32(address) == value;
 	}
 	void Run() {
 		cpu->Step(1);
@@ -234,6 +237,23 @@ void TestLoading() {
 	assert(test3.CheckRegister(3, 0xaabb));
 }
 
+void TestStoreOffset() {
+
+	// sto.l
+	Test test1;
+	test1.SetCodeBytes({
+		0x0d, 0x34, 0x00, 0x03
+	});
+	test1.SetDataBytes({
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00
+	});
+	test1.SetRegister(3, 0x1001);
+	test1.SetRegister(4, 0xaabbccdd);
+	test1.Run();
+	assert(test1.CheckMemory(0x1004, 0xaabbccdd));
+}
+
 #if 0
 
 void TestMisc() {
@@ -288,6 +308,7 @@ void TestCPU() {
 	TestJumping();
 	TestLoading();
 	TestMisc();
+	TestStoreOffset();
 }
 
 } // namespace swanson::tests
