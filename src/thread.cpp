@@ -37,7 +37,7 @@ void Thread::SetFramePointer(uint32_t addr) noexcept {
 	cpu->SetFramePointer(addr);
 }
 
-void Thread::SetMemoryBus(std::shared_ptr<MemoryBus> &memoryBus) noexcept {
+void Thread::SetMemoryBus(std::shared_ptr<MemoryBus> memoryBus) noexcept {
 	cpu->SetMemoryBus(memoryBus);
 }
 
