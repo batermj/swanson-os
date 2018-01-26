@@ -51,6 +51,9 @@ public:
 	                           executePermission(false) { }
 	/// Default deconstructor.
 	~MemorySection() { }
+	/// Get the address of the memory section.
+	/// @returns The address of the memory section.
+	auto GetAddress() const noexcept { return address; }
 	/// Get the number of bytes occupied by
 	/// the memory section.
 	/// @returns The number of bytes occupied
