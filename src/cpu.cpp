@@ -114,6 +114,18 @@ void CPU::JumpToSubroutine(uint32_t addr) {
 	SetInstructionPointer(addr);
 }
 
+void CPU::ReturnFromSubroutine() {
+
+	// pop frame pointer
+	SetFramePointer(Pop32());
+
+	// pop instruction pointer
+	SetInstructionPointer(Pop32());
+
+	// skip static chain slot
+	Pop32();
+}
+
 void CPU::StepOnce() {
 
 	uint32_t a;
@@ -293,6 +305,11 @@ void CPU::StepOnce() {
 		b = get_b(inst);
 		regs[a] = memoryBus.Read16(regs[b]);
 		break;
+	case 0x0f: /* nop */
+		break;
+	case 0x04: /* ret */
+		ReturnFromSubroutine();
+		return;
 	case 0x30: /* swi */
 		immediate = memoryBus.Exec32(instructionPointer + 2);
 		HandleInterrupt(immediate);
@@ -307,6 +324,19 @@ void CPU::StepOnce() {
 	SetInstructionPointer(instructionPointer + 2);
 
 	return;
+}
+
+uint32_t CPU::Pop32() {
+
+	auto stackPointer = GetStackPointer();
+	stackPointer += 4;
+
+	auto &memoryBus = GetMemoryBus();
+	auto value = memoryBus.Read32(stackPointer);
+
+	SetStackPointer(stackPointer);
+
+	return value;
 }
 
 void CPU::Push32(uint32_t value) {
