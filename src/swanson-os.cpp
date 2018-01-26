@@ -16,8 +16,9 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <swanson/exception.hpp>
+#include <swanson/bad-instruction.hpp>
 #include <swanson/kernel.hpp>
+#include <swanson/segfault.hpp>
 
 #include "debug.h"
 #include "options.h"
@@ -26,6 +27,7 @@
 #include "initramfs-data.h"
 #endif /* SWANSON_WITH_INITRAMFS_DATA_H */
 
+#include <iomanip>
 #include <iostream>
 
 #include <cstdlib>
@@ -147,8 +149,20 @@ int Main(int argc, const char **argv) {
 int main(int argc, const char **argv) {
 	try {
 		return Main(argc, argv);
+	} catch (const swanson::Segfault &segfault) {
+		std::cerr << "An uncaught segmentation fault occured at ";
+		std::cerr << std::hex << std::setw(8) << std::setfill('0');
+		std::cerr << segfault.GetAddress() << "." << std::endl;
+		return EXIT_FAILURE;
+	} catch (const swanson::BadInstruction &badInstruction) {
+		std::cerr << "An uncaught illegal instruction was encounted." << std::endl;
+		std::cerr << std::hex << std::setw(8) << std::setfill('0');
+		std::cerr << "Process ID: " << badInstruction.GetProcessID() << std::endl;
+		std::cerr << "Thread ID:  " << badInstruction.GetProcessID() << std::endl;
+		std::cerr << "Address:    " << badInstruction.GetAddress() << std::endl;
+		return EXIT_FAILURE;
 	} catch (const swanson::Exception &exception) {
-		std::cerr << "Error: " << exception.What() << std::endl;
+		std::cerr << exception.What() << std::endl;
 		return EXIT_FAILURE;
 	} catch (...) {
 		return EXIT_FAILURE;
