@@ -333,6 +333,11 @@ void CPU::StepOnce() {
 		b = get_b(inst);
 		regs[a] = memoryBus.Read16(regs[b]);
 		break;
+	case 0x01: /* ldi.l */
+		a = get_a(inst);
+		regs[a] = memoryBus.Exec32(instructionPointer + 2);
+		SetInstructionPointer(instructionPointer + 6);
+		return;
 	case 0x0f: /* nop */
 		break;
 	case 0x04: /* ret */

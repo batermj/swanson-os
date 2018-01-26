@@ -254,6 +254,54 @@ void TestStoreOffset() {
 	assert(test1.CheckMemory(0x1004, 0xaabbccdd));
 }
 
+class LoadImmediateLongTest final {
+	/// The index of the register
+	/// to move the immediate into.
+	uint8_t a;
+	/// The immediate value to move
+	/// into a register.
+	uint32_t immediate;
+public:
+	/// Default constructor
+	LoadImmediateLongTest() noexcept : a(0), immediate(0) { }
+	/// Default deconstructor
+	~LoadImmediateLongTest() { }
+	/// Set the index of the register
+	/// to move the immediate value into.
+	/// @param index The index of the register.
+	void SetRegister(uint32_t index) { a = index; }
+	/// Set the immediate value
+	/// @param immediate_ The new immediate value.
+	void SetImmediate(uint32_t immediate_) { immediate = immediate_; }
+	/// Run the test
+	void Run() const {
+		Test test;
+		test.SetCodeBytes({
+			0x01,
+			(unsigned char)((a << 4) & 0xf0),
+			(unsigned char)((immediate >> 0x18) & 0xff),
+			(unsigned char)((immediate >> 0x10) & 0xff),
+			(unsigned char)((immediate >> 0x08) & 0xff),
+			(unsigned char)((immediate >> 0x00) & 0xff),
+		});
+		test.Run();
+		assert(test.CheckRegister(a, immediate));
+	}
+};
+
+void TestLoadImmediate() {
+
+	LoadImmediateLongTest test1;
+	test1.SetRegister(3);
+	test1.SetImmediate(1);
+	test1.Run();
+
+	LoadImmediateLongTest test2;
+	test2.SetRegister(15);
+	test2.SetImmediate(0xffffffff);
+	test2.Run();
+}
+
 #if 0
 
 void TestMisc() {
@@ -309,6 +357,7 @@ void TestCPU() {
 	TestLoading();
 	TestMisc();
 	TestStoreOffset();
+	TestLoadImmediate();
 }
 
 } // namespace swanson::tests
