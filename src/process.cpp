@@ -18,6 +18,7 @@
 
 #include <swanson/process.hpp>
 
+#include <swanson/bad-instruction.hpp>
 #include <swanson/elf.hpp>
 #include <swanson/memory-map.hpp>
 #include <swanson/memory-section.hpp>
@@ -27,8 +28,18 @@
 
 namespace swanson {
 
-Process::Process() noexcept : memoryMap(std::make_shared<MemoryMap>()), entryPoint(0x00) {
+Process::Process() {
+	memoryMap = std::make_shared<MemoryMap>();
+	entryPoint = 0;
+	exited = false;
+	exitCode = 0;
+}
 
+void Process::HandleSyscall(Syscall &syscall) {
+	// TODO
+	exited = true;
+	exitCode = 0;
+	(void) syscall;
 }
 
 void Process::Load(const elf::File &file) {
@@ -38,6 +49,7 @@ void Process::Load(const elf::File &file) {
 
 	auto mainThread = std::make_shared<Thread>();
 	mainThread->SetInstructionPointer(file.GetEntryPoint());
+	mainThread->SetMemoryBus(memoryMap);
 	// TODO : stack pointer?
 	// TODO : frame poitner?
 	AddThread(mainThread);
@@ -46,6 +58,7 @@ void Process::Load(const elf::File &file) {
 void Process::Load(const elf::Segment &segment) {
 
 	auto memorySection = std::make_shared<MemorySection>();
+	memorySection->SetAddress(segment.GetAddress());
 	memorySection->CopyData(segment.GetData(), segment.GetSize());
 	memorySection->AllowRead(segment.ReadAllowed());
 	memorySection->AllowWrite(segment.WriteAllowed());
@@ -55,8 +68,16 @@ void Process::Load(const elf::Segment &segment) {
 }
 
 void Process::Step(uint32_t steps) {
-	for (auto &thread : threads)
-		thread->Step(steps);
+	auto threadID = 0UL;
+	for (auto &thread : threads) {
+		try {
+			thread->Step(steps);
+		} catch (BadInstruction &badInstruction) {
+			badInstruction.SetThreadID(threadID);
+			throw;
+		}
+		threadID++;
+	}
 }
 
 void Process::AddThread(std::shared_ptr<Thread> &thread) {
