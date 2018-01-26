@@ -64,6 +64,9 @@ class Process final : public InterruptHandler {
 	/// field is only valid if the exit flag
 	/// is set to true.
 	int32_t exitCode;
+	/// The default stack size to use when
+	/// creating threads.
+	uint32_t defaultStackSize;
 public:
 	/// Default constructor
 	Process();
@@ -74,6 +77,11 @@ public:
 	/// @returns True if the process has exited,
 	/// false if it has not.
 	bool Exited() const noexcept { return exited; }
+	/// Get the default stack size.
+	/// The default stack size is the size
+	/// used to create the stack for a new thread.
+	/// @returns The default stack size.
+	auto GetDefaultStackSize() const noexcept { return defaultStackSize; }
 	/// Handle a system call.
 	void HandleSyscall(Syscall &syscall);
 	/// Get the exit code (if the process is executed.)
@@ -89,6 +97,9 @@ public:
 	/// Load an ELF segment into the process.
 	/// @param segment The segment to load.
 	void Load(const elf::Segment &segment);
+	/// Set the default stack size.
+	/// @param size The new default stack size.
+	void SetDefaultStackSize(uint32_t size) noexcept { defaultStackSize = size; }
 	/// Set the ID of the process.
 	/// @param id_ The new ID of the process.
 	void SetID(int id_) { id = id_; }

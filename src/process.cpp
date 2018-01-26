@@ -24,8 +24,6 @@
 #include <swanson/memory-section.hpp>
 #include <swanson/thread.hpp>
 
-#include <debug.h>
-
 namespace swanson {
 
 Process::Process() {
@@ -33,6 +31,8 @@ Process::Process() {
 	entryPoint = 0;
 	exited = false;
 	exitCode = 0;
+	// default stack size is 8MiB
+	defaultStackSize = 8 * 1024 * 1024;
 }
 
 void Process::HandleSyscall(Syscall &syscall) {
@@ -48,10 +48,9 @@ void Process::Load(const elf::File &file) {
 		Load(*segment);
 
 	auto mainThread = std::make_shared<Thread>();
+
 	mainThread->SetInstructionPointer(file.GetEntryPoint());
-	mainThread->SetMemoryBus(memoryMap);
-	// TODO : stack pointer?
-	// TODO : frame poitner?
+
 	AddThread(mainThread);
 }
 
@@ -81,6 +80,16 @@ void Process::Step(uint32_t steps) {
 }
 
 void Process::AddThread(std::shared_ptr<Thread> &thread) {
+
+	auto stack = memoryMap->AddSection(GetDefaultStackSize());
+	stack->AllowRead(true);
+	stack->AllowWrite(true);
+	stack->AllowExecute(false);
+
+	thread->SetMemoryBus(memoryMap);
+	// TODO : frame pointer?
+	thread->SetStackPointer(stack->GetAddress());
+
 	threads.emplace_back(thread);
 }
 
