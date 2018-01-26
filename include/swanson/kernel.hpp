@@ -73,6 +73,11 @@ public:
 	void LoadInitRamfs(const void *addr, uintmax_t size);
 	/// The kernel's entry point.
 	ExitCode Main();
+	/// Run the processes for a specified
+	/// number of instructions per thread.
+	/// @param steps The instructions per
+	/// thread to run in each process.
+	void Step(uint32_t steps);
 protected:
 	/// Add a process to the kernel.
 	/// The process should be loaded
