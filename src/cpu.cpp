@@ -290,6 +290,10 @@ void CPU::StepOnce() {
 	case 0x19: /* jsr */
 		JumpToSubroutine(regs[get_a(inst)]);
 		return;
+	case 0x03: /* jsra */
+		immediate = memoryBus.Exec32(instructionPointer + 2);
+		JumpToSubroutine(immediate);
+		return;
 	case 0x1c: /* ld.b */
 		a = get_a(inst);
 		b = get_b(inst);
@@ -315,6 +319,11 @@ void CPU::StepOnce() {
 		HandleInterrupt(immediate);
 		SetInstructionPointer(instructionPointer + 6);
 		return;
+	case 0x2e: /* xor */
+		a = get_a(inst);
+		b = get_b(inst);
+		regs[a] ^= regs[b];
+		break;
 	default:
 		/* illegal instruction */
 		HandleBadInstruction();
