@@ -103,12 +103,16 @@ protected:
 	void HandleInterrupt(uint32_t type);
 	/// Execute a single instruction.
 	void StepOnce();
+	/// Pop a 32-bit value from the stack.
+	uint32_t Pop32();
 	/// Push a 32-bit value to the stack.
 	void Push32(uint32_t value);
 	/// Jump to a subroutine. This is
 	/// basically a function call.
 	/// @param addr The address of the subroutine.
 	void JumpToSubroutine(uint32_t addr);
+	/// Return from a subroutine.
+	void ReturnFromSubroutine();
 	/// Get the memory bus, if it exists.
 	/// This function will throw an exception
 	/// if there has not yet been a memory bus
