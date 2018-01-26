@@ -17,6 +17,7 @@
 
 #include <swanson/cpu.hpp>
 
+#include <swanson/bad-instruction.hpp>
 #include <swanson/exception.hpp>
 #include <swanson/memory-bus.hpp>
 
@@ -306,7 +307,6 @@ void CPU::StepOnce() {
 	SetInstructionPointer(instructionPointer + 2);
 
 	return;
-
 }
 
 void CPU::Push32(uint32_t value) {
@@ -334,7 +334,9 @@ MemoryBus &CPU::GetMemoryBus() {
 }
 
 void CPU::HandleBadInstruction() {
-
+	BadInstruction badInstruction;
+	badInstruction.SetAddress(GetInstructionPointer());
+	throw badInstruction;
 }
 
 void CPU::HandleBreak() {
