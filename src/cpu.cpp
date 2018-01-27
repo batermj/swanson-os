@@ -349,11 +349,16 @@ void CPU::StepOnce() {
 		regs[a] = memoryBus.Exec32(instructionPointer + 2);
 		SetInstructionPointer(instructionPointer + 6);
 		return;
-	case 0x0c:
+	case 0x0c: /* ldo.l */
 		a = get_a(inst);
 		b = get_b(inst);
 		instructionPointer += 2;
 		LoadOffset32(a, b, (int16_t) memoryBus.Exec16(instructionPointer));
+		break;
+	case 0x02: /* mov */
+		a = get_a(inst);
+		b = get_b(inst);
+		regs[a] = regs[b];
 		break;
 	case 0x0f: /* nop */
 		break;
