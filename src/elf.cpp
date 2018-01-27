@@ -158,12 +158,18 @@ int File::Decode(Stream &stream) {
 
 		if (segmentFlags & 0x01)
 			segment->AllowExecute(true);
+		else
+			segment->AllowExecute(false);
 
 		if (segmentFlags & 0x02)
 			segment->AllowWrite(true);
+		else
+			segment->AllowWrite(false);
 
 		if (segmentFlags & 0x04)
 			segment->AllowRead(true);
+		else
+			segment->AllowRead(false);
 
 		/* if the segment's file size is greater than
 		 * the size it occupies in memory, this segment
