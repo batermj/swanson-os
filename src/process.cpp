@@ -87,8 +87,8 @@ void Process::AddThread(std::shared_ptr<Thread> &thread) {
 	stack->AllowExecute(false);
 
 	thread->SetMemoryBus(memoryMap);
-	// TODO : frame pointer?
-	thread->SetStackPointer(stack->GetAddress());
+	// TODO frame pointer?
+	thread->SetStackPointer(stack->GetAddress() + stack->GetSize());
 
 	threads.emplace_back(thread);
 }
