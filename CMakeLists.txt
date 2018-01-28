@@ -18,3 +18,13 @@ if (SWANSON_BUILD_DOCS)
 endif (SWANSON_BUILD_DOCS)
 
 enable_testing()
+
+set (CPACK_PACKAGE_DESCRIPTION_SUMMARY "An operating system for user space.")
+set (CPACK_PACKAGE_VENDOR "Taylor Holberton")
+set (CPACK_PACKAGE_VERSION_MAJOR ${swanson_os_VERSION_MAJOR})
+set (CPACK_PACKAGE_VERSION_MINOR ${swanson_os_VERSION_MINOR})
+set (CPACK_PACKAGE_VERSION_PATCH ${swanson_os_VERSION_PATCH})
+set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set (CPACK_PACKAGE_CONTACT "taylorcholberton@gmail.com")
+
+include(CPack)
