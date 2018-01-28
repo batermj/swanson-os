@@ -41,6 +41,10 @@ void Thread::SetMemoryBus(std::shared_ptr<MemoryBus> memoryBus) noexcept {
 	cpu->SetMemoryBus(memoryBus);
 }
 
+void Thread::SetInterruptHandler(std::shared_ptr<InterruptHandler> interruptHandler) noexcept {
+	cpu->SetInterruptHandler(interruptHandler);
+}
+
 void Thread::Step(uint32_t steps) {
 	cpu->Step(steps);
 }

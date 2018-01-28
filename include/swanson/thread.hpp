@@ -24,6 +24,7 @@ namespace swanson {
 
 class CPU;
 class MemoryBus;
+class InterruptHandler;
 
 /// A thread in the Swanson kernel.
 /// This is not an actual thread
@@ -56,6 +57,11 @@ public:
 	/// @param memoryBus The new memory bus
 	/// for the thread.
 	void SetMemoryBus(std::shared_ptr<MemoryBus> memoryBus) noexcept;
+	/// Assign the interrupt handler for the thread.
+	/// This will overwrite the one that is currently
+	/// present (if there is one).
+	/// @param interruptHandler The new interrupt handler.
+	void SetInterruptHandler(std::shared_ptr<InterruptHandler> interruptHandler) noexcept;
 	/// Run a specified number of instructions
 	/// on the thread.
 	/// @param steps The number of instructions
