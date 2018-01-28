@@ -20,14 +20,53 @@
 
 #include <swanson/bad-instruction.hpp>
 #include <swanson/elf.hpp>
+#include <swanson/interrupt-handler.hpp>
 #include <swanson/memory-map.hpp>
 #include <swanson/memory-section.hpp>
+#include <swanson/syscall.hpp>
 #include <swanson/thread.hpp>
+
+namespace {
+
+class InterruptHandler final : public swanson::InterruptHandler {
+	swanson::Process &process;
+public:
+	InterruptHandler(swanson::Process &process_) noexcept : process(process_) {
+	}
+	~InterruptHandler() {
+	}
+	void HandleSyscall(const swanson::Syscall &syscall) {
+
+		auto memoryMap = process.GetMemoryMap();
+
+		auto inputAddress = syscall.GetInput();
+
+		auto syscallType = memoryMap->Read32(inputAddress);
+
+		if (syscallType == 0x60) {
+			HandleExit(inputAddress + 4);
+		} else {
+			throw swanson::Exception("System call type is unknown.");
+		}
+	}
+protected:
+	void HandleExit(uint32_t inputAddress) {
+
+		auto memoryMap = process.GetMemoryMap();
+
+		auto exitCode = memoryMap->Read32(inputAddress);
+
+		process.Exit(exitCode);
+	}
+};
+
+} // namespace
 
 namespace swanson {
 
 Process::Process() {
 	memoryMap = std::make_shared<MemoryMap>();
+	interruptHandler = std::make_shared<::InterruptHandler>(*this);
 	entryPoint = 0;
 	exited = false;
 	exitCode = 0;
@@ -35,11 +74,13 @@ Process::Process() {
 	defaultStackSize = 8 * 1024 * 1024;
 }
 
-void Process::HandleSyscall(Syscall &syscall) {
-	// TODO
+std::shared_ptr<MemoryMap> Process::GetMemoryMap() {
+	return memoryMap;
+}
+
+void Process::Exit(int exitCode_) {
 	exited = true;
-	exitCode = 0;
-	(void) syscall;
+	exitCode = exitCode_;
 }
 
 void Process::Load(const elf::File &file) {
@@ -76,6 +117,11 @@ void Process::Step(uint32_t steps) {
 			throw;
 		}
 		threadID++;
+		/// The exit call may have occured
+		/// while executing the last thread.
+		/// Check before continuing.
+		if (Exited())
+			break;
 	}
 }
 
@@ -89,6 +135,7 @@ void Process::AddThread(std::shared_ptr<Thread> &thread) {
 	thread->SetMemoryBus(memoryMap);
 	// TODO frame pointer?
 	thread->SetStackPointer(stack->GetAddress() + stack->GetSize());
+	thread->SetInterruptHandler(interruptHandler);
 
 	threads.emplace_back(thread);
 }

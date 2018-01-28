@@ -19,8 +19,6 @@
 #ifndef SWANSON_PROCESS_HPP
 #define SWANSON_PROCESS_HPP
 
-#include <swanson/interrupt-handler.hpp>
-
 #include <memory>
 #include <vector>
 
@@ -37,11 +35,15 @@ class Segment;
 
 class Thread;
 class MemoryMap;
+class InterruptHandler;
 class Path;
 
-class Process final : public InterruptHandler {
+class Process final {
 	/// Used to read from and write to memory.
 	std::shared_ptr<MemoryMap> memoryMap;
+	/// A pointer to the internally defined
+	/// interrupt handler.
+	std::shared_ptr<InterruptHandler> interruptHandler;
 	/// The array of threads currently used
 	/// by the process.
 	std::vector<std::shared_ptr<Thread>> threads;
@@ -72,6 +74,10 @@ public:
 	Process();
 	/// Default deconstructor
 	~Process() { }
+	/// Exit the process.
+	/// @param exitCode The exit code assign
+	/// after the process has exited.
+	void Exit(int exitCode_);
 	/// Indicates whether or not the function
 	/// has exited.
 	/// @returns True if the process has exited,
@@ -82,13 +88,14 @@ public:
 	/// used to create the stack for a new thread.
 	/// @returns The default stack size.
 	auto GetDefaultStackSize() const noexcept { return defaultStackSize; }
-	/// Handle a system call.
-	void HandleSyscall(Syscall &syscall);
 	/// Get the exit code (if the process is executed.)
 	/// @returns The exit code of the process.
 	/// If the process has not exited, this function
 	/// will return zero.
 	int32_t GetExitCode() const noexcept { return exitCode; }
+	/// Get the processes memory map.
+	/// @returns The memory map of the process.
+	std::shared_ptr<MemoryMap> GetMemoryMap();
 	/// Kill the process.
 	void Kill();
 	/// Load an ELF file into the process.
