@@ -43,7 +43,7 @@ public:
 	/// @return The output address of the system call.
 	auto GetOutput() const noexcept { return outputAddress; }
 	/// Set the input buffer address.
-	/// @param input_ The new location
+	/// @param input The new location
 	/// of the input data.
 	void SetInput(uint32_t input) noexcept { inputAddress = input; }
 	/// Set the output buffer address.

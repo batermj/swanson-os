@@ -38,6 +38,9 @@ class MemoryMap;
 class InterruptHandler;
 class Path;
 
+/// A running process. It consists
+/// of threads, a memory map, a working
+/// directory, and a root directory.
 class Process final {
 	/// Used to read from and write to memory.
 	std::shared_ptr<MemoryMap> memoryMap;
@@ -75,7 +78,7 @@ public:
 	/// Default deconstructor
 	~Process() { }
 	/// Exit the process.
-	/// @param exitCode The exit code assign
+	/// @param exitCode_ The exit code assign
 	/// after the process has exited.
 	void Exit(int exitCode_);
 	/// Indicates whether or not the function

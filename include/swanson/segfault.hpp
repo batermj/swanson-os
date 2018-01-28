@@ -27,13 +27,19 @@ namespace swanson {
 /// The base class of any exception
 /// that may occur from the Swanson library.
 class Segfault final : public Exception {
+	/// The address that the segmentation
+	/// fault occured at.
 	uint32_t addr;
 public:
 	/// Default constructor.
+	/// @param addr_ The address where the segmentation
+	/// fault occured at.
 	Segfault(uint32_t addr_) : Exception("Segmentation fault occured."), addr(addr_) { }
 	/// Default deconstructor.
 	~Segfault() { }
 	/// Get the address that the segmentation fault occured.
+	/// @returns The address that the segmentation fault
+	/// occured at.
 	uint32_t GetAddress() const noexcept { return addr; }
 };
 

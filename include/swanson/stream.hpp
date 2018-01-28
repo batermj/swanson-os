@@ -22,6 +22,9 @@
 
 namespace swanson {
 
+/// An arbitrary stream. This is
+/// the Linux equivalent of a character
+/// device.
 class Stream {
 public:
 	/// Default deconstructor

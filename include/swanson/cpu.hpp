@@ -81,9 +81,11 @@ public:
 	void SetRegister(uint32_t index, uint32_t value) noexcept;
 	/// Set the stack pointer address. This should be an address
 	/// that may be read from or written to.
+	/// @param addr The new address of the stack pointer.
 	void SetStackPointer(uint32_t addr) noexcept { regs[1] = addr; }
 	/// Set the instruction pointer address. This should be
 	/// an address that may be read from and executed.
+	/// @param addr The new address of the instruction pointer.
 	void SetInstructionPointer(uint32_t addr) noexcept { regs[16] = addr; }
 	/// Assign a new memory bus to the CPU.
 	/// This will overwrite the previous one (if any.)
@@ -114,8 +116,11 @@ protected:
 	/// should continue execution.
 	bool StepOnce();
 	/// Pop a 32-bit value from the stack.
+	/// @returns The value that was popped
+	/// from the stack.
 	uint32_t Pop32();
 	/// Push a 32-bit value to the stack.
+	/// @param value The value to push.
 	void Push32(uint32_t value);
 	/// Jump to a subroutine. This is
 	/// basically a function call.
@@ -137,6 +142,7 @@ protected:
 	/// This function will throw an exception
 	/// if there has not yet been a memory bus
 	/// assigned to the CPU.
+	/// @returns A reference to the memory bus.
 	MemoryBus &GetMemoryBus();
 };
 

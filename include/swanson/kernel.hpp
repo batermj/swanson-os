@@ -66,12 +66,24 @@ public:
 	/// Default deconstructor.
 	~Kernel();
 	/// Adds a disk to the kernel.
+	/// @param disk A pointer to the
+	/// disk structure.
 	void AddDisk(disk *disk);
 	/// Adds memory that may be used by the kernel.
+	/// @param addr The address of the usable memory.
+	/// @param size The number of bytes contained by
+	/// the memory block.
 	void AddMemory(void *addr, uintmax_t size);
 	/// Loads the initial ramdisk.
+	/// @param addr The address of the ramdisk data.
+	/// @param size The number of bytes contained by
+	/// the ramdisk.
 	void LoadInitRamfs(const void *addr, uintmax_t size);
 	/// The kernel's entry point.
+	/// @returns The exit code of the kernel.
+	/// This value is used to determine whether
+	/// the host program should return succesfully
+	/// or not.
 	ExitCode Main();
 	/// Run the processes for a specified
 	/// number of instructions per thread.

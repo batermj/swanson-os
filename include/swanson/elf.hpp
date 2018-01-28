@@ -106,12 +106,15 @@ public:
 	auto GetSize() const noexcept { return dataSize; }
 	/// Indicates whether or not read operations
 	/// are allowed in this segment.
+	/// @returns Whether or not reading is allowed.
 	auto ReadAllowed() const noexcept { return readPermission; }
 	/// Indicates whether or not write operations
 	/// are allowed in this segment.
+	/// @returns Whether or not writing is allowed.
 	auto WriteAllowed() const noexcept { return writePermission; }
 	/// Indicates whether or not this segment
 	/// can be executed.
+	/// @returns Whether or not execution is allowed.
 	auto ExecuteAllowed() const noexcept { return executePermission; }
 };
 
@@ -142,8 +145,12 @@ public:
 	/// @returns The 32-bit address of the entry point.
 	auto GetEntryPoint() const noexcept { return entryPoint; }
 	/// Get the number of segments in the file.
+	/// @returns The number of segments in the file.
 	auto GetSegmentCount() { return segments.size(); }
 	/// Get a segment pointer from the file.
+	/// @param index The index of the segment.
+	/// @returns The segment associated with the
+	/// specified index.
 	auto GetSegment(uint64_t index) { return segments[index]; }
 	/// Get the beginning segment iterator.
 	/// Used for loops.
