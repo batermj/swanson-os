@@ -18,7 +18,18 @@ install:
 - "[ $CXX = clang++ ] && export CXX=clang++-5.0 || true"
 
 script:
-  - mkdir build && cd build
-  - cmake ..
-  - cmake --build .
-  - ctest --verbose
+- mkdir build && cd build
+- cmake ..
+- cmake --build .
+- ctest --verbose
+- cpack -G TGZ
+- cpack -G DEB
+deploy:
+  provider: releases
+  api_key:
+    secure: apNfWaV0+7vWeEsD23lQX1WD/HAL9DejpUA+4HrVC0NGCjoOvj5JcmcPFwYukp6ULAZGlj8pCh0SBZy55ZAfaUA6Yc84+QaSvHwifspFqnUnwFm0d8qYlOF4xyZHuH7oCVJz7tYVyrCLQXgfz06fZF0vDwOw4aUy79CjqEg4tJY8FzH8K1oBHW280Mt7M2ThFmiVQZ+ejexNltyL5T69GOsKbriTRcec7aKKXgMmZFd7kKX7Su6YE+cigLw8BG4sjgDrhtF0UlKxblE6GspcbpCcd6jmRPZ1NVsEps2n7l0Mjx9qEAhWXCCiZLO0VmvfV1yTwg59vO2tdtbBkOf/V/hyuHa+7Y5Xlq6xS0A9LOl0FiZcKbIjeq64PlG7O0LxotyhOKDA8Pat+OJhUsy8YgrP7lwp2h0mC1slluvS/pwzJMOv/QY6MOT/f4TEUcnqNc1eW4bODjOJrT86tQM1d6DKlq5dZ8hCRvYkwrW6JYSdgTw2/VSDRhktW+JrlTHm6FnxwfYPkWHaH2n4er8ccMgiLWvNDf+MKlWSC6Ql2bFEql4MsTLsiR/ENhZnIO699I5+p6uB8qUy7IvnO3S5V+xUtdxhrp5qqvG1LoyBDLw7MP58OdGoxKCvBWJ19KI/nNWmEfVDrAhaRBFhHL64ol3UI452vgU6ingzACqzA2U=
+  file:
+  - build/swanson-os-0.1.0-Linux.tar.gz
+  - build/swanson-os-0.1.0-Linux.deb
+  on:
+    repo: swanson-os/swanson-os
