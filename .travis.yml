@@ -19,7 +19,7 @@ install:
 
 script:
 - mkdir build && cd build
-- cmake ..
+- cmake .. -DCMAKE_BUILD_TYPE=Release
 - cmake --build .
 - ctest --verbose
 - cpack -G TGZ
@@ -31,5 +31,6 @@ deploy:
   file:
   - build/swanson-os-0.1.0-Linux.tar.gz
   - build/swanson-os-0.1.0-Linux.deb
+  skip_cleanup: true
   on:
     repo: swanson-os/swanson-os
