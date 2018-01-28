@@ -18,6 +18,8 @@
 #ifndef SWANSON_SYSCALL_HPP
 #define SWANSON_SYSCALL_HPP
 
+#include <vector>
+
 namespace swanson {
 
 /// A system call. It consists
@@ -35,6 +37,12 @@ public:
 	Syscall() { }
 	/// Default deconstructor
 	~Syscall() { }
+	/// Set the input buffer.
+	/// @param input_ The new input buffer.
+	void SetInput(std::vector<unsigned char> &&input_) { input = std::move(input_); }
+	/// Set the output buffer.
+	/// @param output_ The new output buffer.
+	void SetOutput(std::vector<unsigned char> &&output_) { output = std::move(output_); }
 };
 
 } // namespace swanson
