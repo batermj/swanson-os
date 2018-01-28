@@ -29,7 +29,7 @@ public:
 	virtual ~InterruptHandler() { }
 	/// Handle a system call.
 	/// @param syscall The system call to handle.
-	virtual void HandleSyscall(Syscall &syscall) = 0;
+	virtual void HandleSyscall(const Syscall &syscall) = 0;
 };
 
 } // namespace swanson
