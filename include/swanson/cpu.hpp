@@ -25,12 +25,16 @@
 namespace swanson {
 
 class MemoryBus;
+class InterruptHandler;
 
 /// A Moxie CPU simulator.
 /// This is used for executing application code.
 class CPU final {
 	/// Used for reading and writing memory.
 	std::shared_ptr<MemoryBus> memoryBus;
+	/// Used for handling interrupts, like
+	/// system calls.
+	std::shared_ptr<InterruptHandler> interruptHandler;
 	/// General-purpose registers.
 	uint32_t regs[18];
 	/// Special-purpose registers.
@@ -85,6 +89,10 @@ public:
 	/// This will overwrite the previous one (if any.)
 	/// @param memoryBus_ The new memory bus for the CPU.
 	void SetMemoryBus(std::shared_ptr<MemoryBus> memoryBus_) noexcept;
+	/// Assign a new interrupt handler to the CPU.
+	/// This will overwrite the previous one (if any.)
+	/// @param interruptHandler_ The new interrupt handler.
+	void SetInterruptHandler(std::shared_ptr<InterruptHandler> interruptHandler_) noexcept;
 	/// Execute a certain number of instructions.
 	/// @param steps The number of instructions
 	/// to execute.
@@ -102,7 +110,9 @@ protected:
 	/// @param type The type of interrupt.
 	void HandleInterrupt(uint32_t type);
 	/// Execute a single instruction.
-	void StepOnce();
+	/// @returns Whether or not the CPU
+	/// should continue execution.
+	bool StepOnce();
 	/// Pop a 32-bit value from the stack.
 	uint32_t Pop32();
 	/// Push a 32-bit value to the stack.

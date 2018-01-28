@@ -19,7 +19,9 @@
 
 #include <swanson/bad-instruction.hpp>
 #include <swanson/exception.hpp>
+#include <swanson/interrupt-handler.hpp>
 #include <swanson/memory-bus.hpp>
+#include <swanson/syscall.hpp>
 
 #include <cstring>
 #include <csignal>
@@ -104,13 +106,19 @@ void CPU::SetRegister(uint32_t index, uint32_t value) noexcept {
 
 void CPU::Step(uint32_t steps) {
 	for (decltype(steps) i = 0; i < steps; i++) {
-		StepOnce();
+		auto continuationFlag = StepOnce();
+		if (!continuationFlag)
+			break;
 		instructionCount++;
 	}
 }
 
 void CPU::SetMemoryBus(std::shared_ptr<MemoryBus> memoryBus_) noexcept {
 	memoryBus = memoryBus_;
+}
+
+void CPU::SetInterruptHandler(std::shared_ptr<InterruptHandler> interruptHandler_) noexcept {
+	interruptHandler = interruptHandler_;
 }
 
 void CPU::JumpToSubroutine(uint32_t addr) {
@@ -161,7 +169,7 @@ void CPU::LoadOffset32(uint8_t a, uint8_t b, int16_t offset) {
 	regs[a] = memoryBus.Read32(addr);
 }
 
-void CPU::StepOnce() {
+bool CPU::StepOnce() {
 
 	uint32_t a;
 	uint32_t b;
@@ -182,17 +190,17 @@ void CPU::StepOnce() {
 		a = (inst & 0x0f00) >> 0x08;
 		regs[a] += inst & 0xff;
 		SetInstructionPointer(instructionPointer + 2);
-		return;
+		return true;
 	case 0x09:
 		a = (inst & 0x0f00) >> 0x08;
 		regs[a] -= inst & 0xff;
 		SetInstructionPointer(instructionPointer + 2);
-		return;
+		return true;
 	case 0x0a:
 		a = (inst & 0x0f00) >> 0x08;
 		regs[a] = sregs[inst & 0xff];
 		SetInstructionPointer(instructionPointer + 2);
-		return;
+		return true;
 	default:
 		break;
 	}
@@ -227,14 +235,14 @@ void CPU::StepOnce() {
 		if (offset < 0) {
 			if (((uint16_t)(offset * -1)) > instructionPointer) {
 				HandleBadInstruction();
-				return;
+				return false;
 			}
 		}
 
 		/* check for overflow */
 		if (instructionPointer > (UINT32_MAX - ((uint32_t) offset))) {
 			HandleBadInstruction();
-			return;
+			return false;
 		}
 
 		/* check if branch is taken */
@@ -246,13 +254,13 @@ void CPU::StepOnce() {
 				instructionPointer -= (uint32_t)(offset * -1);
 
 			SetInstructionPointer(instructionPointer);
-			return;
+			return true;
 		}
 
 		/* branch not taken */
 		instructionPointer += 2;
 		SetInstructionPointer(instructionPointer);
-		return;
+		return true;
 	default:
 		break;
 	}
@@ -282,7 +290,7 @@ void CPU::StepOnce() {
 		break;
 	case 0x35: /* brk */
 		HandleBreak();
-		break;
+		return false;
 	case 0x0e: /* cmp */
 
 		a = get_a(inst);
@@ -310,25 +318,25 @@ void CPU::StepOnce() {
 		b = get_b(inst);
 		if (regs[b] == 0) {
 			HandleDivideByZero();
-			return;
+			return false;
 		}
 		regs[a] /= regs[b];
 		break;
 	case 0x25: /* jmp */
 		a = get_a(inst);
 		SetInstructionPointer(regs[a]);
-		return;
+		return true;
 	case 0x1a: /* jmpa */
 		instructionPointer = memoryBus.Exec32(instructionPointer + 2);
 		SetInstructionPointer(instructionPointer);
-		return;
+		return true;
 	case 0x19: /* jsr */
 		JumpToSubroutine(regs[get_a(inst)]);
-		return;
+		return true;
 	case 0x03: /* jsra */
 		immediate = memoryBus.Exec32(instructionPointer + 2);
 		JumpToSubroutine(immediate);
-		return;
+		return true;
 	case 0x1c: /* ld.b */
 		a = get_a(inst);
 		b = get_b(inst);
@@ -348,7 +356,7 @@ void CPU::StepOnce() {
 		a = get_a(inst);
 		regs[a] = memoryBus.Exec32(instructionPointer + 2);
 		SetInstructionPointer(instructionPointer + 6);
-		return;
+		return true;
 	case 0x0c: /* ldo.l */
 		a = get_a(inst);
 		b = get_b(inst);
@@ -364,7 +372,7 @@ void CPU::StepOnce() {
 		break;
 	case 0x04: /* ret */
 		ReturnFromSubroutine();
-		return;
+		return true;
 	case 0x0d: /* sto.l */
 		a = get_a(inst);
 		b = get_b(inst);
@@ -375,7 +383,7 @@ void CPU::StepOnce() {
 		immediate = memoryBus.Exec32(instructionPointer + 2);
 		HandleInterrupt(immediate);
 		SetInstructionPointer(instructionPointer + 6);
-		return;
+		return false;
 	case 0x2e: /* xor */
 		a = get_a(inst);
 		b = get_b(inst);
@@ -384,12 +392,12 @@ void CPU::StepOnce() {
 	default:
 		/* illegal instruction */
 		HandleBadInstruction();
-		return;
+		return false;
 	}
 
 	SetInstructionPointer(instructionPointer + 2);
 
-	return;
+	return true;
 }
 
 uint32_t CPU::Pop32() {
@@ -448,11 +456,18 @@ void CPU::HandleDivideByZero() {
 }
 
 void CPU::HandleInterrupt(uint32_t type) {
+
+	if (interruptHandler == nullptr)
+		throw Exception("Interrupt handler is not assigned to the CPU.");
+
 	// check if interrupt is syscall
 	if (type == 0x80) {
-		// syscall data is in r0,
-		// which is regs[2]
-		// TODO
+		Syscall syscall;
+		syscall.SetInput(regs[2]);
+		syscall.SetOutput(regs[3]);
+		interruptHandler->HandleSyscall(syscall);
+	} else {
+		throw Exception("Interrupt type is unknown.");
 	}
 }
 
