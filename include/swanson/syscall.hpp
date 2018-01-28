@@ -18,8 +18,6 @@
 #ifndef SWANSON_SYSCALL_HPP
 #define SWANSON_SYSCALL_HPP
 
-#include <vector>
-
 namespace swanson {
 
 /// A system call. It consists
@@ -28,21 +26,30 @@ namespace swanson {
 /// is handled by the interrupt handler
 /// and standard C library.
 class Syscall final {
-	/// The input buffer.
-	std::vector<unsigned char> input;
-	/// The output buffer.
-	std::vector<unsigned char> output;
+	/// The address of the input data.
+	uint32_t inputAddress;
+	/// The address of where to put the
+	/// output data.
+	uint32_t outputAddress;
 public:
 	/// Default constructor
-	Syscall() { }
+	Syscall() noexcept : inputAddress(0), outputAddress(0) { }
 	/// Default deconstructor
 	~Syscall() { }
-	/// Set the input buffer.
-	/// @param input_ The new input buffer.
-	void SetInput(std::vector<unsigned char> &&input_) { input = std::move(input_); }
-	/// Set the output buffer.
-	/// @param output_ The new output buffer.
-	void SetOutput(std::vector<unsigned char> &&output_) { output = std::move(output_); }
+	/// Get the input address of the system call.
+	/// @return The input address of the system call.
+	auto GetInput() const noexcept { return inputAddress; }
+	/// Get the output address of the system call.
+	/// @return The output address of the system call.
+	auto GetOutput() const noexcept { return outputAddress; }
+	/// Set the input buffer address.
+	/// @param input_ The new location
+	/// of the input data.
+	void SetInput(uint32_t input) noexcept { inputAddress = input; }
+	/// Set the output buffer address.
+	/// @param output The new address of
+	/// where the output data will be put.
+	void SetOutput(uint32_t output) noexcept { outputAddress = output; }
 };
 
 } // namespace swanson
