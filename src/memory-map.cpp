@@ -125,8 +125,11 @@ std::shared_ptr<MemorySection> MemoryMap::AddSection(uint32_t size) {
 	uint32_t address = 0;
 
 	for (auto &existingSection : sections) {
-		if ((address + size) > existingSection->GetAddress())
+		if ((address + size) > existingSection->GetAddress()) {
 			address = existingSection->GetAddress() + existingSection->GetSize();
+			// align to 0x2000
+			address += 0x2000 - (address % 0x2000);
+		}
 	}
 
 	auto section = std::make_shared<MemorySection>();
