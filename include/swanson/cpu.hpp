@@ -125,7 +125,8 @@ protected:
 	/// Jump to a subroutine. This is
 	/// basically a function call.
 	/// @param addr The address of the subroutine.
-	void JumpToSubroutine(uint32_t addr);
+	/// @param ret The return address.
+	void JumpToSubroutine(uint32_t addr, uint32_t ret);
 	/// Return from a subroutine.
 	void ReturnFromSubroutine();
 	/// Store a value at the offset of a memory address.

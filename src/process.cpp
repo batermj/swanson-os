@@ -23,8 +23,13 @@
 #include <swanson/interrupt-handler.hpp>
 #include <swanson/memory-map.hpp>
 #include <swanson/memory-section.hpp>
+#include <swanson/segfault.hpp>
 #include <swanson/syscall.hpp>
 #include <swanson/thread.hpp>
+
+#include <iostream>
+
+#include "debug.h"
 
 namespace {
 
@@ -43,13 +48,33 @@ public:
 
 		auto syscallType = memoryMap->Read32(inputAddress);
 
-		if (syscallType == 0x60) {
+		if (syscallType == 0x01) {
+			HandleWrite(inputAddress + 4);
+		} else if (syscallType == 0x60) {
 			HandleExit(inputAddress + 4);
 		} else {
 			throw swanson::Exception("System call type is unknown.");
 		}
 	}
 protected:
+	void HandleWrite(uint32_t inputAddress) {
+
+		auto memoryMap = process.GetMemoryMap();
+
+		auto fd = memoryMap->Read32(inputAddress);
+
+		auto bufAddr = memoryMap->Read32(inputAddress + 4);
+
+		auto bufSize = memoryMap->Read32(inputAddress + 8);
+
+		if (fd == 1) {
+			WriteStdout(bufAddr, bufSize);
+		} else if (fd == 2) {
+			WriteStderr(bufAddr, bufSize);
+		} else {
+			// not a valid file descriptor
+		}
+	}
 	void HandleExit(uint32_t inputAddress) {
 
 		auto memoryMap = process.GetMemoryMap();
@@ -57,6 +82,22 @@ protected:
 		auto exitCode = memoryMap->Read32(inputAddress);
 
 		process.Exit(exitCode);
+	}
+	void WriteStdout(uint32_t addr, uint32_t size) {
+
+		auto memoryMap = process.GetMemoryMap();
+
+		for (decltype(size) i = 0; i < size; i++) {
+			std::cout.put((char) memoryMap->Read8(addr + i));
+		}
+	}
+	void WriteStderr(uint32_t addr, uint32_t size) {
+
+		auto memoryMap = process.GetMemoryMap();
+
+		for (decltype(size) i = 0; i < size; i++) {
+			std::cerr.put((char) memoryMap->Read8(addr + i));
+		}
 	}
 };
 
@@ -112,6 +153,9 @@ void Process::Step(uint32_t steps) {
 	for (auto &thread : threads) {
 		try {
 			thread->Step(steps);
+		} catch (Segfault &segfault) {
+			segfault.SetThreadID(threadID);
+			throw;
 		} catch (BadInstruction &badInstruction) {
 			badInstruction.SetThreadID(threadID);
 			throw;
@@ -132,8 +176,12 @@ void Process::AddThread(std::shared_ptr<Thread> &thread) {
 	stack->AllowWrite(true);
 	stack->AllowExecute(false);
 
+	debug("stack addr: %08x\n", stack->GetAddress());
+	debug("stack size: %08x\n", stack->GetSize());
+	debug("stack end:  %08x\n", stack->GetAddress() + stack->GetSize());
+
 	thread->SetMemoryBus(memoryMap);
-	// TODO frame pointer?
+	thread->SetFramePointer(0x00);
 	thread->SetStackPointer(stack->GetAddress() + stack->GetSize());
 	thread->SetInterruptHandler(interruptHandler);
 

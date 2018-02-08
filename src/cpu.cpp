@@ -26,6 +26,8 @@
 #include <cstring>
 #include <csignal>
 
+#include "debug.h"
+
 /* Since most instructions encode
  * a register number (or multiple register
  * numbers) within their 32-bit space, these
@@ -121,13 +123,17 @@ void CPU::SetInterruptHandler(std::shared_ptr<InterruptHandler> interruptHandler
 	interruptHandler = interruptHandler_;
 }
 
-void CPU::JumpToSubroutine(uint32_t addr) {
+void CPU::JumpToSubroutine(uint32_t addr, uint32_t ret) {
+
+	debug("jumping (stack = %08x)\n", GetStackPointer() - 12);
 
 	/* Save slot in static chain */
 	Push32(0x00);
 
+	debug("return address (stack = %08x): %08x\n", GetStackPointer(), ret);
+
 	/* Return address */
-	Push32(GetInstructionPointer() + 2);
+	Push32(ret);
 
 	/* Current frame pointer */
 	Push32(GetFramePointer());
@@ -139,11 +145,17 @@ void CPU::JumpToSubroutine(uint32_t addr) {
 
 void CPU::ReturnFromSubroutine() {
 
+	debug("returning (stack = %08x)\n", GetStackPointer());
+
 	// pop frame pointer
 	SetFramePointer(Pop32());
 
-	// pop instruction pointer
+	debug("frame pointer (sp = %08x): %08x\n", GetStackPointer(), GetFramePointer());
+
+	// pop return address
 	SetInstructionPointer(Pop32());
+
+	debug("instruction pointer (sp = %08x): %08x\n", GetStackPointer(), GetInstructionPointer());
 
 	// skip static chain slot
 	Pop32();
@@ -186,12 +198,12 @@ bool CPU::StepOnce() {
 	/* check 4-bit instructions */
 
 	switch ((inst & 0xf000) >> 0x0c) {
-	case 0x08:
+	case 0x08: /* inc */
 		a = (inst & 0x0f00) >> 0x08;
 		regs[a] += inst & 0xff;
 		SetInstructionPointer(instructionPointer + 2);
 		return true;
-	case 0x09:
+	case 0x09: /* dec */
 		a = (inst & 0x0f00) >> 0x08;
 		regs[a] -= inst & 0xff;
 		SetInstructionPointer(instructionPointer + 2);
@@ -240,11 +252,12 @@ bool CPU::StepOnce() {
 		}
 
 		/* check for overflow */
-		if (instructionPointer > (UINT32_MAX - ((uint32_t) offset))) {
-			HandleBadInstruction();
-			return false;
+		if (offset > 0) {
+			if (instructionPointer > (UINT32_MAX - ((uint32_t) offset))) {
+				HandleBadInstruction();
+				return false;
+			}
 		}
-
 		/* check if branch is taken */
 		if (conditionRequired == conditionPresent) {
 
@@ -331,11 +344,11 @@ bool CPU::StepOnce() {
 		SetInstructionPointer(instructionPointer);
 		return true;
 	case 0x19: /* jsr */
-		JumpToSubroutine(regs[get_a(inst)]);
+		JumpToSubroutine(regs[get_a(inst)], instructionPointer + 2);
 		return true;
 	case 0x03: /* jsra */
 		immediate = memoryBus.Exec32(instructionPointer + 2);
-		JumpToSubroutine(immediate);
+		JumpToSubroutine(immediate, instructionPointer + 6);
 		return true;
 	case 0x1c: /* ld.b */
 		a = get_a(inst);
@@ -389,6 +402,11 @@ bool CPU::StepOnce() {
 		b = get_b(inst);
 		regs[a] ^= regs[b];
 		break;
+	case 0x12: /* zex.b */
+		a = get_a(inst);
+		b = get_b(inst);
+		regs[a] = regs[b] & 0xff;
+		break;
 	default:
 		/* illegal instruction */
 		HandleBadInstruction();
@@ -403,12 +421,12 @@ bool CPU::StepOnce() {
 uint32_t CPU::Pop32() {
 
 	auto stackPointer = GetStackPointer();
-	stackPointer += 4;
 
 	auto &memoryBus = GetMemoryBus();
+
 	auto value = memoryBus.Read32(stackPointer);
 
-	SetStackPointer(stackPointer);
+	SetStackPointer(stackPointer + 4);
 
 	return value;
 }
@@ -448,11 +466,11 @@ void CPU::HandleBreak() {
 }
 
 void CPU::HandleStackOverflow() {
-
+	throw Exception("Stack overflow detected.");
 }
 
 void CPU::HandleDivideByZero() {
-
+	throw Exception("Divide by zero detected.");
 }
 
 void CPU::HandleInterrupt(uint32_t type) {
