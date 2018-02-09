@@ -29,8 +29,6 @@
 
 #include <iostream>
 
-#include "debug.h"
-
 namespace {
 
 class InterruptHandler final : public swanson::InterruptHandler {
@@ -175,10 +173,6 @@ void Process::AddThread(std::shared_ptr<Thread> &thread) {
 	stack->AllowRead(true);
 	stack->AllowWrite(true);
 	stack->AllowExecute(false);
-
-	debug("stack addr: %08x\n", stack->GetAddress());
-	debug("stack size: %08x\n", stack->GetSize());
-	debug("stack end:  %08x\n", stack->GetAddress() + stack->GetSize());
 
 	thread->SetMemoryBus(memoryMap);
 	thread->SetFramePointer(0x00);

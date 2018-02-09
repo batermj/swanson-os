@@ -20,8 +20,6 @@
 #include <swanson/memory-section.hpp>
 #include <swanson/segfault.hpp>
 
-#include "debug.h"
-
 namespace swanson {
 
 uint32_t MemoryMap::GetSize() const noexcept {
@@ -85,10 +83,6 @@ uint8_t MemoryMap::Read8(uint32_t addr) const {
 }
 
 void MemoryMap::Write32(uint32_t addr, uint32_t value) {
-
-	debug("write op\n");
-	debug("  addr  : %08x\n", addr);
-	debug("  value : %08x\n", value);
 
 	for (auto &section : sections) {
 		if (section->Exists(addr))
