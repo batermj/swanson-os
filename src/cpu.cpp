@@ -26,8 +26,6 @@
 #include <cstring>
 #include <csignal>
 
-#include "debug.h"
-
 /* Since most instructions encode
  * a register number (or multiple register
  * numbers) within their 32-bit space, these
@@ -125,12 +123,8 @@ void CPU::SetInterruptHandler(std::shared_ptr<InterruptHandler> interruptHandler
 
 void CPU::JumpToSubroutine(uint32_t addr, uint32_t ret) {
 
-	debug("jumping (stack = %08x)\n", GetStackPointer() - 12);
-
 	/* Save slot in static chain */
 	Push32(0x00);
-
-	debug("return address (stack = %08x): %08x\n", GetStackPointer(), ret);
 
 	/* Return address */
 	Push32(ret);
@@ -145,17 +139,11 @@ void CPU::JumpToSubroutine(uint32_t addr, uint32_t ret) {
 
 void CPU::ReturnFromSubroutine() {
 
-	debug("returning (stack = %08x)\n", GetStackPointer());
-
 	// pop frame pointer
 	SetFramePointer(Pop32());
 
-	debug("frame pointer (sp = %08x): %08x\n", GetStackPointer(), GetFramePointer());
-
 	// pop return address
 	SetInstructionPointer(Pop32());
-
-	debug("instruction pointer (sp = %08x): %08x\n", GetStackPointer(), GetInstructionPointer());
 
 	// skip static chain slot
 	Pop32();
