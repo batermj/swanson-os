@@ -79,11 +79,17 @@ public:
 	bool CheckRegister(uint32_t index, uint32_t value) const noexcept {
 		return cpu->GetRegister(index) == value;
 	}
+	bool CheckStackPointer(uint32_t value) const noexcept {
+		return cpu->GetStackPointer() == value;
+	}
+	bool CheckFramePointer(uint32_t value) const noexcept {
+		return cpu->GetFramePointer() == value;
+	}
 	bool CheckMemory(uint32_t address, uint32_t value) const {
 		return memoryMap->Read32(address) == value;
 	}
-	void Run() {
-		cpu->Step(1);
+	void Run(unsigned int steps = 1) {
+		cpu->Step(steps);
 	}
 };
 
@@ -197,6 +203,29 @@ void TestJumping() {
 	test3.SetRegister(3, 0x08);
 	test3.Run();
 	assert(test3.CheckInstructionPointer(0x08));
+	assert(test3.CheckStackPointer(0x1004));
+	// check frame pointer
+	assert(test3.CheckMemory(0x1004, 0x1010));
+	// check return address
+	assert(test3.CheckMemory(0x1008, 0x02));
+	// check stack chain slot
+	assert(test3.CheckMemory(0x100c, 0x00));
+
+	// ret
+	Test test4;
+	test4.SetFramePointer(0x1004);
+	test4.SetStackPointer(0x1004);
+	test4.SetCodeBytes({ 0x04, 0x00 });
+	test4.SetDataBytes({
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0xff, 0x00,
+		0x00, 0x80, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00
+	});
+	test4.Run();
+	assert(test4.CheckInstructionPointer(0x00800000));
+	assert(test4.CheckStackPointer(0x1010));
+	assert(test4.CheckFramePointer(0xff00));
 }
 
 void TestLoading() {
