@@ -226,6 +226,31 @@ void TestJumping() {
 	assert(test4.CheckInstructionPointer(0x00800000));
 	assert(test4.CheckStackPointer(0x1010));
 	assert(test4.CheckFramePointer(0xff00));
+
+	// jsra
+	Test test5;
+	test5.SetFramePointer(0x1010);
+	test5.SetStackPointer(0x1010);
+	test5.SetCodeBytes({
+		0x03, 0x00,
+		0x01, 0x00, 0x00, 0x22
+	});
+	test5.SetDataBytes({
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00
+	});
+	test5.Run();
+	assert(test5.CheckInstructionPointer(0x01000022));
+	assert(test5.CheckStackPointer(0x1004));
+	assert(test5.CheckFramePointer(0x1004));
+	// check frame pointer
+	assert(test5.CheckMemory(0x1004, 0x1010));
+	// check return address
+	assert(test5.CheckMemory(0x1008, 0x06));
+	// check stack chain slot
+	assert(test5.CheckMemory(0x100c, 0x00));
 }
 
 void TestLoading() {
