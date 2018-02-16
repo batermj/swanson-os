@@ -128,8 +128,8 @@ void MemorySection::Write16(uint32_t addr, uint16_t value) {
 	if ((offset + 2) > bytes.size())
 		throw Segfault(addr);
 
-	bytes[offset + 0] = (value << 0x08) & 0xff;
-	bytes[offset + 1] = (value << 0x00) & 0xff;
+	bytes[offset + 0] = (value >> 0x08) & 0xff;
+	bytes[offset + 1] = (value >> 0x00) & 0xff;
 }
 
 void MemorySection::Write8(uint32_t addr, uint8_t value) {
