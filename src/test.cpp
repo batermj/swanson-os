@@ -20,6 +20,7 @@
 
 #include "cpu-test.hpp"
 #include "elf-test.hpp"
+#include "memory-map-test.hpp"
 
 #include "crc32-test.h"
 #include "gpt-test.h"
@@ -59,6 +60,7 @@ void RunTests() {
 	// C++ tests
 	TestCPU();
 	TestELF();
+	TestMemoryMap();
 	// Standard C tests
 	crc32_test();
 	gpt_test();
