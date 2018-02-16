@@ -65,6 +65,13 @@ public:
 	/// Get the current instruction pointer address.
 	/// @returns The current instruction pointer address.
 	auto GetInstructionPointer() const noexcept { return regs[16]; }
+	/// Pop a 32-bit value from the stack.
+	/// @returns The value that was popped
+	/// from the stack.
+	uint32_t Pop32();
+	/// Push a 32-bit value to the stack.
+	/// @param value The value to push.
+	void Push32(uint32_t value);
 	/// Set the condition state of the CPU.
 	/// Do not use this function unless you have a very
 	/// specific reason for it.
@@ -115,13 +122,6 @@ protected:
 	/// @returns Whether or not the CPU
 	/// should continue execution.
 	bool StepOnce();
-	/// Pop a 32-bit value from the stack.
-	/// @returns The value that was popped
-	/// from the stack.
-	uint32_t Pop32();
-	/// Push a 32-bit value to the stack.
-	/// @param value The value to push.
-	void Push32(uint32_t value);
 	/// Jump to a subroutine. This is
 	/// basically a function call.
 	/// @param addr The address of the subroutine.
