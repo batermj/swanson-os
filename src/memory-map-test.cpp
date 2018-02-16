@@ -153,8 +153,6 @@ void TestMemoryMap() {
 
 	map->Write16(0x92, 0x5927);
 
-	debug("here: %08x\n", map->Read32(0x90));
-
 	assert(map->Read32(0x90) == 0x31415927);
 	assert(map->Read16(0x90) == 0x3141);
 	assert(map->Read8(0x90) == 0x31);
