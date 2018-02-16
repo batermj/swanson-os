@@ -19,6 +19,7 @@
 #include <swanson/conditions.hpp>
 #include <swanson/memory-map.hpp>
 #include <swanson/memory-section.hpp>
+#include <swanson/stack-overflow.hpp>
 
 #include "cpu-test.hpp"
 
@@ -421,6 +422,62 @@ void TestLoadOffset() {
 	test2.Run();
 }
 
+void TestPushPop() {
+
+	auto memorySection = std::make_shared<swanson::MemorySection>();
+	memorySection->Resize(0x10);
+	memorySection->SetAddress(0x00);
+	memorySection->AllowRead(true);
+	memorySection->AllowWrite(true);
+	memorySection->AllowExecute(false);
+
+	auto memoryMap = std::make_shared<swanson::MemoryMap>();
+	memoryMap->AddSection(memorySection);
+
+	swanson::CPU cpu;
+	cpu.SetMemoryBus(memoryMap);
+	cpu.SetStackPointer(0x10);
+
+	const uint32_t val1 = 0x21314151;
+	const uint32_t val2 = 0x77886699;
+	const uint32_t val3 = 0x11992288;
+	const uint32_t val4 = 0x33445566;
+
+	cpu.Push32(val1);
+	cpu.Push32(val2);
+	cpu.Push32(val3);
+	cpu.Push32(val4);
+
+	/* test to ensure that stack
+	 * overflows are caught */
+
+	auto faultFlag = false;
+
+	try {
+		cpu.Push32(0x00);
+	} catch (const swanson::StackOverflow &) {
+		faultFlag = true;
+	}
+
+	assert(faultFlag == true);
+
+	/* check that values are in correct
+	 * locations */
+
+	assert(memorySection->Read32(0x0c) == val1);
+	assert(memorySection->Read32(0x08) == val2);
+	assert(memorySection->Read32(0x04) == val3);
+	assert(memorySection->Read32(0x00) == val4);
+
+	/* check that pop returns the values
+	 * in the right order */
+
+	assert(cpu.Pop32() == val4);
+	assert(cpu.Pop32() == val3);
+	assert(cpu.Pop32() == val2);
+	assert(cpu.Pop32() == val1);
+}
+
 #if 0
 
 void TestMisc() {
@@ -478,6 +535,7 @@ void TestCPU() {
 	TestStoreOffset();
 	TestLoadImmediate();
 	TestLoadOffset();
+	TestPushPop();
 }
 
 } // namespace swanson::tests
