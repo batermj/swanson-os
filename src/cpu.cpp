@@ -21,6 +21,7 @@
 #include <swanson/exception.hpp>
 #include <swanson/interrupt-handler.hpp>
 #include <swanson/memory-bus.hpp>
+#include <swanson/stack-overflow.hpp>
 #include <swanson/syscall.hpp>
 
 #include <cstring>
@@ -454,7 +455,10 @@ void CPU::HandleBreak() {
 }
 
 void CPU::HandleStackOverflow() {
-	throw Exception("Stack overflow detected.");
+	StackOverflow stackOverflow;
+	stackOverflow.SetInstructionPointer(GetInstructionPointer());
+	stackOverflow.SetAddress(GetStackPointer());
+	throw stackOverflow;
 }
 
 void CPU::HandleDivideByZero() {
