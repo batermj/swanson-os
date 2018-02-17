@@ -140,6 +140,8 @@ void CPU::JumpToSubroutine(uint32_t addr, uint32_t ret) {
 
 void CPU::ReturnFromSubroutine() {
 
+	SetStackPointer(GetFramePointer());
+
 	// pop frame pointer
 	SetFramePointer(Pop32());
 
@@ -365,12 +367,29 @@ bool CPU::StepOnce() {
 		instructionPointer += 2;
 		LoadOffset32(a, b, (int16_t) memoryBus.Exec16(instructionPointer));
 		break;
+	case 0x2b: /* or */
+		a = get_a(inst);
+		b = get_b(inst);
+		regs[a] |= regs[b];
+		break;
 	case 0x02: /* mov */
 		a = get_a(inst);
 		b = get_b(inst);
 		regs[a] = regs[b];
 		break;
 	case 0x0f: /* nop */
+		break;
+	case 0x07: /* pop */
+		a = get_a(inst);
+		b = get_b(inst);
+		regs[b] = memoryBus.Read32(regs[a]);
+		regs[a] += 4;
+		break;
+	case 0x06: /* push */
+		a = get_a(inst);
+		b = get_b(inst);
+		regs[a] -= 4;
+		memoryBus.Write32(regs[a], regs[b]);
 		break;
 	case 0x04: /* ret */
 		ReturnFromSubroutine();
@@ -380,6 +399,11 @@ bool CPU::StepOnce() {
 		b = get_b(inst);
 		instructionPointer += 2;
 		StoreOffset32(regs[a], regs[b], (int16_t) memoryBus.Exec16(instructionPointer));
+		break;
+	case 0x29: /* sub */
+		a = get_a(inst);
+		b = get_b(inst);
+		regs[a] -= regs[b];
 		break;
 	case 0x30: /* swi */
 		immediate = memoryBus.Exec32(instructionPointer + 2);
