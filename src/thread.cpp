@@ -18,6 +18,7 @@
 #include <swanson/thread.hpp>
 
 #include <swanson/cpu.hpp>
+#include <swanson/segfault.hpp>
 
 namespace swanson {
 
@@ -46,7 +47,12 @@ void Thread::SetInterruptHandler(std::shared_ptr<InterruptHandler> interruptHand
 }
 
 void Thread::Step(uint32_t steps) {
-	cpu->Step(steps);
+	try {
+		cpu->Step(steps);
+	} catch (Segfault &segfault) {
+		segfault.SetInstructionPointer(cpu->GetInstructionPointer());
+		throw;
+	}
 }
 
 } // namespace swanson
