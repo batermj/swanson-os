@@ -18,6 +18,7 @@
 #include <swanson/cpu.hpp>
 
 #include <swanson/bad-instruction.hpp>
+#include <swanson/conditions.hpp>
 #include <swanson/exception.hpp>
 #include <swanson/interrupt-handler.hpp>
 #include <swanson/memory-bus.hpp>
@@ -38,36 +39,6 @@
 #define get_b(inst) (inst & 0x000f)
 
 #define get_v(inst) ((((int16_t)((inst & ((1 << 10) - 1)) << 6)) >> 6) << 1)
-
-// Equal to.
-#define CPU_CONDITION_EQ 0x00
-
-// Greater than or equal to.
-#define CPU_CONDITION_GE 0x06
-
-// Greater than or equal to (unsigned).
-#define CPU_CONDITION_GEU 0x08
-
-// Greater than.
-#define CPU_CONDITION_GT 0x03
-
-// Greater than (unsigned).
-#define CPU_CONDITION_GTU 0x05
-
-// Less than or equal to.
-#define CPU_CONDITION_LE 0x07
-
-// Less than or equal to (unsigned).
-#define CPU_CONDITION_LEU 0x09
-
-// Less than.
-#define CPU_CONDITION_LT 0x02
-
-// Less than (unsigned).
-#define CPU_CONDITION_LTU 0x04
-
-// Not equal to.
-#define CPU_CONDITION_NE 0x01
 
 namespace {
 
@@ -91,7 +62,7 @@ namespace swanson {
 CPU::CPU() noexcept {
 	std::memset(regs, 0, sizeof(regs));
 	std::memset(sregs, 0, sizeof(sregs));
-	condition = CPU_CONDITION_EQ;
+	condition = conditions::eq;
 	instructionCount = 0;
 }
 
@@ -194,6 +165,19 @@ void CPU::LoadOffset16(uint8_t a, uint8_t b, int16_t offset) {
 	regs[a] = memoryBus.Read16(addr);
 }
 
+constexpr uint32_t condition_states[10] = {
+	conditions::eq,
+	~conditions::eq,
+	conditions::lt,
+	conditions::gt,
+	conditions::ltu,
+	conditions::gtu,
+	conditions::gt | conditions::eq,
+	conditions::lt | conditions::eq,
+	conditions::gtu | conditions::eq,
+	conditions::ltu | conditions::eq
+};
+
 bool CPU::StepOnce() {
 
 	uint32_t a;
@@ -235,7 +219,6 @@ bool CPU::StepOnce() {
 	// These variables are used
 	// in the branch instructions.
 	uint8_t conditionRequired;
-	uint8_t conditionPresent;
 	// An immediate value that
 	// follows an instruction.
 	uint32_t immediate;
@@ -251,16 +234,29 @@ bool CPU::StepOnce() {
 	case 0x32: /* blt */
 	case 0x34: /* bltu */
 	case 0x31: /* bne */
-		/* condition code required */
-		conditionRequired = (inst & 0x3c00) >> 0x0a;
-		/* actual condition code of the cpu */
-		conditionPresent = condition;
-		/* move instruction pointer passed the
-		 * current instruction */
+
+		// move instruction pointer passed the
+		// current instruction
 		instructionPointer += 2;
-		/* get branch offset (if taken) */
+
+		// get the condition code required
+		// by the instruction
+		conditionRequired = (inst & 0x3c00) >> 0x0a;
+		if (conditionRequired > 10)
+			HandleBadInstruction();
+
+		if (!(condition & condition_states[conditionRequired])) {
+			// branch not taken
+			SetInstructionPointer(instructionPointer);
+			return true;
+		}
+
+		// branch taken
+	
+		// get branch offset (if taken)
 		offset = get_v(inst);
-		/* check for underflow */
+
+		// check for underflow
 		if (offset < 0) {
 			if (((uint16_t)(offset * -1)) > instructionPointer) {
 				HandleBadInstruction();
@@ -268,29 +264,25 @@ bool CPU::StepOnce() {
 			}
 		}
 
-		/* check for overflow */
+		// check for overflow
 		if (offset > 0) {
 			if (instructionPointer > (UINT32_MAX - ((uint32_t) offset))) {
 				HandleBadInstruction();
 				return false;
 			}
 		}
-		/* check if branch is taken */
-		if (conditionRequired == conditionPresent) {
 
-			if (offset > 0)
-				instructionPointer += (uint32_t)(offset);
-			else
-				instructionPointer -= (uint32_t)(offset * -1);
+		// increment the instruction pointer
+		// by the offset
+		if (offset > 0)
+			instructionPointer += (uint32_t)(offset);
+		else
+			instructionPointer -= (uint32_t)(offset * -1);
 
-			SetInstructionPointer(instructionPointer);
-			return true;
-		}
-
-		/* branch not taken, instruction
-		 * pointer has already been updated. */
+		// finalize instruction pointer
 		SetInstructionPointer(instructionPointer);
 		return true;
+
 	default:
 		break;
 	}
@@ -330,16 +322,16 @@ bool CPU::StepOnce() {
 		reg_b = regs[b];
 
 		if (reg_a > reg_b)
-			condition = CPU_CONDITION_GTU;
+			condition = conditions::gtu;
 		else if (reg_a < reg_b)
-			condition = CPU_CONDITION_LTU;
+			condition = conditions::ltu;
 		else
-			condition = CPU_CONDITION_EQ;
+			condition = conditions::eq;
 
 		if (((int32_t) reg_a) > ((int32_t) reg_b))
-			condition |= CPU_CONDITION_GT;
+			condition |= conditions::gt;
 		else if (((int32_t) reg_a) < ((int32_t) reg_b))
-			condition |= CPU_CONDITION_LT;
+			condition |= conditions::lt;
 
 		break;
 
@@ -579,15 +571,7 @@ void CPU::HandleInterrupt(uint32_t type) {
 	if (interruptHandler == nullptr)
 		throw Exception("Interrupt handler is not assigned to the CPU.");
 
-	// check if interrupt is syscall
-	if (type == 0x80) {
-		Syscall syscall;
-		syscall.SetInput(regs[2]);
-		syscall.SetOutput(regs[3]);
-		interruptHandler->HandleSyscall(syscall);
-	} else {
-		throw Exception("Interrupt type is unknown.");
-	}
+	interruptHandler->HandleSyscall(*this, type);
 }
 
 } // namespace swanson

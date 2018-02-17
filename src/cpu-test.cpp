@@ -74,6 +74,9 @@ public:
 	void SetCondition(uint32_t condition) noexcept {
 		cpu->SetCondition(condition);
 	}
+	bool CheckCondition(uint32_t condition) const noexcept {
+		return condition & cpu->GetCondition();
+	}
 	bool CheckInstructionPointer(uint32_t addr) const noexcept {
 		return addr == cpu->GetInstructionPointer();
 	}
@@ -168,6 +171,18 @@ void TestBranching() {
 	test2.SetCondition(swanson::conditions::eq);
 	test2.Run();
 	assert(test2.CheckInstructionPointer(0x0a));
+
+	// test cmp
+
+	auto condition = swanson::conditions::le | swanson::conditions::leu;
+
+	Test test3;
+	test3.SetCodeBytes({ 0x0e, 0x23 });
+	test3.SetRegister(2, 0x01);
+	test3.SetRegister(3, 0x02);
+	test3.SetCondition(swanson::conditions::eq);
+	test3.Run();
+	assert(test3.CheckCondition(condition));
 }
 
 void TestJumping() {
@@ -492,17 +507,6 @@ void TestMisc() {
 	assert(cpu_get_pc(cpu) == 2);
 
 	cpu_recover(cpu);
-
-	/* test cmp */
-	cpu_set_pc(cpu, 0x00);
-	code[0] = 0x0e;
-	code[1] = 0x12;
-	cpu->regs[1] = 0x01;
-	cpu->regs[2] = 0x02;
-	cpu->condition = CPU_CONDITION_EQ;
-	cpu.Step(1);
-	assert(cpu->condition == (CPU_CONDITION_LT | CPU_CONDITION_LTU));
-	assert(cpu_get_pc(cpu) == 2);
 
 	/* test gsr (get special register) */
 	cpu_set_pc(cpu, 0x00);

@@ -48,6 +48,11 @@ public:
 	CPU() noexcept;
 	/// Default deconstructor
 	~CPU() { }
+	/// Get the current condition
+	/// state of the cpu.
+	/// @returns The current condition
+	/// state of the cpu.
+	auto GetCondition() const noexcept { return condition; }
 	/// Get the value of a register by specifying
 	/// the index of the register. There are eighteen
 	/// registers. The first register has an index of

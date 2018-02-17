@@ -22,35 +22,35 @@
 
 namespace swanson::conditions {
 
-/// Equal to.
-uint32_t eq = 0x00;
-
-/// greater than or equal to.
-uint32_t ge = 0x06;
-
-/// greater than or equal to (unsigned).
-uint32_t geu = 0x08;
-
 /// greater than.
-uint32_t gt = 0x03;
-
-/// greater than (unsigned).
-uint32_t gtu = 0x05;
-
-/// less than or equal to.
-uint32_t le = 0x07;
-
-/// less than or equal to (unsigned).
-uint32_t leu = 0x09;
+constexpr uint32_t gt = 1 << 0;
 
 /// less than.
-uint32_t lt = 0x02;
+constexpr uint32_t lt = 1 << 1;
+
+/// Equal to.
+constexpr uint32_t eq = 1 << 2;
+
+/// greater than (unsigned).
+constexpr uint32_t gtu = 1 << 3;
 
 /// less than (unsigned).
-uint32_t ltu = 0x04;
+constexpr uint32_t ltu = 1 << 4;
+
+/// greater than or equal to.
+constexpr uint32_t ge = gt | eq;
+
+/// greater than or equal to (unsigned).
+constexpr uint32_t geu = gtu | eq;
+
+/// less than or equal to.
+constexpr uint32_t le = lt | eq;
+
+/// less than or equal to (unsigned).
+constexpr uint32_t leu = ltu | eq;
 
 /// not equal to.
-uint32_t ne = 0x01;
+constexpr uint32_t ne = ~eq;
 
 } // namespace swanson::conditions
 
