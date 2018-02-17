@@ -24,6 +24,26 @@
 #include <cstdlib>
 #include <cstring>
 
+namespace {
+
+class StdStream final : public swanson::Stream {
+	std::istream &stream;
+public:
+	StdStream(std::istream &stream_) : stream(stream_) { }
+	~StdStream() { }
+	void Write(const void *, uint64_t) {
+		throw swanson::Exception("Cannot write to read-only stream.");
+	}
+	void Read(void *buf, uint64_t bufSize) {
+		stream.read((char *) buf, (std::streampos) bufSize);
+	}
+	void SetPosition(uint64_t position) {
+		stream.seekg((std::streampos) position, std::ios::beg);
+	}
+};
+
+} // namespace
+
 namespace swanson::elf {
 
 Segment::Segment() noexcept {
@@ -188,6 +208,13 @@ int File::Decode(Stream &stream) {
 	}
 
 	return 0;
+}
+
+int File::Decode(std::istream &stream_) {
+
+	StdStream stdStream(stream_);
+
+	return Decode(stdStream);
 }
 
 void File::Push(std::shared_ptr<Segment> &segment) {

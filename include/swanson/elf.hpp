@@ -19,8 +19,9 @@
 #ifndef SWANSON_ELF_HPP
 #define SWANSON_ELF_HPP
 
-#include <vector>
+#include <istream>
 #include <memory>
+#include <vector>
 
 #include <cstdint>
 
@@ -136,6 +137,13 @@ public:
 	/// @returns Zero on success, a negative
 	/// number on failure.
 	int Decode(Stream &stream);
+	/// Decode an ELF file from a standard
+	/// library stream.
+	/// @param stream The stream to decode
+	/// the ELF file from.
+	/// @returns Zero on success, a negative
+	/// number on failure.
+	int Decode(std::istream &stream);
 	/// Add an ELF segment to the
 	/// ELF file.
 	/// @param segment The segment
