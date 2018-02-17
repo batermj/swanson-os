@@ -150,9 +150,10 @@ int main(int argc, const char **argv) {
 	try {
 		return Main(argc, argv);
 	} catch (const swanson::Segfault &segfault) {
-		std::cerr << "An uncaught segmentation fault occured at ";
+		std::cerr << "An uncaught segmentation fault occured." << std::endl;
 		std::cerr << std::hex << std::setw(8) << std::setfill('0');
-		std::cerr << segfault.GetAddress() << "." << std::endl;
+		std::cerr << "Instruction Pointer: " << segfault.GetInstructionPointer() << std::endl;
+		std::cerr << "Fault Address:       " << segfault.GetAddress() << std::endl;
 		return EXIT_FAILURE;
 	} catch (const swanson::BadInstruction &badInstruction) {
 		std::cerr << "An uncaught illegal instruction was encounted." << std::endl;
