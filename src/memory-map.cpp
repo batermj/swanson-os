@@ -20,8 +20,6 @@
 #include <swanson/memory-section.hpp>
 #include <swanson/segfault.hpp>
 
-#define debug(...)
-
 namespace swanson {
 
 uint32_t MemoryMap::GetSize() const noexcept {
@@ -36,8 +34,6 @@ uint32_t MemoryMap::GetSize() const noexcept {
 
 uint32_t MemoryMap::Exec32(uint32_t addr) const {
 
-	debug("exec32: %08x\n", addr);
-
 	for (const auto &section : sections) {
 		if (section->Exists(addr))
 			return section->Exec32(addr);
@@ -47,8 +43,6 @@ uint32_t MemoryMap::Exec32(uint32_t addr) const {
 }
 
 uint16_t MemoryMap::Exec16(uint32_t addr) const {
-
-	debug("exec16: %08x\n", addr);
 
 	for (const auto &section : sections) {
 		if (section->Exists(addr))
@@ -60,8 +54,6 @@ uint16_t MemoryMap::Exec16(uint32_t addr) const {
 
 uint32_t MemoryMap::Read32(uint32_t addr) const {
 
-	debug("read32: %08x\n", addr);
-
 	for (const auto &section : sections) {
 		if (section->Exists(addr))
 			return section->Read32(addr);
@@ -71,8 +63,6 @@ uint32_t MemoryMap::Read32(uint32_t addr) const {
 }
 
 uint16_t MemoryMap::Read16(uint32_t addr) const {
-
-	debug("read16: %08x\n", addr);
 
 	for (const auto &section : sections) {
 		if (section->Exists(addr))
@@ -84,8 +74,6 @@ uint16_t MemoryMap::Read16(uint32_t addr) const {
 
 uint8_t MemoryMap::Read8(uint32_t addr) const {
 
-	debug("read8: %08x\n", addr);
-
 	for (const auto &section : sections) {
 		if (section->Exists(addr))
 			return section->Read8(addr);
@@ -95,8 +83,6 @@ uint8_t MemoryMap::Read8(uint32_t addr) const {
 }
 
 void MemoryMap::Write32(uint32_t addr, uint32_t value) {
-
-	debug("write32: %08x (value = %08x)\n", addr, value);
 
 	for (auto &section : sections) {
 		if (section->Exists(addr))
@@ -108,8 +94,6 @@ void MemoryMap::Write32(uint32_t addr, uint32_t value) {
 
 void MemoryMap::Write16(uint32_t addr, uint16_t value) {
 
-	debug("write16: %08x (value = %04x)\n", addr, value);
-
 	for (auto &section : sections) {
 		if (section->Exists(addr))
 			return section->Write16(addr, value);
@@ -119,8 +103,6 @@ void MemoryMap::Write16(uint32_t addr, uint16_t value) {
 }
 
 void MemoryMap::Write8(uint32_t addr, uint8_t value) {
-
-	debug("write8: %08x (value = %02x)\n", addr, value);
 
 	for (auto &section : sections) {
 		if (section->Exists(addr))
