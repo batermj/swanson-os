@@ -183,6 +183,14 @@ void TestBranching() {
 	test3.SetCondition(swanson::conditions::eq);
 	test3.Run();
 	assert(test3.CheckCondition(condition));
+
+	// bne
+
+	Test test4;
+	test4.SetCodeBytes({ 0xc4, 0x04 });
+	test4.SetCondition(swanson::conditions::lt);
+	test4.Run();
+	assert(test4.CheckInstructionPointer(0x0a));
 }
 
 void TestJumping() {
