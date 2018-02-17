@@ -4,18 +4,23 @@ cmake_policy(SET CMP0048 NEW)
 
 project("swanson_os" VERSION "0.1.0" LANGUAGES C CXX)
 
-option(SWANSON_BUILD_DOCS "Build the documentation with Doxygen." ON)
-option(SWANSON_BUILD_SRC  "Build the source code." ON)
+option(SWANSON_BUILD_DOCS     "Build the documentation with Doxygen." ON)
+option(SWANSON_BUILD_SOURCE   "Build the source code." ON)
+option(SWANSON_BUILD_EXAMPLES "Build the examples." ON)
 
 include_directories("include")
 
-if (SWANSON_BUILD_SRC)
+if (SWANSON_BUILD_SOURCE)
 	add_subdirectory("src")
-endif (SWANSON_BUILD_SRC)
+endif (SWANSON_BUILD_SOURCE)
 
 if (SWANSON_BUILD_DOCS)
 	add_subdirectory("docs")
 endif (SWANSON_BUILD_DOCS)
+
+if (SWANSON_BUILD_EXAMPLES)
+	add_subdirectory("examples")
+endif (SWANSON_BUILD_EXAMPLES)
 
 enable_testing()
 
