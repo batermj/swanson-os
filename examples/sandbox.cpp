@@ -70,7 +70,7 @@ void Run(int argc, const char **argv) {
 
 int main(int argc, const char **argv) {
 
-	int argi;
+	int argi = 0;
 
 	if (argi == 1) {
 		PrintHelp();
@@ -93,6 +93,7 @@ int main(int argc, const char **argv) {
 	try {
 		Run(argc - argi, &argv[argi]);
 	} catch (const swanson::Exception &exception) {
+		std::cerr << argv[argi] << ": ";
 		std::cerr << exception.What() << std::endl;
 		return EXIT_FAILURE;
 	}
