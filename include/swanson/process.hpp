@@ -35,6 +35,7 @@ class Segment;
 
 class Thread;
 class MemoryMap;
+class MemorySection;
 class InterruptHandler;
 class Path;
 
@@ -44,6 +45,9 @@ class Path;
 class Process final {
 	/// Used to read from and write to memory.
 	std::shared_ptr<MemoryMap> memoryMap;
+	/// Contains the command line arguments to
+	/// the process.
+	std::shared_ptr<MemorySection> argumentSection;
 	/// A pointer to the internally defined
 	/// interrupt handler.
 	std::shared_ptr<InterruptHandler> interruptHandler;
