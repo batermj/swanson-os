@@ -167,7 +167,7 @@ void TestBranching() {
 	test2.SetCodeBytes({ 0xc0, 0x04 });
 	test2.SetCondition(swanson::conditions::eq);
 	test2.Run();
-	assert(test2.CheckInstructionPointer(0x08));
+	assert(test2.CheckInstructionPointer(0x0a));
 }
 
 void TestJumping() {
