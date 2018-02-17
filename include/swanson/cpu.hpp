@@ -129,16 +129,26 @@ protected:
 	void JumpToSubroutine(uint32_t addr, uint32_t ret);
 	/// Return from a subroutine.
 	void ReturnFromSubroutine();
-	/// Store a value at the offset of a memory address.
+	/// Store a 32-bit value at the offset of a memory address.
 	/// @param addr The base address.
 	/// @param value The value to store.
 	/// @param offset The offset to add to the base address.
 	void StoreOffset32(uint32_t addr, uint32_t value, int16_t offset);
-	/// Load the value at the offset of a memory base address.
+	/// Store a 16-bit value at the offset of a memory address.
+	/// @param addr The base address.
+	/// @param value The value to store.
+	/// @param offset The offset to add to the base address.
+	void StoreOffset16(uint32_t addr, uint16_t value, int16_t offset);
+	/// Load the 32-bit value at the offset of a memory base address.
 	/// @param a The destination register index.
 	/// @param b The index of the register containing the base address.
 	/// @param offset The offset to add to the base address.
 	void LoadOffset32(uint8_t a, uint8_t b, int16_t offset);
+	/// Load the 16-bit value at the offset of a memory base address.
+	/// @param a The destination register index.
+	/// @param b The index of the register containing the base address.
+	/// @param offset The offset to add to the base address.
+	void LoadOffset16(uint8_t a, uint8_t b, int16_t offset);
 	/// Get the memory bus, if it exists.
 	/// This function will throw an exception
 	/// if there has not yet been a memory bus
