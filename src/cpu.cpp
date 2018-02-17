@@ -72,6 +72,7 @@
 namespace {
 
 uint32_t CalculateOffset(uint32_t addr, int16_t offset) {
+
 	if (offset < 0) {
 		if (((uint32_t) (offset * -1)) > addr)
 			throw swanson::Exception("Integer underflow detected.");
@@ -79,6 +80,7 @@ uint32_t CalculateOffset(uint32_t addr, int16_t offset) {
 		if ((UINT32_MAX - ((uint32_t) offset)) < addr)
 			throw swanson::Exception("Integer overflow detected.");
 	}
+
 	return (uint32_t)(((int32_t) addr) + offset);
 }
 
@@ -232,6 +234,9 @@ bool CPU::StepOnce() {
 		conditionRequired = (inst & 0x3c00) >> 0x0a;
 		/* actual condition code of the cpu */
 		conditionPresent = condition;
+		/* move instruction pointer passed the
+		 * current instruction */
+		instructionPointer += 2;
 		/* get branch offset (if taken) */
 		offset = get_v(inst);
 		/* check for underflow */
@@ -261,8 +266,8 @@ bool CPU::StepOnce() {
 			return true;
 		}
 
-		/* branch not taken */
-		instructionPointer += 2;
+		/* branch not taken, instruction
+		 * pointer has already been updated. */
 		SetInstructionPointer(instructionPointer);
 		return true;
 	default:
@@ -285,12 +290,12 @@ bool CPU::StepOnce() {
 	case 0x28: /* ashl */
 		a = get_a(inst);
 		b = get_b(inst);
-		regs[a] = regs[a] << regs[b];
+		regs[a] = (int32_t) ((int32_t) regs[a]) << ((int32_t) regs[b]);
 		break;
 	case 0x2d: /* ashr */
 		a = get_a(inst);
 		b = get_b(inst);
-		regs[a] = regs[a] >> regs[b];
+		regs[a] = (int32_t) ((int32_t) regs[a]) >> ((int32_t) regs[b]);
 		break;
 	case 0x35: /* brk */
 		HandleBreak();
@@ -367,6 +372,11 @@ bool CPU::StepOnce() {
 		instructionPointer += 2;
 		LoadOffset32(a, b, (int16_t) memoryBus.Exec16(instructionPointer));
 		break;
+	case 0x27: /* lshr */
+		a = get_a(inst);
+		b = get_b(inst);
+		regs[a] = regs[a] >> regs[b];
+		break;
 	case 0x2b: /* or */
 		a = get_a(inst);
 		b = get_b(inst);
@@ -394,6 +404,21 @@ bool CPU::StepOnce() {
 	case 0x04: /* ret */
 		ReturnFromSubroutine();
 		return true;
+	case 0x1e: /* st.b */
+		a = get_a(inst);
+		b = get_b(inst);
+		memoryBus.Write8(regs[a], regs[b]);
+		break;
+	case 0x0b: /* st.l */
+		a = get_a(inst);
+		b = get_b(inst);
+		memoryBus.Write32(regs[a], regs[b]);
+		break;
+	case 0x23: /* st.s */
+		a = get_a(inst);
+		b = get_b(inst);
+		memoryBus.Write16(regs[a], regs[b]);
+		break;
 	case 0x0d: /* sto.l */
 		a = get_a(inst);
 		b = get_b(inst);
