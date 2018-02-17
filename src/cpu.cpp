@@ -163,6 +163,15 @@ void CPU::StoreOffset32(uint32_t addr, uint32_t value, int16_t offset) {
 	memoryBus.Write32(addr, value);
 }
 
+void CPU::StoreOffset16(uint32_t addr, uint16_t value, int16_t offset) {
+
+	addr = CalculateOffset(addr, offset);
+
+	auto &memoryBus = GetMemoryBus();
+
+	memoryBus.Write16(addr, value);
+}
+
 void CPU::LoadOffset32(uint8_t a, uint8_t b, int16_t offset) {
 
 	auto addr = regs[b];
@@ -172,6 +181,17 @@ void CPU::LoadOffset32(uint8_t a, uint8_t b, int16_t offset) {
 	auto &memoryBus = GetMemoryBus();
 
 	regs[a] = memoryBus.Read32(addr);
+}
+
+void CPU::LoadOffset16(uint8_t a, uint8_t b, int16_t offset) {
+
+	auto addr = regs[b];
+
+	addr = CalculateOffset(addr, offset);
+
+	auto &memoryBus = GetMemoryBus();
+
+	regs[a] = memoryBus.Read16(addr);
 }
 
 bool CPU::StepOnce() {
@@ -219,6 +239,7 @@ bool CPU::StepOnce() {
 	// An immediate value that
 	// follows an instruction.
 	uint32_t immediate;
+
 	switch ((inst & 0xfc00) >> 0x0a) {
 	case 0x30: /* beq */
 	case 0x36: /* bge */
@@ -361,6 +382,12 @@ bool CPU::StepOnce() {
 		b = get_b(inst);
 		regs[a] = memoryBus.Read16(regs[b]);
 		break;
+	case 0x08: /* lda.l */
+		a = get_a(inst);
+		immediate = memoryBus.Read32(instructionPointer + 2);
+		regs[a] = memoryBus.Read32(immediate);
+		SetInstructionPointer(instructionPointer + 6);
+		return true;
 	case 0x01: /* ldi.l */
 		a = get_a(inst);
 		regs[a] = memoryBus.Exec32(instructionPointer + 2);
@@ -372,10 +399,21 @@ bool CPU::StepOnce() {
 		instructionPointer += 2;
 		LoadOffset32(a, b, (int16_t) memoryBus.Exec16(instructionPointer));
 		break;
+	case 0x38: /* ldo.s */
+		a = get_a(inst);
+		b = get_b(inst);
+		instructionPointer += 2;
+		LoadOffset16(a, b, (int16_t) memoryBus.Exec16(instructionPointer));
+		break;
 	case 0x27: /* lshr */
 		a = get_a(inst);
 		b = get_b(inst);
 		regs[a] = regs[a] >> regs[b];
+		break;
+	case 0x2f: /* mul */
+		a = get_a(inst);
+		b = get_b(inst);
+		regs[a] = (int32_t)(((int32_t) regs[a]) * ((int32_t) regs[b]));
 		break;
 	case 0x2b: /* or */
 		a = get_a(inst);
@@ -388,6 +426,11 @@ bool CPU::StepOnce() {
 		regs[a] = regs[b];
 		break;
 	case 0x0f: /* nop */
+		break;
+	case 0x2c: /* not */
+		a = get_a(inst);
+		b = get_b(inst);
+		regs[a] = 0xffffffff ^ regs[b];
 		break;
 	case 0x07: /* pop */
 		a = get_a(inst);
@@ -404,6 +447,11 @@ bool CPU::StepOnce() {
 	case 0x04: /* ret */
 		ReturnFromSubroutine();
 		return true;
+	case 0x11: /* sex.s */
+		a = get_a(inst);
+		b = get_b(inst);
+		regs[a] = (int32_t)((int16_t) regs[b]);
+		break;
 	case 0x1e: /* st.b */
 		a = get_a(inst);
 		b = get_b(inst);
@@ -419,11 +467,23 @@ bool CPU::StepOnce() {
 		b = get_b(inst);
 		memoryBus.Write16(regs[a], regs[b]);
 		break;
+	case 0x09: /* sta.l */
+		a = get_a(inst);
+		immediate = memoryBus.Exec32(instructionPointer + 2);
+		memoryBus.Write32(immediate, regs[a]);
+		SetInstructionPointer(instructionPointer + 6);
+		return true;
 	case 0x0d: /* sto.l */
 		a = get_a(inst);
 		b = get_b(inst);
 		instructionPointer += 2;
 		StoreOffset32(regs[a], regs[b], (int16_t) memoryBus.Exec16(instructionPointer));
+		break;
+	case 0x39: /* sto.s */
+		a = get_a(inst);
+		b = get_b(inst);
+		instructionPointer += 2;
+		StoreOffset16(regs[a], regs[b], (int16_t) memoryBus.Exec16(instructionPointer));
 		break;
 	case 0x29: /* sub */
 		a = get_a(inst);
