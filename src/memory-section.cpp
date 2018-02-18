@@ -24,7 +24,7 @@
 namespace swanson {
 
 void MemorySection::CopyData(const void *data, uint32_t size) {
-	bytes.resize(size);
+	Resize(size);
 	std::memcpy(bytes.data(), data, size);
 }
 
