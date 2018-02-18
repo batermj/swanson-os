@@ -20,16 +20,18 @@
 
 namespace swanson {
 
-class Syscall;
+class CPU;
 
 /// Handles interrupts from processes.
 class InterruptHandler {
 public:
 	/// Default deconstructor
 	virtual ~InterruptHandler() { }
-	/// Handle a system call.
-	/// @param syscall The system call to handle.
-	virtual void HandleSyscall(const Syscall &syscall) = 0;
+	/// Handle an interrupt initiated by a CPU.
+	/// @param cpu The CPU that initiated
+	/// the interrupted.
+	/// @param type The interrupt type.
+	virtual void HandleSyscall(CPU &cpu, uint32_t type) = 0;
 };
 
 } // namespace swanson
