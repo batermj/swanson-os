@@ -19,6 +19,7 @@
 #include <swanson/process.hpp>
 
 #include <swanson/bad-instruction.hpp>
+#include <swanson/cpu.hpp>
 #include <swanson/elf.hpp>
 #include <swanson/interrupt-handler.hpp>
 #include <swanson/memory-map.hpp>
@@ -38,48 +39,53 @@ public:
 	}
 	~InterruptHandler() {
 	}
-	void HandleSyscall(const swanson::Syscall &syscall) {
+	void HandleSyscall(swanson::CPU &cpu, uint32_t type) {
 
 		auto memoryMap = process.GetMemoryMap();
 
-		auto inputAddress = syscall.GetInput();
-
-		auto syscallType = memoryMap->Read32(inputAddress);
-
-		if (syscallType == 0x01) {
-			HandleWrite(inputAddress + 4);
-		} else if (syscallType == 0x60) {
-			HandleExit(inputAddress + 4);
+		if (type == 0x01) {
+			HandleExit(cpu);
+		} else if (type == 0x03) {
+			HandleClose(cpu);
+		} else if (type == 0x05) {
+			HandleWrite(cpu);
 		} else {
 			throw swanson::Exception("System call type is unknown.");
 		}
 	}
 protected:
-	void HandleWrite(uint32_t inputAddress) {
+	void HandleClose(swanson::CPU &) {
+		// nothing to do here, currently.
+	}
+	void HandleExit(swanson::CPU &cpu) {
+
+		// exit code in r0
+		auto exitCode = cpu.GetRegister(2);
+
+		process.Exit(exitCode);
+	}
+	void HandleWrite(swanson::CPU &cpu) {
 
 		auto memoryMap = process.GetMemoryMap();
 
-		auto fd = memoryMap->Read32(inputAddress);
+		auto fd = cpu.GetRegister(2);
+		auto bufAddr = cpu.GetRegister(3);
+		auto bufSize = cpu.GetRegister(4);
 
-		auto bufAddr = memoryMap->Read32(inputAddress + 4);
-
-		auto bufSize = memoryMap->Read32(inputAddress + 8);
+		if (bufSize > INT32_MAX)
+			bufSize = INT32_MAX;
 
 		if (fd == 1) {
 			WriteStdout(bufAddr, bufSize);
+			// return bytes written
+			cpu.SetRegister(2, bufSize);
 		} else if (fd == 2) {
 			WriteStderr(bufAddr, bufSize);
+			// return bytes written
+			cpu.SetRegister(2, bufSize);
 		} else {
 			// not a valid file descriptor
 		}
-	}
-	void HandleExit(uint32_t inputAddress) {
-
-		auto memoryMap = process.GetMemoryMap();
-
-		auto exitCode = memoryMap->Read32(inputAddress);
-
-		process.Exit(exitCode);
 	}
 	void WriteStdout(uint32_t addr, uint32_t size) {
 
@@ -104,11 +110,36 @@ protected:
 namespace swanson {
 
 Process::Process() {
+
+	/* create memory that will contain the
+	 * command line arguments */
+	argumentSection = std::make_shared<MemorySection>();
+	/* argc, argv, argv[0] */
+	argumentSection->Resize(4 + 4 + 4);
+	argumentSection->SetAddress(0x04);
+	/* argc = 0 */
+	argumentSection->Write32(0x04, 0x00);
+	/* argv = argv[0] */
+	argumentSection->Write32(0x08, 0x0c);
+	/* argv[0] = NULL */
+	argumentSection->Write32(0x0c, 0x00);
+	/* set permissions */
+	argumentSection->AllowRead(true);
+	argumentSection->AllowWrite(true);
+	argumentSection->AllowExecute(false);
+
+	/* create memory map */
 	memoryMap = std::make_shared<MemoryMap>();
+	/* add command line argument section */
+	memoryMap->AddSection(argumentSection);
+
 	interruptHandler = std::make_shared<::InterruptHandler>(*this);
+
 	entryPoint = 0;
+
 	exited = false;
 	exitCode = 0;
+
 	// default stack size is 8MiB
 	defaultStackSize = 8 * 1024 * 1024;
 }
@@ -142,6 +173,14 @@ void Process::Load(const elf::Segment &segment) {
 	memorySection->AllowRead(segment.ReadAllowed());
 	memorySection->AllowWrite(segment.WriteAllowed());
 	memorySection->AllowExecute(segment.ExecuteAllowed());
+
+	// TODO : remove this, it's a hack
+	// used to reserve enough space for
+	// a few changes to the heap from
+	// sbrk.
+	if (((memorySection->GetSize() % 0x2000) != 0) && segment.WriteAllowed()) {
+		memorySection->Resize(memorySection->GetSize() + (0x2000 - (memorySection->GetSize() % 0x2000)));
+	}
 
 	memoryMap->AddSection(memorySection);
 }
