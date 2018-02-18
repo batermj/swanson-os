@@ -23,7 +23,6 @@
 #include <swanson/interrupt-handler.hpp>
 #include <swanson/memory-bus.hpp>
 #include <swanson/stack-overflow.hpp>
-#include <swanson/syscall.hpp>
 
 #include <cstring>
 #include <csignal>
