@@ -374,12 +374,20 @@ bool CPU::StepOnce() {
 		b = get_b(inst);
 		regs[a] = memoryBus.Read16(regs[b]);
 		break;
+	case 0x1d: /* lda.b */
+		a = get_a(inst);
+		immediate = memoryBus.Exec32(instructionPointer + 2);
+		regs[a] = memoryBus.Read16(immediate);
+		SetInstructionPointer(instructionPointer + 6);
+		return true;
 	case 0x08: /* lda.l */
 		a = get_a(inst);
 		immediate = memoryBus.Exec32(instructionPointer + 2);
 		regs[a] = memoryBus.Read32(immediate);
 		SetInstructionPointer(instructionPointer + 6);
 		return true;
+	case 0x1b: /* ldi.b */
+	case 0x20: /* ldi.s */
 	case 0x01: /* ldi.l */
 		a = get_a(inst);
 		regs[a] = memoryBus.Exec32(instructionPointer + 2);
@@ -406,6 +414,11 @@ bool CPU::StepOnce() {
 		a = get_a(inst);
 		b = get_b(inst);
 		regs[a] = regs[a] * regs[b];
+		break;
+	case 0x2a: /* neg */
+		a = get_a(inst);
+		b = get_b(inst);
+		regs[a] = (((int32_t) regs[b]) * -1);
 		break;
 	case 0x2b: /* or */
 		a = get_a(inst);
@@ -464,6 +477,12 @@ bool CPU::StepOnce() {
 		b = get_b(inst);
 		memoryBus.Write16(regs[a], regs[b]);
 		break;
+	case 0x1f: /* sta.b */
+		a = get_a(inst);
+		immediate = memoryBus.Exec32(instructionPointer + 2);
+		memoryBus.Write8(immediate, regs[a]);
+		SetInstructionPointer(instructionPointer + 6);
+		return true;
 	case 0x09: /* sta.l */
 		a = get_a(inst);
 		immediate = memoryBus.Exec32(instructionPointer + 2);
@@ -496,6 +515,11 @@ bool CPU::StepOnce() {
 		a = get_a(inst);
 		b = get_b(inst);
 		regs[a] ^= regs[b];
+		break;
+	case 0x13: /* zex.s */
+		a = get_a(inst);
+		b = get_b(inst);
+		regs[a] = regs[b] & 0xffff;
 		break;
 	case 0x12: /* zex.b */
 		a = get_a(inst);
