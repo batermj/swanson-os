@@ -376,7 +376,7 @@ bool CPU::StepOnce() {
 		break;
 	case 0x08: /* lda.l */
 		a = get_a(inst);
-		immediate = memoryBus.Read32(instructionPointer + 2);
+		immediate = memoryBus.Exec32(instructionPointer + 2);
 		regs[a] = memoryBus.Read32(immediate);
 		SetInstructionPointer(instructionPointer + 6);
 		return true;
@@ -405,7 +405,7 @@ bool CPU::StepOnce() {
 	case 0x2f: /* mul */
 		a = get_a(inst);
 		b = get_b(inst);
-		regs[a] = (int32_t)(((int32_t) regs[a]) * ((int32_t) regs[b]));
+		regs[a] = regs[a] * regs[b];
 		break;
 	case 0x2b: /* or */
 		a = get_a(inst);
@@ -439,7 +439,7 @@ bool CPU::StepOnce() {
 	case 0x04: /* ret */
 		ReturnFromSubroutine();
 		return true;
-	case 0x10:
+	case 0x10: /* sex.b */
 		a = get_a(inst);
 		b = get_b(inst);
 		regs[a] = (int32_t)((int8_t) regs[b]);
