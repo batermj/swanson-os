@@ -101,7 +101,7 @@ add_swanson_library("swanson"
 	"${INCDIR}/thread.hpp"
 	"${SRCDIR}/thread.cpp")
 
-set (INIT_VER "0.0.4")
+set (INIT_VER "0.0.5")
 set (INIT_URL "https://github.com/swanson-os/init/releases/download/v${INIT_VER}/init-${INIT_VER}.tar.gz")
 set (INIT_OUT "${CMAKE_CURRENT_BINARY_DIR}/init-${INIT_VER}.tar.gz")
 file (DOWNLOAD ${INIT_URL} ${INIT_OUT})
