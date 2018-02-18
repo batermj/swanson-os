@@ -25,7 +25,7 @@
 #include <swanson/memory-map.hpp>
 #include <swanson/memory-section.hpp>
 #include <swanson/segfault.hpp>
-#include <swanson/syscall.hpp>
+#include <swanson/syscalls.hpp>
 #include <swanson/thread.hpp>
 
 #include <iostream>
@@ -43,11 +43,11 @@ public:
 
 		auto memoryMap = process.GetMemoryMap();
 
-		if (type == 0x01) {
+		if (type == swanson::syscalls::exit) {
 			HandleExit(cpu);
-		} else if (type == 0x03) {
+		} else if (type == swanson::syscalls::close) {
 			HandleClose(cpu);
-		} else if (type == 0x05) {
+		} else if (type == swanson::syscalls::write) {
 			HandleWrite(cpu);
 		} else {
 			throw swanson::Exception("System call type is unknown.");
