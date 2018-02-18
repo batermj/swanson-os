@@ -23,6 +23,8 @@
 
 #include "cpu-test.hpp"
 
+#include "debug.h"
+
 #include <cassert>
 #include <csignal>
 #include <cstdint>
@@ -501,37 +503,24 @@ void TestPushPop() {
 	assert(cpu.Pop32() == val1);
 }
 
-#if 0
-
 void TestMisc() {
 
-	/* test breakpoint */
-	cpu_set_pc(cpu, 0x00);
-	code[0] = 0x35; /* brk */
-	code[1] = 0;    /* (ignored) */
-	code[2] = 0x0f; /* nop */
-	assert(cpu.Step(2) == 1);
-	assert(cpu->exception == SIGTRAP);
-	assert(cpu_get_pc(cpu) == 2);
+	// sex.s
+	Test test1;
+	test1.SetCodeBytes({ 0x11, 0x34 });
+	test1.SetRegister(3, 0);
+	test1.SetRegister(4, 0xfffe);
+	test1.Run();
+	assert(test1.CheckRegister(3, 0xfffffffe));
 
-	cpu_recover(cpu);
-
-	/* test gsr (get special register) */
-	cpu_set_pc(cpu, 0x00);
-	code[0] = 0xa1;
-	code[1] = 0xff;
-	cpu->regs[1] = 0;
-	cpu->sregs[0xff] = 42;
-	cpu.Step(1);
-	assert(cpu->regs[1] == 42);
-	assert(cpu_get_pc(cpu) == 2);
+	// sex.b
+	Test test2;
+	test2.SetCodeBytes({ 0x10, 0x45 });
+	test2.SetRegister(4, 0);
+	test2.SetRegister(5, 0xfc);
+	test2.Run();
+	assert(test2.CheckRegister(4, 0xfffffffc));
 }
-
-#else
-
-void TestMisc() { }
-
-#endif
 
 } // namespace
 

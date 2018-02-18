@@ -439,6 +439,11 @@ bool CPU::StepOnce() {
 	case 0x04: /* ret */
 		ReturnFromSubroutine();
 		return true;
+	case 0x10:
+		a = get_a(inst);
+		b = get_b(inst);
+		regs[a] = (int32_t)((int8_t) regs[b]);
+		break;
 	case 0x11: /* sex.s */
 		a = get_a(inst);
 		b = get_b(inst);
