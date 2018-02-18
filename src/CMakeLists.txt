@@ -5,25 +5,6 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 list (APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-if ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
-	set (SWANSON_WITH_CLANG ON)
-endif ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
-
-if (MSVC)
-	# 4820 warnings about added structure padding
-	# 4996 warnings about 'unsafe' libc functions
-	# 4710 warnings about functions like 'printf'
-	#      not being inlined.
-	list (APPEND SWANSON_CFLAGS /Wall /WX /wd4820 /wd4996 /wd4710)
-	lsit (APPEND SWANSON_CFLAGS /DSWANSON_WITH_INITRAMFS_DATA_H=1)
-endif (MSVC)
-
-if (CMAKE_COMPILER_IS_GNUCC OR SWANSON_WITH_CLANG)
-	set (CMAKE_CXX_FLAGS "-Wall -Wextra -Werror -Wfatal-errors -std=c++17")
-	list (APPEND SWANSON_CFLAGS -Wall -Wextra -Werror -Wfatal-errors)
-	list (APPEND SWANSON_CFLAGS -DSWANSON_WITH_INITRAMFS_DATA_H=1)
-endif (CMAKE_COMPILER_IS_GNUCC OR SWANSON_WITH_CLANG)
-
 # Use these functions for adding targets
 # in this build script.
 include("AddSwansonLibrary")
