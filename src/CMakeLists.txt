@@ -82,27 +82,27 @@ add_swanson_library("swanson"
 	"${INCDIR}/thread.hpp"
 	"${SRCDIR}/thread.cpp")
 
-set (INIT_VER "0.0.5")
-set (INIT_URL "https://github.com/swanson-os/init/releases/download/v${INIT_VER}/init-${INIT_VER}.tar.gz")
-set (INIT_OUT "${CMAKE_CURRENT_BINARY_DIR}/init-${INIT_VER}.tar.gz")
-file (DOWNLOAD ${INIT_URL} ${INIT_OUT})
+set (TOOLKIT_VER "0.0.6")
+set (TOOLKIT_URL "https://github.com/swanson-os/swanson-tk/releases/download/v${TOOLKIT_VER}/swanson-tk-${TOOLKIT_VER}.tar.gz")
+set (TOOLKIT_OUT "${CMAKE_CURRENT_BINARY_DIR}/swanson-tk-${TOOLKIT_VER}.tar.gz")
+
+set (INIT_PATH "${CMAKE_CURRENT_BINARY_DIR}/swanson-tk-${TOOLKIT_VER}/bin/init")
+
+file (DOWNLOAD ${TOOLKIT_URL} ${TOOLKIT_OUT})
 
 add_custom_command(OUTPUT "init"
-	COMMAND "${CMAKE_COMMAND}" -E tar xvf "${INIT_OUT}")
+	COMMAND "${CMAKE_COMMAND}" -E tar xvf "${TOOLKIT_OUT}")
 
 add_custom_command(OUTPUT
 		"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.h"
 		"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.c"
-	DEPENDS "rc" "init"
-	COMMAND
-		$<TARGET_FILE:ramfs-tool> --disk "${CMAKE_CURRENT_BINARY_DIR}/initramfs.img" --create format
-	COMMAND
-		$<TARGET_FILE:ramfs-tool> --disk "${CMAKE_CURRENT_BINARY_DIR}/initramfs.img" cp "init" "init"
-	COMMAND
-		$<TARGET_FILE:rc> --header "${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.h"
-		                  --source "${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.c"
-		                  --input "${CMAKE_CURRENT_BINARY_DIR}/initramfs.img"
-		                  --name "initramfs_data")
+	DEPENDS "rc" "${INIT_PATH}"
+	COMMAND $<TARGET_FILE:ramfs-tool> --disk "${CMAKE_CURRENT_BINARY_DIR}/initramfs.img" --create format
+	COMMAND $<TARGET_FILE:ramfs-tool> --disk "${CMAKE_CURRENT_BINARY_DIR}/initramfs.img" cp "${INIT_PATH}" "init"
+	COMMAND $<TARGET_FILE:rc> --header "${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.h"
+	                          --source "${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.c"
+	                          --input "${CMAKE_CURRENT_BINARY_DIR}/initramfs.img"
+	                          --name "initramfs_data")
 
 add_swanson_executable("swanson-os" "swanson-os.cpp"
 	"${CMAKE_CURRENT_BINARY_DIR}/initramfs-data.h"
