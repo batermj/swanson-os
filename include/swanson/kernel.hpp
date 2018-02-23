@@ -18,6 +18,8 @@
 #ifndef SWANSON_KERNEL_HPP
 #define SWANSON_KERNEL_HPP
 
+#include <swanson/exit-code.hpp>
+
 #include "fs/any.h"
 #include "fs/ramfs/fs.h"
 #include "memmap.h"
@@ -32,16 +34,6 @@
 namespace swanson {
 
 class Process;
-
-/// The code returned from the kernel entry point.
-/// Indicates whether or not the kernel ran without a panic.
-/// @see Kernel::Main
-enum class ExitCode {
-	/// Kernel exited without a panic.
-	Success,
-	/// Kernel exited after a panic.
-	Failure
-};
 
 /// The kernel, encapsulated into a single
 /// class. There are no global variables, just

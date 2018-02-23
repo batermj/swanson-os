@@ -114,7 +114,7 @@ ExitCode Kernel::Main() {
 	auto init = ramfs_open_file(&initramfs, "/init");
 	if (init == NULL) {
 		debug("Failed to open 'init'.\n");
-		return ExitCode::Failure;
+		return ExitCode::EntryMissing;
 	}
 
 	::InitStream initStream(init->data, init->data_size);
