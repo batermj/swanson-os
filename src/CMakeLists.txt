@@ -82,7 +82,9 @@ add_swanson_library("swanson"
 	"sstream.h"
 	"sstream.c"
 	"${INCDIR}/thread.hpp"
-	"${SRCDIR}/thread.cpp")
+	"${SRCDIR}/thread.cpp"
+	"${INCDIR}/tmpfs.hpp"
+	"${SRCDIR}/tmpfs.cpp")
 
 set (TOOLKIT_VER "0.0.6")
 set (TOOLKIT_URL "https://github.com/swanson-os/swanson-tk/releases/download/v${TOOLKIT_VER}/swanson-tk-${TOOLKIT_VER}.tar.gz")
