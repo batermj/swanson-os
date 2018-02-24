@@ -35,6 +35,15 @@ public:
 	Disk() noexcept { }
 	/// Default deconstructor
 	~Disk() { }
+	/// Format the disk.
+	/// @param maxSize The maximum number
+	/// of bytes that the disk can hold.
+	void Format(uint64_t maxSize);
+	/// Create a disk file. If a disk file
+	/// with the same path exists, its
+	/// contents are discarded.
+	/// The path of the disk file.
+	void Create(const std::string &path);
 	/// Open a disk file for reading
 	/// and writing.
 	/// @param path The path of the file.

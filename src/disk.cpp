@@ -19,10 +19,48 @@
 
 #include <swanson/exception.hpp>
 
+namespace {
+
+constexpr uint64_t diskSignature = 0x6e6f736e6177537f;
+
+} // namespace
+
 namespace swanson {
 
+void Disk::Format(uint64_t maxSize) {
+
+	// Maximum size is at least 1KiB
+	if (maxSize < 0x1000)
+		maxSize = 0x1000;
+
+	SetPosition(0x00);
+	// Signature
+	EncodeLE(diskSignature);
+	// Version
+	EncodeLE((uint64_t) 0x00);
+	// Max Size
+	EncodeLE(maxSize);
+	// Current Size
+	EncodeLE((uint64_t) 0x00);
+}
+
+void Disk::Create(const std::string &path) {
+
+	std::ios_base::openmode mode = std::ios_base::out;
+	mode |= std::ios_base::binary;
+
+	file.open(path, mode);
+	if (!file.good())
+		throw Exception("Failed to open disk file for writing.");
+}
+
 void Disk::Open(const std::string &path) {
-	file.open(path);
+
+	std::ios_base::openmode mode = std::ios_base::in;
+	mode |= std::ios_base::out;
+	mode |= std::ios_base::binary;
+
+	file.open(path, mode);
 	if (!file.good())
 		throw Exception("Failed to open disk file.");
 }
