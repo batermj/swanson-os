@@ -35,104 +35,27 @@
 
 namespace {
 
-/// A section of memory, described
-/// by an address and size.
-struct MemorySection {
-	/// The address of the memory section.
-	void *addr;
-	/// The number of bytes allocated by
-	/// the section.
-	uintmax_t size;
-};
+int Help() {
+	std::cout << "Usage: swanson-os [options] [cmd]" << std::endl;
+	std::cout << std::endl;
+	std::cout << "Options:" << std::endl;
+	std::cout << "\t-h, --help : Print this help message." << std::endl;
+	std::cout << std::endl;
+	std::cout << "Commands:" << std::endl;
+	std::cout << "\tinit : Initialize a Swanson system." << std::endl;
+	std::cout << "\trun  : Run the system. This is the default command." << std::endl;
+	return EXIT_FAILURE;
+}
 
-/// The hosted environment for the
-/// kernel to run in. Contains the
-/// memory and the disks that the
-/// kernel will use to run the operating
-/// system.
-class KernelHost {
-	/// The memory sections that will be
-	/// used by the kernel.
-	std::vector<MemorySection> memorySections;
-	/// The kernel that is being hosted.
-	swanson::Kernel &kernel;
-public:
-	/// Default constructor
-	KernelHost(swanson::Kernel &kernel_) noexcept : kernel(kernel_) {
+int Init(int argc, const char **argv) {
+	(void) argc;
+	(void) argv;
+	return EXIT_FAILURE;
+}
 
-	}
-	/// Default constructor.
-	~KernelHost() {
-		for (auto &memorySection : memorySections)
-			std::free(memorySection.addr);
-	}
-	/// Add a section of memory for the kernel to use.
-	/// @param size The number of bytes that the memory
-	/// section will contain.
-	void AddMemorySection(uintmax_t size) {
-
-		MemorySection memorySection;
-		memorySection.addr = std::malloc(size);
-		memorySection.size = size;
-		memorySections.push_back(memorySection);
-
-		kernel.AddMemory(memorySection.addr, memorySection.size);
-	}
-	/// Read the command line arguments
-	/// and adjust the kernel host accordingly.
-	/// @param argc The number of arguments in the
-	/// argument array.
-	/// @param argv The argument array. This does not
-	/// include the name of the program, which is typically
-	/// the first argument in a standard entry point.
-	void ReadArgs(int argc, const char **argv) {
-
-		options opts;
-
-		options_init(&opts);
-
-		auto err = options_parse_args(&opts, argc, argv);
-		if (err != 0) {
-			options_free(&opts);
-			throw swanson::Exception("Failed to parse command line arguments.");
-		}
-
-		ReadOptions(opts);
-
-		options_free(&opts);
-	}
-	/// Read the options that were passed via
-	/// the command line.
-	/// @param opts The options structure to read.
-	void ReadOptions(options &opts) {
-
-		auto memorySize = options_get_memory(&opts);
-
-		AddMemorySection(memorySize);
-
-		auto diskCount = options_get_disk_count(&opts);
-		for (decltype(diskCount) i = 0; i < diskCount; i++) {
-
-			auto disk = options_get_disk(&opts, i);
-			if (disk == nullptr)
-				continue;
-
-			kernel.AddDisk(disk);
-		}
-	}
-};
-
-/// The entry point of the program.
-/// The entry point is put here so that
-/// exception handling could be implemented
-/// by the caller.
-int Main(int argc, const char **argv) {
+int Run(int, const char **) {
 
 	swanson::Kernel kernel;
-
-	::KernelHost kernelHost(kernel);
-
-	kernelHost.ReadArgs(argc - 1, &argv[1]);
 
 	kernel.LoadInitRamfs(initramfs_data, initramfs_data_size);
 
@@ -142,6 +65,46 @@ int Main(int argc, const char **argv) {
 		return EXIT_SUCCESS;
 	else
 		return EXIT_FAILURE;
+}
+
+/// The entry point of the program.
+/// The entry point is put here so that
+/// exception handling could be implemented
+/// by the caller.
+int Main(int argc, const char **argv) {
+
+	// This is the argument index
+	auto i = 1;
+
+	while (i < argc) {
+
+		if (argv[i][0] != '-') {
+			// Not an option
+			break;
+		} else if ((std::strcmp(argv[i], "--help") == 0)
+		        || (std::strcmp(argv[i], "-h") == 0)) {
+			return Help();
+		} else {
+			// Unknown option
+			std::cerr << "Unknown option: " << argv[i] << std::endl;
+			return EXIT_FAILURE;
+		}
+
+		i++;
+	}
+
+	auto cmd = argv[i];
+	if (cmd == NULL)
+		cmd = "run";
+
+	if (std::strcmp(cmd, "init") == 0) {
+		return Init(argc - (i + 1), &argv[i + 1]);
+	} else if (std::strcmp(cmd, "run") == 0) {
+		return Run(argc - (i + 1), &argv[i + 1]);
+	} else {
+		std::cerr << "Unknown command: " << cmd << std::endl;
+		return EXIT_FAILURE;
+	}
 }
 
 } // namespace
