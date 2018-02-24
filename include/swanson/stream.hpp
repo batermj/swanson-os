@@ -56,6 +56,10 @@ public:
 	/// @param n The variable to assign the
 	/// decoded value.
 	void DecodeBE(uint16_t &n);
+	/// Encode a 64-bit, little-endian
+	/// number to the stream.
+	/// @param n The number to encode.
+	void EncodeLE(uint64_t n);
 };
 
 } // namespace swanson

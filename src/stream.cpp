@@ -60,4 +60,21 @@ void Stream::DecodeBE(uint16_t &n){
 	n |= ((uint64_t) buf[1]) << 0x00;
 }
 
+void Stream::EncodeLE(uint64_t n) {
+
+	unsigned char buf[8];
+
+	buf[0] = (n >> 0x00) & 0xff;
+	buf[1] = (n >> 0x08) & 0xff;
+	buf[2] = (n >> 0x10) & 0xff;
+	buf[3] = (n >> 0x18) & 0xff;
+
+	buf[4] = (n >> 0x20) & 0xff;
+	buf[5] = (n >> 0x28) & 0xff;
+	buf[6] = (n >> 0x30) & 0xff;
+	buf[7] = (n >> 0x38) & 0xff;
+
+	Write(buf, 8);
+}
+
 } // namespace swanson
