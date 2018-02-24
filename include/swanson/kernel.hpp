@@ -18,13 +18,10 @@
 #ifndef SWANSON_KERNEL_HPP
 #define SWANSON_KERNEL_HPP
 
+#include <swanson/disk.hpp>
 #include <swanson/exit-code.hpp>
 
-#include "fs/any.h"
 #include "fs/ramfs/fs.h"
-#include "memmap.h"
-#include "partition.h"
-#include "sstream.h"
 
 #include <memory>
 #include <vector>
@@ -39,33 +36,20 @@ class Process;
 /// class. There are no global variables, just
 /// the structures found in this class.
 class Kernel final {
-	/// The kernel's memory map.
-	memmap mmap;
 	/// The disks known by the kernel.
-	std::vector<disk*> disks;
-	/// The partition containing the
-	// operating system.
-	partition root_partition;
-	/// The root file system.
-	any_fs root_fs;
-	/// Initial ramfs file system.
-	ramfs initramfs;
+	std::vector<std::shared_ptr<Disk>> disks;
 	/// The array of processes.
 	std::vector<std::shared_ptr<Process>> processes;
+	/// The initial ram file system.
+	ramfs initramfs;
 public:
 	/// Default constructor.
 	Kernel() noexcept;
 	/// Default deconstructor.
 	~Kernel();
-	/// Adds a disk to the kernel.
-	/// @param disk A pointer to the
-	/// disk structure.
-	void AddDisk(disk *disk);
-	/// Adds memory that may be used by the kernel.
-	/// @param addr The address of the usable memory.
-	/// @param size The number of bytes contained by
-	/// the memory block.
-	void AddMemory(void *addr, uintmax_t size);
+	/// Add a disk to the kernel's disk array.
+	/// @param disk The disk to add to the kernel.
+	void AddDisk(std::shared_ptr<Disk> disk);
 	/// Loads the initial ramdisk.
 	/// @param addr The address of the ramdisk data.
 	/// @param size The number of bytes contained by

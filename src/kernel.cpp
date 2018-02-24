@@ -72,9 +72,6 @@ public:
 namespace swanson {
 
 Kernel::Kernel() noexcept {
-	any_fs_init(&root_fs);
-	memmap_init(&mmap);
-	partition_init(&root_partition);
 	ramfs_init(&initramfs);
 }
 
@@ -82,13 +79,8 @@ Kernel::~Kernel() {
 	ramfs_free(&initramfs);
 }
 
-void Kernel::AddDisk(disk *disk) {
-	disks.push_back(disk);
-}
-
-void Kernel::AddMemory(void *addr, uintmax_t size) {
-	if (memmap_add(&mmap, addr, size) != MEMMAP_ERROR_NONE)
-		throw Exception("Failed to add memory segment.");
+void Kernel::AddDisk(std::shared_ptr<Disk> disk) {
+	disks.emplace_back(disk);
 }
 
 void Kernel::LoadInitRamfs(const void *buf, uintmax_t buf_size) {
