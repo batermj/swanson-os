@@ -32,7 +32,7 @@ add_library("swanson-fat"
 	"fat_defs.h"
 	"fat_list.h"
 	"fat_opts.h"
-	"fat_types.h")
+	"types.h")
 
 function(ADD_FAT_UTILITY UTILITY_NAME)
 	add_executable("${UTILITY_NAME}" ${ARGN})
