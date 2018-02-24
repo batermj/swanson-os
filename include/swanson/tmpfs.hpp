@@ -28,20 +28,23 @@ namespace swanson::tmpfs {
 /// A temporary file.
 class File final : public vfs::File {
 	/// Information regarding the file.
-	vfs::Info info;
+	std::shared_ptr<vfs::Info> info;
 	/// The file data.
 	std::vector<unsigned char> data;
 public:
 	/// Default constructor
-	File() { }
+	File() : info(std::make_shared<vfs::Info>()) { }
 	/// Default deconstructor
 	~File() { }
 	/// Get information regarding the file.
 	/// @returns An information class describing the file.
-	vfs::Info GetInfo() const override { return info; }
-	/// Set information regarding the file.
-	/// @param info_ Information regarding the file.
-	void SetInfo(const vfs::Info &info_) override { info = info_; }
+	std::shared_ptr<vfs::Info> GetInfo() override { return info; }
+	/// Open the temporary file.
+	/// @param mode The input/output mode to
+	/// open the file in.
+	/// @returns A stream class used to read
+	/// and write data.
+	std::shared_ptr<Stream> Open(uint32_t mode);
 	/// This function is a stub and does nothing,
 	/// since temporary files are not saved to disk.
 	void Import(Disk &) override { }
@@ -57,30 +60,72 @@ class Directory final : public vfs::Directory {
 	/// Subdirectories contained by the directory.
 	std::vector<std::shared_ptr<vfs::Directory>> subdirectories;
 	/// Information regarding this directory.
-	vfs::Info info;
+	std::shared_ptr<vfs::Info> info;
 public:
 	/// Default constructor
-	Directory() { }
+	Directory() : info(std::make_shared<vfs::Info>()) { }
 	/// Default deconstructor
 	~Directory() { }
 	/// Add a file to the temporary directory.
 	/// @param name The name of the file.
-	void AddFile(const std::string &name);
+	/// @returns ExitCode::Success on a successfull run.
+	/// If the entry already exists, then ExitCode::EntryExists
+	/// is returned.
+	ExitCode AddFile(const std::string &name) override;
 	/// Add a subdirectory to the temporary directory.
 	/// @param name The name of the subdirectory.
-	void AddDirectory(const std::string &name);
+	/// @returns ExitCode::Success on a successfull run.
+	/// If the entry already exists, then ExitCode::EntryExists
+	/// is returned.
+	ExitCode AddDirectory(const std::string &name) override;
+	/// Checks if an entry exists or not.
+	/// @param name The name of the entry.
+	/// @returns True if the entry exists,
+	/// false if it does not.
+	bool EntryExists(const std::string &name) noexcept;
 	/// Get information regarding this directory.
 	/// @returns Information regarding the directory.
-	vfs::Info GetInfo() const { return info; }
-	/// Set information regarding this directory.
-	/// @param info_ The new information describing the directory.
-	void SetInfo(const vfs::Info &info_) { info = info_; }
+	std::shared_ptr<vfs::Info> GetInfo() override { return info; }
 	/// This function is a stub and does nothing,
 	/// since temporary directories are not saved to disk.
-	void Export(Disk &) { }
+	void Export(Disk &) override { }
 	/// This function is a stub and does nothing,
 	/// since temporary directories are not saved to disk.
-	void Import(Disk &) { }
+	void Import(Disk &) override { }
+};
+
+class FS final : public vfs::FS {
+	/// The root directory of the
+	/// temporary file system.
+	std::shared_ptr<vfs::Directory> root;
+public:
+	/// Default constructor
+	FS() : root(std::shared_ptr<vfs::Directory>(new Directory)) { }
+	/// Default deconstructor
+	~FS() { }
+	/// Get the root directory of
+	/// the temporary file system.
+	/// @returns The root directory
+	/// of the temporary file system.
+	std::shared_ptr<vfs::Directory> GetRoot() { return root; }
+	/// Create a file in the temporary file system.
+	/// @param path The path of the file to create.
+	/// @returns If the function creates the file
+	/// successfully, then @ref ExitCode::Success is
+	/// returned. If the file exists already, then
+	/// @ref ExitCode::FileExists is returned. If
+	/// the parent directory does not exist,
+	/// then @ref ExitCode::MissingEntry is returned.
+	ExitCode CreateFile(const std::string &path);
+	/// Create a directory in the temporary file system.
+	/// @param path The path of the directory to create.
+	/// @returns If the function creates the directory
+	/// successfully, then @ref ExitCode::Success is
+	/// returned. If the file exists already, then
+	/// @ref ExitCode::FileExists is returned. If
+	/// the parent directory does not exist,
+	/// then @ref ExitCode::MissingEntry is returned.
+	ExitCode CreateDirectory(const std::string &path);
 };
 
 } // namespace swanson::tmpfs

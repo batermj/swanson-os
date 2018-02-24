@@ -94,7 +94,7 @@ set (INIT_PATH "${CMAKE_CURRENT_BINARY_DIR}/swanson-tk-${TOOLKIT_VER}/bin/init")
 
 file (DOWNLOAD ${TOOLKIT_URL} ${TOOLKIT_OUT})
 
-add_custom_command(OUTPUT "init"
+add_custom_command(OUTPUT "${INIT_PATH}"
 	COMMAND "${CMAKE_COMMAND}" -E tar xvf "${TOOLKIT_OUT}")
 
 add_custom_command(OUTPUT
@@ -140,6 +140,8 @@ add_swanson_test("swanson-test"
 	"elf-test.cpp"
 	"elf-data.h"
 	"elf-data.c"
+	"fs-test.hpp"
+	"fs-test.cpp"
 	"gpt-test.h"
 	"gpt-test.c"
 	"memory-map-test.hpp"

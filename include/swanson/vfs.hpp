@@ -18,13 +18,15 @@
 #ifndef SWANSON_VFS_HPP
 #define SWANSON_VFS_HPP
 
-#include <swanson/stream.hpp>
+#include <swanson/exit-code.hpp>
 
 #include <string>
+#include <memory>
 
 namespace swanson {
 
 class Disk;
+class Stream;
 
 namespace vfs {
 
@@ -50,6 +52,28 @@ public:
 	void SetName(std::string &&name_) noexcept { name = std::move(name_); }
 };
 
+namespace modes {
+
+/// Allow for read operations
+/// on an open file.
+constexpr uint32_t read = 0x01;
+
+/// Allow for write operations
+/// on an open file.
+constexpr uint32_t write = 0x02;
+
+/// When opening the file, write
+/// operations will take place at
+/// the end of the file.
+constexpr uint32_t append = 0x04;
+
+/// When opening the file in writing
+/// mode, do not truncate the data in
+/// the file.
+constexpr uint32_t notrunc = 0x08;
+
+} // namespace modes
+
 /// A virtual file system file.
 class File {
 public:
@@ -59,10 +83,12 @@ public:
 	/// class that describes the file.
 	/// @returns An information class
 	/// that describes the file.
-	virtual Info GetInfo() const = 0;
-	/// Set the information of the file.
-	/// @param info The new file information.
-	virtual void SetInfo(const Info &info) = 0;
+	virtual std::shared_ptr<Info> GetInfo() = 0;
+	/// Open the file for reading, writing, or both.
+	/// @param mode The mode to open the file in.
+	/// @returns A stream structure that
+	/// can be used to read the file data.
+	virtual std::shared_ptr<Stream> Open(uint32_t mode) = 0;
 	/// Import the file from disk.
 	/// @param disk The disk to import
 	/// the file from.
@@ -80,17 +106,24 @@ public:
 	virtual ~Directory() { }
 	/// Add a file to the directory, by name.
 	/// @param name The name of the file to add.
-	virtual void AddFile(const std::string &name) = 0;
+	/// @returns ExitCode::Success on a good run. If
+	/// the name of the directory already exists, then
+	/// ExitCode::EntryExists is returned. If the name
+	/// is an empty string, then ExitCode::InvalidArgument
+	/// is returned.
+	virtual ExitCode AddFile(const std::string &name) = 0;
 	/// Add a subdirectory to the directory, by name.
 	/// @param name The name of the directory to add.
-	virtual void AddDirectory(const std::string &name) = 0;
+	/// @returns ExitCode::Success on a good run. If
+	/// the name of the directory already exists, then
+	/// ExitCode::EntryExists is returned. If the name
+	/// is an empty string, then ExitCode::InvalidArgument
+	/// is returned.
+	virtual ExitCode AddDirectory(const std::string &name) = 0;
 	/// Get information regarding the directory.
 	/// @returns An information class that describes
 	/// the directory.
-	virtual Info GetInfo() const = 0;
-	/// Set information about the directory.
-	/// @param info The new directory information.
-	virtual void SetInfo(const Info &info) = 0;
+	virtual std::shared_ptr<Info> GetInfo() = 0;
 	/// Export the directory, including the subdirectories
 	/// and files, to a disk.
 	/// @param disk The disk to export the directory to.
@@ -99,6 +132,33 @@ public:
 	/// and files, from a disk.
 	/// @param disk The disk to import the directory from.
 	virtual void Import(Disk &disk) = 0;
+};
+
+/// File system class. Used to
+/// contain the root directory as
+/// well as information found in
+/// the file system header.
+class FS {
+public:
+	/// Default deconstructor
+	virtual ~FS() { }
+	/// Get a pointer to the root directory.
+	/// @returns A pointer to the root directory.
+	virtual std::shared_ptr<Directory> GetRoot() = 0;
+	/// Create a regular file.
+	/// @param path The path of the file.
+	/// @returns @ref ExitCode::Success on a successful run.
+	/// If the directory already exists, then @ref ExitCode::EntryExists
+	/// is returned. If the parent directory does not exist,
+	/// then @ref ExitCode::MissingEntry is returned.
+	virtual ExitCode CreateFile(const std::string &path) = 0;
+	/// Create a directory.
+	/// @param path The path of the directory.
+	/// @returns @ref ExitCode::Success on a successful run.
+	/// If the directory already exists, then @ref ExitCode::EntryExists
+	/// is returned. If the parent directory does not exist,
+	/// then @ref ExitCode::MissingEntry is returned.
+	virtual ExitCode CreateDirectory(const std::string &path) = 0;
 };
 
 } // namespace vfs
