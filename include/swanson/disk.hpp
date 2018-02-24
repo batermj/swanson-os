@@ -42,7 +42,7 @@ public:
 	/// Create a disk file. If a disk file
 	/// with the same path exists, its
 	/// contents are discarded.
-	/// The path of the disk file.
+	/// @param path The path of the disk file.
 	void Create(const std::string &path);
 	/// Open a disk file for reading
 	/// and writing.

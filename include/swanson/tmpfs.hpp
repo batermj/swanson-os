@@ -94,6 +94,7 @@ public:
 	void Import(Disk &) override { }
 };
 
+/// A temporary file system.
 class FS final : public vfs::FS {
 	/// The root directory of the
 	/// temporary file system.
