@@ -17,6 +17,7 @@
  */
 
 #include <swanson/bad-instruction.hpp>
+#include <swanson/disk.hpp>
 #include <swanson/kernel.hpp>
 #include <swanson/segfault.hpp>
 
@@ -47,10 +48,44 @@ int Help() {
 	return EXIT_FAILURE;
 }
 
-int Init(int argc, const char **argv) {
-	(void) argc;
-	(void) argv;
+int HelpInit() {
+	std::cout << "Options:" << std::endl;
+	std::cout << "\t-d, --disk PATH : Specify the path of the disk to use." << std::endl;
+	std::cout << "\t-s, --size SIZE : Specify the max size of the disk." << std::endl;
 	return EXIT_FAILURE;
+}
+
+int Init(int argc, const char **argv) {
+
+	auto diskSize = 512ULL * 1024ULL;
+
+	std::string diskPath = "disk.img";
+
+	for (decltype(argc) i = 0; i < argc; i++) {
+		if ((std::strcmp(argv[i], "--disk") == 0)
+		 || (std::strcmp(argv[i], "-d") == 0)) {
+			diskPath = argv[i + 1];
+			i++;
+		} else if ((std::strcmp(argv[i], "--size") == 0)
+		        || (std::strcmp(argv[i], "-s") == 0)) {
+			if (std::sscanf(argv[i + 1], "%llu", &diskSize) != 1) {
+				std::cerr << "Invalid disk size: " << argv[i + 1] << std::endl;
+				return EXIT_FAILURE;
+			}
+		} else if ((std::strcmp(argv[i], "--help") == 0)
+		        || (std::strcmp(argv[i], "-h") == 0)) {
+			return HelpInit();
+		} else {
+			std::cerr << "Unknown argument: " << argv[i] << std::endl;
+			return EXIT_FAILURE;
+		}
+	}
+	
+	swanson::Disk disk;
+	disk.Create(diskPath);
+	disk.Format(diskSize);
+
+	return EXIT_SUCCESS;
 }
 
 int Run(int, const char **) {
