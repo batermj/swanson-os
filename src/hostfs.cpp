@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Taylor Holberton
+/* Copyright (C) 2017 - 2018 Taylor Holberton
  *
  * This file is part of Swanson.
  *
@@ -16,35 +16,13 @@
  * along with Swanson.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "host.h"
+#include <swanson/hostfs.hpp>
 
-#ifndef NULL
-#define NULL ((void *) 0x00)
-#endif
+namespace swanson::hostfs {
 
-static enum vfs_error
-host_fs_get_root_dir(void *fs_ptr,
-                     struct vfs_dir *root_dir) {
-
-	struct host_fs *fs;
-
-	fs = (struct host_fs *) fs_ptr;
-
-	*root_dir = fs->root_dir.dir;
-
-	return VFS_ERROR_NONE;
+ExitCode FS::CreateFile(const std::string &path) {
+	(void) path;
+	return ExitCode::Success;
 }
 
-void
-host_dir_init(struct host_dir *dir) {
-	vfs_dir_init(&dir->dir);
-	dir->fs = NULL;
-}
-
-void
-host_fs_init(struct host_fs *fs) {
-	vfs_init(&fs->vfs);
-	fs->vfs.get_root_dir = host_fs_get_root_dir;
-	fs->root_path = "";
-	host_dir_init(&fs->root_dir);
-}
+} // namespace swanson::hostfs

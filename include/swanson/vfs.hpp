@@ -159,6 +159,14 @@ public:
 	/// is returned. If the parent directory does not exist,
 	/// then @ref ExitCode::MissingEntry is returned.
 	virtual ExitCode CreateDirectory(const std::string &path) = 0;
+	/// Open a file from the file system.
+	/// @param path The path of the file to open.
+	/// @param stream If the file can be opened, this pointer
+	/// will be assigned a stream class for read and write
+	/// operations for the file.
+	/// @returns The exit code most similar to that
+	/// of the system call.
+	virtual ExitCode OpenFile(const std::string &path, std::shared_ptr<Stream> &stream) = 0;
 };
 
 } // namespace vfs

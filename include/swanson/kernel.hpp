@@ -20,6 +20,7 @@
 
 #include <swanson/disk.hpp>
 #include <swanson/exit-code.hpp>
+#include <swanson/vfs.hpp>
 
 #include "fs/ramfs/fs.h"
 
@@ -42,6 +43,8 @@ class Kernel final {
 	std::vector<std::shared_ptr<Process>> processes;
 	/// The initial ram file system.
 	ramfs initramfs;
+	/// The root file system.
+	std::shared_ptr<vfs::FS> root_fs;
 public:
 	/// Default constructor.
 	Kernel() noexcept;
@@ -61,6 +64,11 @@ public:
 	/// the host program should return succesfully
 	/// or not.
 	ExitCode Main();
+	/// Set the root file system.
+	/// This is also the file system that the
+	/// kernel will will search for '/sbin/init' for.
+	/// @param root_fs_ The new root file system.
+	void SetRootFS(std::shared_ptr<vfs::FS> root_fs_);
 	/// Run the processes for a specified
 	/// number of instructions per thread.
 	/// @param steps The instructions per

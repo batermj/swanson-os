@@ -130,6 +130,10 @@ ExitCode Kernel::Main() {
 	return ExitCode::Success;
 }
 
+void Kernel::SetRootFS(std::shared_ptr<vfs::FS> root_fs_) {
+	root_fs = root_fs_;
+}
+
 void Kernel::Step(uint32_t steps) {
 	auto processID = 0UL;
 	for (auto &process : processes) {
