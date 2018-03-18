@@ -55,28 +55,36 @@ int HelpInit() {
 	return EXIT_FAILURE;
 }
 
-int Init(int argc, const char **argv) {
+int Init(std::vector<std::string>::const_iterator begin,
+         std::vector<std::string>::const_iterator end) {
 
 	auto diskSize = 512ULL * 1024ULL;
 
 	std::string diskPath = "disk.img";
 
-	for (decltype(argc) i = 0; i < argc; i++) {
-		if ((std::strcmp(argv[i], "--disk") == 0)
-		 || (std::strcmp(argv[i], "-d") == 0)) {
-			diskPath = argv[i + 1];
-			i++;
-		} else if ((std::strcmp(argv[i], "--size") == 0)
-		        || (std::strcmp(argv[i], "-s") == 0)) {
-			if (std::sscanf(argv[i + 1], "%llu", &diskSize) != 1) {
-				std::cerr << "Invalid disk size: " << argv[i + 1] << std::endl;
+	for (auto it = begin; it != end; it++) {
+
+		if ((*it == "--disk") || (*it == "-d")) {
+
+			if ((it + 1) == end)
+				throw std::runtime_error("Disk path not given");
+
+			diskPath = *(++it);
+
+		} else if ((*it == "--size") || (*it == "-s")) {
+
+			if ((it + 1) == end)
+				throw std::runtime_error("Disk size not given");
+
+			if (std::sscanf((++it)->c_str(), "%llu", &diskSize) != 1) {
+				std::cerr << "Invalid disk size: " << *it << std::endl;
 				return EXIT_FAILURE;
 			}
-		} else if ((std::strcmp(argv[i], "--help") == 0)
-		        || (std::strcmp(argv[i], "-h") == 0)) {
+
+		} else if ((*it == "--help") || (*it == "-h")) {
 			return HelpInit();
 		} else {
-			std::cerr << "Unknown argument: " << argv[i] << std::endl;
+			std::cerr << "Unknown argument: " << *it << std::endl;
 			return EXIT_FAILURE;
 		}
 	}
@@ -88,7 +96,8 @@ int Init(int argc, const char **argv) {
 	return EXIT_SUCCESS;
 }
 
-int Run(int, const char **) {
+int Run(std::vector<std::string>::const_iterator,
+        std::vector<std::string>::const_iterator) {
 
 	swanson::Kernel kernel;
 
@@ -106,36 +115,35 @@ int Run(int, const char **) {
 /// The entry point is put here so that
 /// exception handling could be implemented
 /// by the caller.
-int Main(int argc, const char **argv) {
+int Main(std::vector<std::string>::const_iterator begin,
+         std::vector<std::string>::const_iterator end) {
 
-	// This is the argument index
-	auto i = 1;
+	auto it = begin;
 
-	while (i < argc) {
+	while (it != end) {
 
-		if (argv[i][0] != '-') {
-			// Not an option
+		if ((*it)[0] != '-') {
 			break;
-		} else if ((std::strcmp(argv[i], "--help") == 0)
-		        || (std::strcmp(argv[i], "-h") == 0)) {
+		} else if ((*it == "--help") || (*it == "-h")) {
 			return Help();
 		} else {
 			// Unknown option
-			std::cerr << "Unknown option: " << argv[i] << std::endl;
+			std::cerr << "Unknown option: " << *it << std::endl;
 			return EXIT_FAILURE;
 		}
 
-		i++;
+		it++;
 	}
 
-	auto cmd = argv[i];
-	if (cmd == NULL)
-		cmd = "run";
+	std::string cmd = "run";
 
-	if (std::strcmp(cmd, "init") == 0) {
-		return Init(argc - (i + 1), &argv[i + 1]);
-	} else if (std::strcmp(cmd, "run") == 0) {
-		return Run(argc - (i + 1), &argv[i + 1]);
+	if (it != end)
+		cmd = *it;
+
+	if (cmd == "init") {
+		return Init(++it, end);
+	} else if (cmd == "run") {
+		return Run(++it, end);
 	} else {
 		std::cerr << "Unknown command: " << cmd << std::endl;
 		return EXIT_FAILURE;
@@ -145,8 +153,14 @@ int Main(int argc, const char **argv) {
 } // namespace
 
 int main(int argc, const char **argv) {
+
+	std::vector<std::string> args;
+
+	for (auto i = 1; i < argc; i++)
+		args.push_back(argv[i]);
+
 	try {
-		return Main(argc, argv);
+		return Main(args.begin(), args.end());
 	} catch (const swanson::Segfault &segfault) {
 		std::cerr << "An uncaught segmentation fault occured." << std::endl;
 		std::cerr << std::hex << std::setw(8) << std::setfill('0');
