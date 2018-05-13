@@ -103,21 +103,23 @@ void Kernel::LoadInitRamfs(const void *buf, uintmax_t buf_size) {
 
 ExitCode Kernel::Main() {
 
-	auto init = ramfs_open_file(&initramfs, "/init");
-	if (init == NULL) {
-		debug("Failed to open 'init'.\n");
-		return ExitCode::EntryMissing;
+	std::shared_ptr<Stream> initStream;
+
+	if (root_fs == nullptr) {
+		throw Exception("Root file system not mounted.");
 	}
 
-	::InitStream initStream(init->data, init->data_size);
+	auto exitCode = root_fs->OpenFile("/bin/init", initStream);
+	if (exitCode != ExitCode::Success)
+		return exitCode;
 
-	elf::File file;
+	elf::File elfFile;
 
-	file.Decode(initStream);
+	elfFile.Decode(*initStream);
 
 	auto process = std::make_shared<Process>();
 
-	process->Load(file);
+	process->Load(elfFile);
 
 	AddProcess(process);
 
