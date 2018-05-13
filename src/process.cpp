@@ -49,6 +49,10 @@ public:
 			HandleClose(cpu);
 		} else if (type == swanson::syscalls::write) {
 			HandleWrite(cpu);
+		} else if (type == swanson::syscalls::execve) {
+			throw swanson::Exception("Syscall 'execve' not implemented");
+		} else if (type == swanson::syscalls::fork) {
+			throw swanson::Exception("Syscall 'fork' not implemented");
 		} else {
 			throw swanson::Exception("System call type is unknown.");
 		}
@@ -183,6 +187,10 @@ void Process::Load(const elf::Segment &segment) {
 	}
 
 	memoryMap->AddSection(memorySection);
+}
+
+void Process::SetRootFS(std::shared_ptr<vfs::FS> root_fs_) {
+	root_fs = root_fs_;
 }
 
 void Process::Step(uint32_t steps) {
