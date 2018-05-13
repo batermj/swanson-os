@@ -33,12 +33,17 @@ class Segment;
 
 } // namespace elf
 
+namespace vfs {
+
+class FS;
+
+} // namespace vfs
+
 class Thread;
 class MemoryMap;
 class MemorySection;
 class InterruptHandler;
 class Path;
-
 /// A running process. It consists
 /// of threads, a memory map, a working
 /// directory, and a root directory.
@@ -57,8 +62,8 @@ class Process final {
 	/// The array of process IDs that were
 	/// started by this process.
 	std::vector<int> childProcesses;
-	/// The root path of the process.
-	std::shared_ptr<Path> root;
+	/// A pointer to the root file system.
+	std::shared_ptr<vfs::FS> root_fs;
 	/// The current working directory
 	/// of the process.
 	std::shared_ptr<Path> cwd;
@@ -117,6 +122,9 @@ public:
 	/// Set the ID of the process.
 	/// @param id_ The new ID of the process.
 	void SetID(int id_) { id = id_; }
+	/// Set the root file system for the process.
+	/// @param root_fs_ The new root file system.
+	void SetRootFS(std::shared_ptr<vfs::FS> root_fs_);
 	/// Allow each of the threads in the
 	/// process to run for a specified number
 	/// of instructions.
