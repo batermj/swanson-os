@@ -73,8 +73,21 @@ class FS final : public vfs::FS {
 	/// are passed to the class functions.
 	std_fs::path root;
 public:
+	/// Create a virtual file system from
+	/// the host file system.
+	/// @param root The root path of the
+	/// file system on the host.
+	/// @returns A shared pointer to the
+	/// new virtual file system.
+	static std::shared_ptr<vfs::FS> Create(const std::string &root);
 	/// Default constructor
 	FS() noexcept { };
+	/// This constructor initializes a host
+	/// file system class with a specified
+	/// root directory.
+	/// @param path The path to the root directory,
+	/// contained on the host file system.
+	FS(const std::string &path);
 	/// Default deconstructor
 	~FS() { }
 	/// Creates a regular file on the host system.
