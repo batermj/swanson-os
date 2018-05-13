@@ -20,6 +20,7 @@
 
 #include <swanson/disk.hpp>
 #include <swanson/exit-code.hpp>
+#include <swanson/interrupt-handler.hpp>
 #include <swanson/vfs.hpp>
 
 #include "fs/ramfs/fs.h"
