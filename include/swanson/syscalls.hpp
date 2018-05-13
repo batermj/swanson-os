@@ -60,6 +60,12 @@ constexpr uint32_t times = 20;
 
 constexpr uint32_t link = 21;
 
+constexpr uint32_t execve = 22;
+
+constexpr uint32_t fork = 23;
+
+constexpr uint32_t wait = 24;
+
 } // namespace syscalls
 
 } // namespace swanson
