@@ -82,6 +82,8 @@ add_swanson_library("swanson"
 	"${INCDIR}/tmpfs.hpp"
 	"${SRCDIR}/tmpfs.cpp")
 
+target_link_libraries("swanson" "stdc++fs")
+
 set (TOOLKIT_VER "0.0.6")
 set (TOOLKIT_URL "https://github.com/swanson-os/swanson-tk/releases/download/v${TOOLKIT_VER}/swanson-tk-${TOOLKIT_VER}.tar.gz")
 set (TOOLKIT_OUT "${CMAKE_CURRENT_BINARY_DIR}/swanson-tk-${TOOLKIT_VER}.tar.gz")
