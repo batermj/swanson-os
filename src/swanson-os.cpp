@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Taylor Holberton
+/* Copyright (C) 2017 - 2018 Taylor Holberton
  *
  * This file is part of Swanson.
  *
@@ -18,6 +18,7 @@
 
 #include <swanson/bad-instruction.hpp>
 #include <swanson/disk.hpp>
+#include <swanson/hostfs.hpp>
 #include <swanson/kernel.hpp>
 #include <swanson/segfault.hpp>
 
@@ -28,11 +29,14 @@
 #include "initramfs-data.h"
 #endif /* SWANSON_WITH_INITRAMFS_DATA_H */
 
+#include <experimental/filesystem>
 #include <iomanip>
 #include <iostream>
 
 #include <cstdlib>
 #include <cstring>
+
+namespace std_fs = std::experimental::filesystem;
 
 namespace {
 
@@ -96,12 +100,35 @@ int Init(std::vector<std::string>::const_iterator begin,
 	return EXIT_SUCCESS;
 }
 
-int Run(std::vector<std::string>::const_iterator,
-        std::vector<std::string>::const_iterator) {
+int Run(std::vector<std::string>::const_iterator begin,
+        std::vector<std::string>::const_iterator end) {
+
+	auto use_hostfs = false;
+
+	std::string hostfs_path = std_fs::current_path();
+
+	for (auto it = begin; it != end; it++) {
+		if (*it == "--use-hostfs") {
+			use_hostfs = true;
+		} else if (*it == "--hostfs-path") {
+			if ((it + 1) == end)
+				throw std::runtime_error("HostFS path not given");
+
+			hostfs_path = *(++it);
+		} else {
+			std::cerr << "Unknown option: " << *it << std::endl;
+			return EXIT_FAILURE;
+		}
+	}
 
 	swanson::Kernel kernel;
 
-	kernel.LoadInitRamfs(initramfs_data, initramfs_data_size);
+	if (use_hostfs) {
+		auto root_fs = swanson::hostfs::FS::Create(hostfs_path);
+		kernel.SetRootFS(root_fs);
+	} else {
+		kernel.LoadInitRamfs(initramfs_data, initramfs_data_size);
+	}
 
 	auto exitCode = kernel.Main();
 
@@ -137,13 +164,15 @@ int Main(std::vector<std::string>::const_iterator begin,
 
 	std::string cmd = "run";
 
-	if (it != end)
+	if (it != end) {
 		cmd = *it;
+		it++;
+	}
 
 	if (cmd == "init") {
-		return Init(++it, end);
+		return Init(it, end);
 	} else if (cmd == "run") {
-		return Run(++it, end);
+		return Run(it, end);
 	} else {
 		std::cerr << "Unknown command: " << cmd << std::endl;
 		return EXIT_FAILURE;
